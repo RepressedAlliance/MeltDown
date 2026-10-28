@@ -464,7 +464,7 @@ S("S54", lambda: L(45) - 0.2, scene="room", setup=dict(void=True, hide=["LampBas
                          rim_col=(0.0, 0.0, 0.0), exposure=1.0))],
   anim=dict(plate=[(0, 0.0), (1, 0.0)]))
 S("S55", lambda: L(46) - 0.2, bg="chest_core", bg_args=dict(pose="rin_float", mode="tight"), finish=NIGHT,
-  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.18)]}, {"type": "heat", "amount": 2.5}])
+  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.06)], "cy": 100}, {"type": "heat", "amount": 2.5}])
 S("S56", lambda: L(47) - 0.2, scene="core", setup=dict(mood="blue"), finish=COREB,
   cam=dict(keys=[(0, ring_pos(0.0, R + 2.0, -2.6), ring_pos(0.08, R + 1.6, 1.1), 24, 0),
                  (1, ring_pos(0.008, R + 2.0, -2.5), ring_pos(0.08, R + 1.4, 1.3), 23, -10)], fstop=2.8,
@@ -640,6 +640,9 @@ for _s in SHOTS:
         _s[_k] = _v
 for _sid in ("S45e", "S45f", "S45g", "S45b"):
     next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.4
+# light type over lit windows, the reactor's rings and the gears' highlights: a wider, firmer backing
+for _sid in ("S11", "S12", "S13", "S22", "S25", "S53", "S58", "S62", "S63"):
+    next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.25
 # the TV caption sits low on the left, where a broadcast puts it: clear of her hands (S44c), the host's
 # face and waving hand (S45) and most of the clock (S44d)
 LYRIC_STYLES[37] = dict(style="telop", x=110, y=952, w=760, size=44, tail=1.5)
@@ -671,7 +674,7 @@ THERMAL = {
     "S49": dict(lyric_glitch=[(0, 0.2), (1, 0.6)]),
     "S56": dict(fx=[{"type": "rgbsplit", "px": [(0, 0.0), (0.7, 2.0), (1, 8.0)]}],
                 lyric_glitch=[(0, 0.0), (0.75, 0.0), (1, 0.8)]),
-    "S57": dict(lyric_glitch=[(0, 0.3), (1, 0.9)]),
+    "S57": dict(lyric_glitch=[(0, 0.15), (1, 0.4)]),
 }
 for _s in SHOTS:
     for _k, _v in THERMAL.get(_s["id"], {}).items():

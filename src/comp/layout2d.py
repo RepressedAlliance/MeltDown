@@ -42,7 +42,7 @@ def print_marks(c, t, col=(0.93, 0.9, 0.83), a=0.7, sheet="", inks=(), margin=46
 
 
 def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ring", cx=W / 2, cy=H / 2, r=230,
-               at=0.0, panel="left", size=150):
+               at=0.0, panel="left", size=150, plate_title=True):
     """The film title. mode 'ring': inside the opening ring; 'poster': full credits over the picture,
     coming up from shot fraction `at` (the end titles start once Rin has woken). `col` colours the big
     title; the credits always sit light on their dark plate, at the lower `panel` corner."""
@@ -63,24 +63,28 @@ def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ri
     a = max(0.0, min(1.0, (u - at) * 3 / max(0.1, 1 - at))) * max(0.0, min(1.0, (1 - u) * 6))
     if a <= 0:
         return
+    # the title and the credits each sit on a plate of the midnight ink, so they read over any picture
+    ink, light = (0.05, 0.07, 0.17), (0.93, 0.9, 0.83)
     blk = layout("炉心融解", "mincho_b", size, vertical=True, tracking=0.08)
+    tx, ty = W - 96 - size, 112
+    # vertical glyphs are centred on their x: the plate is centred on tx too
+    c.drawRect(skia.Rect.MakeXYWH(tx - size / 2 - 26, ty - 26, size + 52, blk.height + 52), paint(ink, a * 0.88))
     for g in blk.glyphs:
         m = glyph_matrix(g)
-        m.postTranslate(W - 110 - size, 120)
+        m.postTranslate(tx, ty)
         pth = skia.Path(g.path)
         pth.transform(m)
-        c.drawPath(pth, paint(col, a))
-    c.drawLine(W - 190 - size, 110, W - 190 - size, 110 + blk.height + 20, paint(col, a * 0.6, stroke=1.2))
-    light = (0.93, 0.9, 0.83)
-    px = 96 if panel == "left" else W - 96 - 760
-    c.drawRect(skia.Rect.MakeXYWH(px, H - 318, 760, 228), paint((0.05, 0.07, 0.17), a * 0.88))
-    _text(c, "MELTDOWN", "shoulders", 64, px + 24, H - 282, accent, a, tracking=0.25)
+        c.drawPath(pth, paint(light if plate_title else col, a))
+    pw = 860
+    px = 96 if panel == "left" else W - 96 - pw
+    c.drawRect(skia.Rect.MakeXYWH(px, H - 344, pw, 264), paint(ink, a * 0.88))
+    _text(c, "MELTDOWN", "shoulders", 64, px + 24, H - 310, accent, a, tracking=0.25)
     # the credits in one language (English), the song's own credit first, the video's last
-    _text(c, "iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 30, px + 28, H - 200, light, a)
-    c.drawLine(px + 24, H - 218, px + 664, H - 218, paint(light, a * 0.6, stroke=1.2))
-    _text(c, "music  iroha(sasaki)    lyrics  kuma    vocal  Kagamine Rin", "mono_l", 19, px + 28, H - 150,
-          light, a * 0.85, proportional=False)
-    _text(c, "MV  RepressedAlliance  ×  Claude", "mono_l", 19, px + 28, H - 114, light, a * 0.85, proportional=False)
+    _text(c, "iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 36, px + 28, H - 228, light, a)
+    c.drawLine(px + 24, H - 246, px + pw - 24, H - 246, paint(light, a * 0.6, stroke=1.2))
+    _text(c, "music iroha(sasaki) / lyrics kuma / vocal Kagamine Rin", "mono_l", 23, px + 28, H - 172,
+          light, a * 0.9, proportional=False)
+    _text(c, "MV  RepressedAlliance  ×  Claude", "mono_l", 23, px + 28, H - 134, light, a * 0.9, proportional=False)
 
 
 def telop(c, line, t, x, y, w, size=46):
