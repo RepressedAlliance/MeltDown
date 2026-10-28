@@ -177,9 +177,10 @@ S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
 # ================================================================ B1 (white afternoon dream)
 S("S17", lambda: L(8) - 0.2, scene="room", setup=dict(tod="morning", wind=0.8, plate=None, world=(2.2, 2.2, 2.3)), finish=DAYW, in_="white",
   fx=[{"type": "exposure", "ev": -0.2}],
-  # the line about a violent dream: in the white afternoon she stares at her own open hands. Medium shot,
-  # card sized so her eyes match the close-ups that follow (S19, S20)
-  cam=dict(keys=[(0, (1.57, 1.55, 0.95), (1.0, 2.2, 0.93), 33), (1, (1.53, 1.60, 0.95), (1.0, 2.2, 0.93), 36)],
+  # the line about a violent dream: in the white afternoon she stares at her own open hands. Medium shot
+  # wide enough to hold her bow and both hands the whole time (a tighter push left a sliver of the bow
+  # on the top edge), creeping in only a little
+  cam=dict(keys=[(0, (1.57, 1.55, 0.95), (1.0, 2.2, 0.985), 29), (1, (1.56, 1.56, 0.95), (1.0, 2.2, 0.985), 30.5)],
            fstop=2.8),
   render=dict(samples=64),
   cards=[dict(pose="rin_hands", h=0.755, loc=(1.0, 2.2, 0.507), rot=(90, 0, 0), face_cam=True,
