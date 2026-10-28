@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Song, lyrics and timing references: copyrighted or third-party, bring your own (see README)
+*.m4a
+*.mp3
+*.wav
+*.flac
+*.ass
+*.lrc
+/lyrics.txt
+/炉心融解.txt
+
+# Everything the pipeline generates (analysis, renders, segments, review sheets, final films)
+/work/
+/out/
+/input/*
+!/input/README.md
+
+# Fonts are downloaded by src/tools/fetch_fonts.py (SIL OFL, from google/fonts)
+/assets/fonts/

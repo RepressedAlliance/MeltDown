@@ -1,0 +1,22 @@
+# Python 3.12. torch/torchaudio are the CPU builds:
+#   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+# Blender 5.2 (Eevee) and ffmpeg are separate installs.
+
+# compositing and typography
+numpy==2.5.4
+numexpr==2.14.2
+opencv-python==5.0.0.93
+skia-python==144.1
+fonttools==4.67.0
+pillow==13.0.0
+scikit-image==0.26.0
+scipy==1.18.1
+
+# audio analysis, stem separation, lyric alignment
+# (MMS_FA weights, ~1.2 GB, download on first use into the torch hub cache)
+librosa==1.0.0
+soundfile==0.14.0
+demucs==4.0.1
+pykakasi==2.3.0
+torch==2.5.1+cpu
+torchaudio==2.5.1+cpu
