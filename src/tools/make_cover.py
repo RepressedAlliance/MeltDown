@@ -61,7 +61,7 @@ def main():
     c.drawRect(skia.Rect.MakeXYWH(80, 760, 860, 230), paint((0.05, 0.07, 0.17), 0.88))
     text(c, "炉心融解", "mincho_b", 210, 1560, 90, paper, vertical=True, tracking=0.06)
     text(c, "MELTDOWN", "shoulders", 84, 110, 820, (1.0, 0.83, 0.0), tracking=0.22)
-    text(c, "iroha(sasaki)  feat.  鏡音リン", "code_jp", 40, 116, 930, paper)
+    text(c, "iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 40, 116, 930, paper)
     c.drawLine(110, 905, 900, 905, paint(paper, 0.7, stroke=2))
     lay = to_array(s)
     img = base * (1 - lay[..., 3:4]) + lay[..., :3]

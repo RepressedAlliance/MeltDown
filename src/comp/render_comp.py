@@ -163,7 +163,7 @@ def apply_fx(img, shot, t, u):
             a = _val(fx["amount"], u)
             if a > 0:
                 rgba = np.dstack([img, np.ones((H, W, 1), np.float32)])
-                img = typo_fx.melt_layer(rgba, a, t, seed=fx.get("seed", 3))[..., :3]
+                img = typo_fx.melt_layer(rgba, a, t, seed=fx.get("seed", 3), edge=cv2.BORDER_REPLICATE)[..., :3]
         elif kind == "tint":
             img = img * np.array(fx["mul"], np.float32) + np.array(fx.get("add", (0, 0, 0)), np.float32)
         elif kind == "exposure":
@@ -215,9 +215,14 @@ def apply_fx(img, shot, t, u):
             sc = fx.get("scale", 1.0) * H / rgb.shape[0]
             cx = fx.get("x", W / 2) + fx.get("drift", 0) * (u - 0.5)
             fg = scenes2d._place(rgb, sc, cx, fx.get("y", H / 2))
-            a2 = scenes2d._place(al, sc, cx, fx.get("y", H / 2))[..., None] * fx.get("opacity", 0.35)
+            a1 = scenes2d._place(al, sc, cx, fx.get("y", H / 2))[..., None]
+            a2 = a1 * fx.get("opacity", 0.35)
             tint = np.array(fx.get("tint", (0.55, 0.65, 0.95)), np.float32)
             g = fg * tint * a2
+            ho = fx.get("holdout", 0.0)
+            if ho:
+                # the city behind her face is held down, so the bright windows do not break up her features
+                img = img * (1 - ho * a1)
             img = 1 - (1 - np.clip(img, 0, 1)) * (1 - g)
         elif kind == "tvflicker":
             rng = np.random.default_rng(int(t * 24) * 13)
@@ -431,7 +436,10 @@ def lyrics_overlay(t, shot):
         if "shots" in st and shot["id"] not in st["shots"]:
             continue
         style = st["style"]
-        kw = {k: v for k, v in st.items() if k not in ("style", "tail", "melt", "glow", "glow_col", "heat", "shots")}
+        kw = {k: v for k, v in st.items() if k not in ("style", "tail", "melt", "glow", "glow_col", "heat", "shots",
+                                                        "at_shot")}
+        # a line that carries over a cut can move to where the new picture has room for it
+        kw.update(st.get("at_shot", {}).get(shot["id"], {}))
         ln, quick = _yield_to_next(ln)
         if quick is not None and style in ("tate", "impact", "whisper", "echo", "score_line"):
             kw["fade_out"] = quick
@@ -778,7 +786,11 @@ def render_frame(shots, f, preview, raw=False):
         lay[..., :3] *= tint
     else:
         tint, dark = np.ones(3, np.float32), (0.06, 0.06, 0.08)
-    a_rgb, a_alpha, a_glow = adapt_type(lay_a, bright_behind(img), tint, dark, shot.get("type_mode", "flip"))
+    # light type keeps its ink and gets a soft dark cloud where the picture behind it is bright ("plate"),
+    # so a line crossing a lit window or a white bow never splits into dark and light halves; on the white
+    # pages (dream room, white chorus) the type turns to the dark ink instead ("flip")
+    mode = shot.get("type_mode") or ("flip" if shot.get("ink") in ("white", "dream") else "plate")
+    a_rgb, a_alpha, a_glow = adapt_type(lay_a, bright_behind(img), tint, dark, mode)
     sec = current_section(t)
     g_str, g_col = SECTION_GLOW.get(sec, (0.4, (0.55, 0.75, 1.0)))
     gcol = np.array(shot.get("glow_col", g_col), np.float32)

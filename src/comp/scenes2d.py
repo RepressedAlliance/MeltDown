@@ -259,9 +259,12 @@ def static(t, u, **kw):
     roll = ((yy / H + t * 0.3) % 1.0)
     bar = 1.0 + 0.5 * np.exp(-((roll - 0.5) / 0.06) ** 2)
     g = _signal(t, base=kw.get("signal", 0.55))
-    pic = rin_picture(kw.get("pose", "rin_tv_host"), 1440, 1080)
+    # the picture sits inside a margin of snow, so the host's bow and waving hand are never cut by the frame
+    pw, ph = 1300, 975
+    pic = rin_picture(kw.get("pose", "rin_tv_host"), pw, ph)
     full = np.zeros((H, W), np.float32)
-    full[:, 240:1680] = pic
+    x0, y0 = (W - pw) // 2, (H - ph) // 2
+    full[y0:y0 + ph, x0:x0 + pw] = pic
     # weak signal: the picture tears sideways in bands
     if g < 0.6:
         for _ in range(int((0.6 - g) * 20)):
@@ -336,8 +339,8 @@ def score(t, u, mode="calm", **kw):
 # ---------------------------------------------------------------- tinnitus
 
 def tinnitus(t, u, pose="rin_ears_covered", close=False, **kw):
-    base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=1.25 if not close else 2.1,
-                cx=W * 0.68, cy=H * (0.62 if not close else 0.9),
+    base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=1.25 if not close else 1.7,
+                cx=W * 0.68, cy=H * (0.62 if not close else 0.78),
                 duotone=((0.03, 0.0, 0.01), (1.0, 0.16, 0.12)))
     s = surface()
     c = s.getCanvas()
@@ -366,7 +369,7 @@ def endcard(t, u, **kw):
         p = skia.Path(g.path)
         p.transform(m)
         c.drawPath(p, paint((0.95, 0.96, 1.0), a))
-    for txt, face, size, y in (("iroha(sasaki)  feat.  鏡音リン", "code_jp", 34, H / 2 + 300),
+    for txt, face, size, y in (("iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 34, H / 2 + 300),
                                ("MELTDOWN — fan music video", "mono", 22, H / 2 + 360)):
         b2 = layout(txt, face, size, proportional=False)
         for g in b2.glyphs:
@@ -382,8 +385,9 @@ def endcard(t, u, **kw):
 
 # ---------------------------------------------------------------- the reactor in her chest
 
-def chest_core(t, u, pose="rin_float", chest=(0.5, 0.36), scale=1.15, cx=W * 0.42, cy=H * 0.55, mode="calm", **kw):
-    """Rin as a technical silhouette with a pulsing reactor ring where her heart is."""
+def chest_core(t, u, pose="rin_float", chest=(0.5, 0.36), scale=0.86, cx=W * 0.42, cy=H * 0.52, mode="calm", **kw):
+    """Rin as a technical silhouette with a pulsing reactor ring where her heart is. Sized so the whole
+    outline, bow to feet, stays inside the frame through the shot's push-in."""
     import timeline as TL
     rgb, a = _img(CHAR / pose / "color.png")
     edge = cv2.imread(str(CHAR / pose / "edge.png"), cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255
@@ -418,7 +422,8 @@ def chest_core(t, u, pose="rin_float", chest=(0.5, 0.36), scale=1.15, cx=W * 0.4
         c.drawCircle(px, py, r * 1.6, paint((1.0, 0.6, 0.25), 0.35 + 0.5 * beat, stroke=1.2))
     # callouts
     lab = paint((0.85, 0.9, 1.0), 0.85, stroke=1.4)
-    for (dx, dy, label) in ((260, -170, "炉心 / CORE"), (300, 60, "温度 / TEMP"), (-330, 140, "鼓動 / PULSE")):
+    # all callouts to her right: the lyric column runs down the left of the frame
+    for (dx, dy, label) in ((260, -170, "炉心 / CORE"), (300, 40, "温度 / TEMP"), (240, 190, "鼓動 / PULSE")):
         ex, ey = px + dx, py + dy
         c.drawLine(px + np.sign(dx) * r * 1.1, py, ex - np.sign(dx) * 10, ey, lab)
         c.drawLine(ex, ey, ex + np.sign(dx) * 170, ey, lab)

@@ -88,7 +88,7 @@ S("S03", 9.6, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.4,
 S("S04", 11.8, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.5,
   cam=dict(keys=[(0, (-760, 115, 22), (-460, 115.5, 26), 22), (1, (-520, 115, 30), (-230, 117, 75), 22)],
            ease="linear", shake=(0.12, 0.25, 1.5)))
-S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200"), finish=NIGHT, in_="zoom", in_dur=0.5, tail=0.5,
+S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200", rake=True), finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.5,
   cam=dict(keys=[(0, (3.2, 0.35, 1.25), (0.8, 2.3, 0.85), 24), (1, (2.85, 0.7, 1.15), (0.75, 2.25, 0.8), 26)],
            fstop=4.0),
   # she sits in the middle of the bed facing the window, clear of the pillow; the card turns to the camera
@@ -96,7 +96,7 @@ S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200"), finish=NIGH
               contact=SIT,
               props=dict(key_dir=(0.8, 0.25, 0.4), key_col=(0.42, 0.52, 0.8), amb_col=(0.08, 0.09, 0.15),
                          rim_dir=(0.9, 0.2, 0), rim_col=(0.7, 0.82, 1.2), exposure=1.0))])
-S("S06", 16.0, scene="city", finish=NIGHT, in_="dissolve", in_dur=0.5, tail=0.5,
+S("S06", 16.0, scene="city", finish=NIGHT, in_="dissolve", in_dur=0.4, tail=0.5,
   cam=dict(keys=[(0, (480, -760, 40), (900, -1150, 30), 50), (1, (520, -800, 140), (900, -1150, 45), 45)],
            shake=(0.3, 0.05, 0.5)), hud=dict(level=1, alpha=0.8))
 S("S07", 18.3, scene="city", finish=NIGHT, setup=dict(comp=dict(streaks=0.0)), in_="dissolve", in_dur=0.5,
@@ -109,7 +109,7 @@ S("S08", 22.7, scene="core", setup=dict(mood="blue", exterior=True), finish=CORE
   anim=dict(plasma=[(0, 0.35), (1, 0.6)]))
 S("S09", 26.0, scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.03, 0.12, 0.035), quilt=LIE_QUILT,
                                          hide=OVERHEAD_HIDE),
-  finish=NIGHT, render=dict(exposure=-1.8), in_="dissolve", in_dur=0.6, tail=0.6,
+  finish=NIGHT, render=dict(exposure=-1.8), in_="dissolve", in_dur=0.45, tail=0.6,
   cam=dict(keys=[(0, (0.55, 1.95, 1.92), (0.551, 1.95, 0.4), 35, 0), (1, (0.55, 1.95, 2.06), (0.551, 1.95, 0.4), 32, 14)],
            ease="linear"),
   cards=[dict(pose="rin_lie_up", **LIE_UP,
@@ -118,7 +118,7 @@ S("S09", 26.0, scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.0
 # the bar before the first line (about the city lights at night): Rin at the window, her hand on the
 # glass, a silhouette against the city, its lights melting into bokeh behind her
 S("S10", 29.08, scene="room", setup=dict(tod="night"), finish=NIGHT, hud=dict(level=1, alpha=0.7), in_="dissolve",
-  in_dur=0.6,
+  in_dur=0.45,
   cam=dict(keys=[(0, (2.1, 0.95, 1.33), (1.55, 2.7, 1.26), 38), (1, (1.98, 1.12, 1.34), (1.5, 2.7, 1.26), 40)],
            fstop=2.0, ease="linear"),
   cards=[dict(pose="rin_window_back", h=0.95, loc=(1.25, 2.45, 0.6), rot=(90, 0, 0), face_cam=True,
@@ -127,7 +127,7 @@ S("S10", 29.08, scene="room", setup=dict(tod="night"), finish=NIGHT, hud=dict(le
 
 # ================================================================ A1
 S("S11", lambda: L(0) - 0.25, scene="room", setup=dict(tod="night"), finish=NIGHT,
-  cam=dict(keys=[(0, (1.75, 1.15, 1.03), (1.0, 2.15, 0.98), 50), (1, (1.6, 1.35, 1.01), (1.0, 2.15, 0.98), 55)],
+  cam=dict(keys=[(0, (1.75, 1.15, 1.03), (1.0, 2.15, 1.0), 48), (1, (1.68, 1.25, 1.02), (1.0, 2.15, 1.02), 50)],
            fstop=2.2),
   render=dict(samples=64),
   cards=[dict(pose="rin_face_close", h=0.62, loc=(1.0, 2.2, 0.62), rot=(90, 0, 0), face_cam=True,
@@ -155,7 +155,7 @@ S("S14", lambda: L(4) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
              (0.8, 265), (1.0, 265)]}])
 S("S15", lambda: L(5) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   fx=[{"type": "heat", "amount": 3.0}],
-  cam=dict(keys=[(0, (1.62, 1.5, 0.88), (1.0, 2.2, 0.86), 45), (1, (1.52, 1.62, 0.88), (1.0, 2.2, 0.86), 52)],
+  cam=dict(keys=[(0, (1.62, 1.5, 0.88), (1.0, 2.2, 0.85), 42), (1, (1.56, 1.57, 0.88), (1.0, 2.2, 0.85), 46)],
            fstop=2.0),
   render=dict(samples=64),
   # the line about a burning stomach: she presses a hand to it, wincing. Drawn with both arms inside the canvas and
@@ -170,8 +170,8 @@ S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
            fstop=2.8, focus=1.3),
   fx=[{"type": "darken", "rect": (630, 600, 890, 1080), "feather": 25, "amount": 0.9},
       {"type": "darken", "rect": (900, 860, 1920, 1080), "feather": 90, "amount": 0.45},
-      {"type": "ghost", "pose": "rin_face_close", "x": 1180, "y": 640, "scale": 1.05, "opacity": 0.55,
-       "drift": -60},
+      {"type": "ghost", "pose": "rin_face_close", "x": 1180, "y": 640, "scale": 1.05, "opacity": 0.72,
+       "holdout": 0.55, "drift": -60},
       {"type": "zoom", "z": [(0, 1.0), (1, 1.07)], "cx": 220, "cy": 60}, {"type": "kick", "amount": 0.008}])
 
 # ================================================================ B1 (white afternoon dream)
@@ -298,7 +298,7 @@ S("S34", lambda: L(24) - 0.2, scene="dusk", setup=dict(place="balcony", lights=0
   cam=dict(keys=[(0, (1499.0, 901.5, 152.0), (300, -900, 80), 50), (1, (1499.0, 901.5, 152.0), (300, -900, 70), 55)]))
 
 # ================================================================ B2 (blue hour, curtains, bubbles)
-S("S35", lambda: L(26) - 0.2, scene="room", setup=dict(tod="night", wind=1.2, hide=[
+S("S35", lambda: L(26) - 0.2, scene="room", setup=dict(tod="night", wind=1.2, rake=True, hide=[
     "Lace", "DeskTop", "DeskLeg", "DeskLeg.001", "DeskLeg.002", "DeskLeg.003", "DeskClock", "DeskClockDisplay",
     "Lighter", "Glass"]), finish=NIGHT,
   # the camera sits far enough left that the reactor ring stays inside one pane of the window
@@ -310,7 +310,7 @@ S("S35", lambda: L(26) - 0.2, scene="room", setup=dict(tod="night", wind=1.2, hi
 # the line about words spilling from her lips: a tighter profile, lips parted as she murmurs.
 # The card is sized so her eye sits where the old profile's did (the drawing has less shoulder).
 S("S36", lambda: L(28) - 0.25, scene="room", setup=dict(tod="night", wind=0.6), finish=NIGHT,
-  cam=dict(keys=[(0, (1.95, 1.05, 1.06), (1.0, 2.2, 1.06), 64), (1, (1.85, 1.15, 1.06), (1.0, 2.2, 1.06), 68)],
+  cam=dict(keys=[(0, (1.95, 1.05, 1.06), (1.0, 2.2, 1.08), 62), (1, (1.88, 1.12, 1.06), (1.0, 2.2, 1.08), 64)],
            fstop=2.0),
   render=dict(samples=64),
   cards=[dict(pose="rin_profile_speak", h=0.485, loc=(0.944, 2.154, 0.787), rot=(90, 0, 0), face_cam=True,
@@ -357,7 +357,7 @@ S("S43b", 172.91, scene="room", setup=dict(tod="night", lamp=False), finish=MONO
   cam=dict(keys=[(0, (3.0, 1.05, 1.88), (3.6, 1.0, 1.85), 70), (1, (3.05, 1.02, 1.86), (3.6, 1.0, 1.85), 85)],
            fstop=2.2),
   anim=dict(clock_tick=True))
-S("S43c", 179.46, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
+S("S43c", 179.46, scene="room", setup=dict(tod="night", lamp=False, rake=True), finish=MONO,
   cam=dict(keys=[(0, (3.2, 2.4, 1.5), (1.2, 0.8, 0.6), 24), (1, (3.1, 2.2, 1.45), (1.2, 0.8, 0.6), 26)], fstop=4.0),
   cards=[dict(pose="rin_sit_knees", h=1.05, loc=(0.6, 1.4, 0.38), rot=(90, 0, -90), face_cam=True,
               contact=SIT,
@@ -379,7 +379,7 @@ S("S44b", 190.36, frames_from=dict(id="S44", at=4.4), finish=MONO,
 # beside the TV (behind the camera), so only the flicker of its light reaches her; the card stands where
 # her head is in S43c, sized like the other close-ups (aligned to rin_face_close)
 S("S44c", 192.55, scene="room", setup=dict(tod="night", lamp=False), finish=MONO, render_to=195.0,
-  cam=dict(keys=[(0, (1.9, 0.75, 1.12), (0.6, 1.42, 1.12), 60), (1, (1.86, 0.79, 1.12), (0.6, 1.42, 1.12), 66)],
+  cam=dict(keys=[(0, (1.9, 0.75, 1.12), (0.6, 1.42, 1.15), 52), (1, (1.87, 0.78, 1.12), (0.6, 1.42, 1.15), 56)],
            fstop=2.0),
   render=dict(samples=64),
   cards=[dict(pose="rin_watch_tv", h=0.6479, loc=(0.5974, 1.415, 0.7518), rot=(90, 0, 0), face_cam=True,
@@ -411,7 +411,7 @@ S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered
 S("S48", lambda: L(42) - 0.3, bg="score", bg_args=dict(mode="wild"), finish=dict(chroma=2.5),
   fx=[{"type": "glitch", "on": [(0, 0), (0.7, 0), (0.72, 1)], "amount": 0.8}])
 S("S49", lambda: L(43) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered", close=True),
-  finish=dict(chroma=4.0), fx=[{"type": "strobe", "amount": 0.6}], out="black", out_dur=0.08)
+  finish=dict(chroma=1.5), fx=[{"type": "strobe", "amount": 0.6}], out="black", out_dur=0.08)
 
 # ================================================================ INSTRUMENTAL: the room grows infinite
 # the void opens on the downbeat after the line is sung out (the music changes at 230.9)
@@ -458,10 +458,10 @@ S("S54", lambda: L(45) - 0.2, scene="room", setup=dict(void=True, hide=["LampBas
                          rim_col=(0.0, 0.0, 0.0), exposure=1.0))],
   anim=dict(plate=[(0, 0.0), (1, 0.0)]))
 S("S55", lambda: L(46) - 0.2, bg="chest_core", bg_args=dict(pose="rin_float", mode="tight"), finish=NIGHT,
-  fx=[{"type": "zoom", "z": [(0, 1.05), (1, 1.25)]}, {"type": "heat", "amount": 2.5}])
+  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.18)]}, {"type": "heat", "amount": 2.5}])
 S("S56", lambda: L(47) - 0.2, scene="core", setup=dict(mood="blue"), finish=COREB,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.0, -2.6), ring_pos(0.08, R + 1.6, 0.6), 24, 0),
-                 (1, ring_pos(0.015, R + 2.0, -2.3), ring_pos(0.08, R + 1.4, 0.9), 26, -10)], fstop=2.8,
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.0, -2.6), ring_pos(0.08, R + 1.6, 1.1), 24, 0),
+                 (1, ring_pos(0.008, R + 2.0, -2.5), ring_pos(0.08, R + 1.4, 1.3), 23, -10)], fstop=2.8,
            focus="card", focus_at=0.8),
   # the line about not being able to breathe: a hand pressed to her chest, head thrown back, mouth open
   cards=[dict(pose="rin_chest_clutch", h=1.7, loc=ring_pos(0.08, R + 1.8, -1.3), rot=(90, 0, 0), face_cam="full",
@@ -540,7 +540,8 @@ S("S65c", 316.73, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent
               keys={"blink": [(("s", 0.0), 1.0), (("s", 2.17), 1.0), (("s", 2.19), 0.0),
                               (("s", 5.85), 0.0), (("s", 5.87), 1.0), (("s", 5.96), 1.0), (("s", 5.98), 0.0)]})],
   fx=[{"type": "exposure", "ev": [(0, -0.2), (0.175, -0.2), (0.21, 0.18), (1, 0.08)]}],
-  title=dict(mode="poster", at=0.31, col=(0.33, 0.2, 0.12), panel="right"),
+  # the title small enough to end above her collar and clear of the credits panel
+  title=dict(mode="poster", at=0.31, col=(0.33, 0.2, 0.12), panel="right", size=110),
   out="black", out_dur=2.6)
 
 
@@ -605,7 +606,9 @@ LYRIC_STYLES[53] = dict(style="impact", x=960, y=470, size=96, face="mincho_b", 
                         color=(1.0, 0.92, 0.75))
 # the last line of the song stays a while over the sleeping Rin and fades slowly
 LYRIC_STYLES[54] = dict(style="impact", x=960, y=600, size=96, face="mincho_b", overshoot=0.08, slam=0.6,
-                        color=(1.0, 0.92, 0.75), tail=6.0, hold=1.6, fade_out=0.9)
+                        color=(1.0, 0.92, 0.75), tail=6.0, hold=1.6, fade_out=0.9,
+                        # over the sleeping S65 the line moves off her shoulders onto the open quilt
+                        at_shot={"S65": dict(x=1290, y=560)})
 
 
 # ================================================================ design layer (titles, print marks, ring cuts)
@@ -626,7 +629,9 @@ DESIGN = {
 for _s in SHOTS:
     for _k, _v in DESIGN.get(_s["id"], {}).items():
         _s[_k] = _v
-LYRIC_STYLES[37] = dict(style="telop", x=560, y=790, w=800, size=44, tail=1.5)
+# the TV caption sits low on the left, where a broadcast puts it: clear of her hands (S44c), the host's
+# face and waving hand (S45) and most of the clock (S44d)
+LYRIC_STYLES[37] = dict(style="telop", x=110, y=952, w=760, size=44, tail=1.5)
 
 # a little life in the cut-outs: blinks on close-ups, hair moving where there is wind or weightlessness
 # (amplitudes in UV units of the drawing; the sway is a slow smooth warp, see character.py)
@@ -643,8 +648,8 @@ for _s in SHOTS:
 THERMAL = {
     "S20": dict(fx=[{"type": "rgbsplit", "px": [(0, 0.0), (0.6, 2.0), (1, 16.0)]}],
                 lyric_glitch=[(0, 0.0), (0.7, 0.0), (1, 1.0)]),
-    "S49": dict(fx=[{"type": "rgbsplit", "px": [(0, 2.0), (1, 22.0)]}], lyric_glitch=[(0, 0.2), (1, 1.0)]),
-    "S56": dict(fx=[{"type": "rgbsplit", "px": [(0, 0.0), (0.7, 3.0), (1, 14.0)]}],
+    "S49": dict(fx=[{"type": "rgbsplit", "px": [(0, 1.0), (1, 7.0)]}], lyric_glitch=[(0, 0.2), (1, 1.0)]),
+    "S56": dict(fx=[{"type": "rgbsplit", "px": [(0, 0.0), (0.7, 2.0), (1, 8.0)]}],
                 lyric_glitch=[(0, 0.0), (0.75, 0.0), (1, 0.8)]),
     "S57": dict(lyric_glitch=[(0, 0.3), (1, 0.9)]),
 }
@@ -684,7 +689,9 @@ BURN = {
     "S01": 0.12, "S06": 0.15, "S12": 0.1, "S08": 0.12, "S25": CHORUS,
     "S22": dict(keys=[(0, 0.08), (0.75, 0.35), (1, 1.0)]),
     "S23": CHORUS, "S24": CHORUS, "S26": CHORUS,
-    "S38": CHORUS, "S39": CHORUS, "S40": CHORUS, "S41": CHORUS, "S42": dict(base=0.2, energy=0.3, hits=0.1),
+    # S40 and S42 hold her in the white light: no burn, or her white clothes and face (brighter than any
+    # threshold once bloomed) burn away to a blank silhouette
+    "S38": CHORUS, "S39": CHORUS, "S40": 0.0, "S41": CHORUS, "S42": 0.0,
     "S42b": dict(keys=[(0, 0.3), (1, 1.0)]),
     "S53": dict(keys=[(0, 0.55), (0.15, 0.12), (1, 0.3)]), "S56": CHORUS,
     "S58": CHORUS, "S59": dict(keys=[(0, 0.2), (1, 0.9)]), "S60": dict(base=0.3, energy=0.4, hits=0.3),

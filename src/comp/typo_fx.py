@@ -308,8 +308,9 @@ def whisper(c, line, t, x, y, size=26, face="mincho_r", color=(0.85, 0.88, 0.95)
 
 # ---------------------------------------------------------------- 7. melt (pixel effect)
 
-def melt_layer(layer, amount, t, seed=3):
-    """Drag a premultiplied RGBA layer downward in uneven drips. amount 0..1."""
+def melt_layer(layer, amount, t, seed=3, edge=cv2.BORDER_CONSTANT):
+    """Drag a premultiplied RGBA layer downward in uneven drips. amount 0..1. edge: what is pulled in from
+    above the top (nothing for type; the picture's own top row for a whole frame, so no torn edge shows)."""
     if amount <= 0:
         return layer
     h, w = layer.shape[:2]
@@ -322,7 +323,7 @@ def melt_layer(layer, amount, t, seed=3):
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     wob = np.sin(xx * 0.05 + t * 1.3) * 2.0 * amount
     map_y = yy - drop[None, :] * np.clip((yy / h) * 0.6 + 0.4, 0, 1) - wob
-    out = cv2.remap(layer, xx, map_y.astype(np.float32), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+    out = cv2.remap(layer, xx, map_y.astype(np.float32), cv2.INTER_LINEAR, borderMode=edge)
     # stretch streaks: keep the max along the drip
     streak = cv2.blur(out, (1, int(1 + 40 * amount)))
     return np.maximum(out, streak * 0.6)

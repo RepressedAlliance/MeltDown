@@ -42,7 +42,7 @@ def print_marks(c, t, col=(0.93, 0.9, 0.83), a=0.7, sheet="", inks=(), margin=46
 
 
 def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ring", cx=W / 2, cy=H / 2, r=230,
-               at=0.0, panel="left"):
+               at=0.0, panel="left", size=150):
     """The film title. mode 'ring': inside the opening ring; 'poster': full credits over the picture,
     coming up from shot fraction `at` (the end titles start once Rin has woken). `col` colours the big
     title; the credits always sit light on their dark plate, at the lower `panel` corner."""
@@ -63,24 +63,24 @@ def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ri
     a = max(0.0, min(1.0, (u - at) * 3 / max(0.1, 1 - at))) * max(0.0, min(1.0, (1 - u) * 6))
     if a <= 0:
         return
-    blk = layout("炉心融解", "mincho_b", 150, vertical=True, tracking=0.08)
+    blk = layout("炉心融解", "mincho_b", size, vertical=True, tracking=0.08)
     for g in blk.glyphs:
         m = glyph_matrix(g)
-        m.postTranslate(W - 260, 120)
+        m.postTranslate(W - 110 - size, 120)
         pth = skia.Path(g.path)
         pth.transform(m)
         c.drawPath(pth, paint(col, a))
-    c.drawLine(W - 340, 110, W - 340, 110 + blk.height + 20, paint(col, a * 0.6, stroke=1.2))
+    c.drawLine(W - 190 - size, 110, W - 190 - size, 110 + blk.height + 20, paint(col, a * 0.6, stroke=1.2))
     light = (0.93, 0.9, 0.83)
     px = 96 if panel == "left" else W - 96 - 760
     c.drawRect(skia.Rect.MakeXYWH(px, H - 318, 760, 228), paint((0.05, 0.07, 0.17), a * 0.88))
     _text(c, "MELTDOWN", "shoulders", 64, px + 24, H - 282, accent, a, tracking=0.25)
-    _text(c, "iroha(sasaki)  feat.  鏡音リン", "code_jp", 30, px + 28, H - 200, light, a)
+    # the credits in one language (English), the song's own credit first, the video's last
+    _text(c, "iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 30, px + 28, H - 200, light, a)
     c.drawLine(px + 24, H - 218, px + 664, H - 218, paint(light, a * 0.6, stroke=1.2))
-    _text(c, "music  iroha(sasaki)     lyrics  kuma     vocal  KAGAMINE RIN", "mono_l", 16, px + 28, H - 152,
-          light, a * 0.8, proportional=False)
-    # the people who made this video, set like the credit line above it
-    _text(c, "MV  RepressedAlliance  ×  Claude", "mono_l", 16, px + 28, H - 124, light, a * 0.8, proportional=False)
+    _text(c, "music  iroha(sasaki)    lyrics  kuma    vocal  Kagamine Rin", "mono_l", 19, px + 28, H - 150,
+          light, a * 0.85, proportional=False)
+    _text(c, "MV  RepressedAlliance  ×  Claude", "mono_l", 19, px + 28, H - 114, light, a * 0.85, proportional=False)
 
 
 def telop(c, line, t, x, y, w, size=46):
