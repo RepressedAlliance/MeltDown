@@ -1,0 +1,4 @@
+# text is stored with LF line endings on every platform; images stay binary
+* text=auto eol=lf
+*.png binary
+*.jpg binary
