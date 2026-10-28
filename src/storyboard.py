@@ -382,7 +382,7 @@ S("S44", 186.0, scene="room", setup=dict(tod="night", lamp=False), finish=MONO, 
 # bars, then on the beats, into the wall of TVs. Inserts re-frame frames already rendered for S43-S44.
 # a decisive punch-in on the screen (a 1.3x step on the same axis read as a jump cut)
 S("S44b", 190.36, frames_from=dict(id="S44", at=4.4), finish=MONO,
-  fx=[{"type": "zoom", "z": [(0, 1.7), (1, 1.85)], "cy": 30}])
+  fx=[{"type": "zoom", "z": [(0, 1.55), (1, 1.62)], "cy": -300}])
 # reverse shot: the real Rin on the bed, chin on her knees, watching herself smile on the screen. Shot from
 # beside the TV (behind the camera), so only the flicker of its light reaches her; the card stands where
 # her head is in S43c, sized like the other close-ups (aligned to rin_face_close)
@@ -404,7 +404,7 @@ S("S45d", 203.09, bg="static", bg_args=dict(signal=0.35, pose="rin_laugh"), fini
   fx=[{"type": "strobe", "amount": 0.3}])
 S("S45e", 204.18, frames_from=dict(id="S44", at=7.0), finish=MONO,
   # the push is centred near the top of her bow, so the bow stays in and the frame grows downward
-  fx=[{"type": "zoom", "z": [(0, 1.4), (1, 1.5)], "cy": -380}])
+  fx=[{"type": "zoom", "z": [(0, 1.22), (1, 1.28)], "cy": -380}])
 S("S45f", 205.28, frames_from=dict(id="S44c", at=0.3), finish=MONO,
   fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.04)], "cy": -480}, {"type": "tvflicker"}])
 S("S45g", 205.83, frames_from=dict(id="S12", at=1.2), finish=MONO,
@@ -618,10 +618,10 @@ LYRIC_STYLES[52] = dict(style="tate", x=1604, y=150, size=60, face="mincho_b", a
 LYRIC_STYLES[53] = dict(style="impact", x=960, y=470, size=96, face="mincho_b", overshoot=0.08, slam=0.6,
                         color=(1.0, 0.92, 0.75))
 # the last line of the song stays a while over the sleeping Rin and fades slowly
-LYRIC_STYLES[54] = dict(style="impact", x=960, y=600, size=96, face="mincho_b", overshoot=0.08, slam=0.6,
-                        color=(1.0, 0.92, 0.75), tail=6.0, hold=1.6, fade_out=0.9,
-                        # over the sleeping S65 the line moves off her shoulders onto the open quilt
-                        at_shot={"S65": dict(x=1290, y=560)})
+# the last line runs from the dawn city (S64) into her sleeping (S65): set right of centre in both, over
+# the city and then over the open quilt, so it neither jumps at the cut nor covers her shoulders
+LYRIC_STYLES[54] = dict(style="impact", x=1290, y=560, size=96, face="mincho_b", overshoot=0.08, slam=0.6,
+                        color=(1.0, 0.92, 0.75), tail=6.0, hold=1.6, fade_out=0.9)
 
 
 # ================================================================ design layer (titles, print marks, ring cuts)
@@ -646,6 +646,14 @@ for _s in SHOTS:
         _s[_k] = _v
 for _sid in ("S45e", "S45f", "S45g", "S45b"):
     next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.4
+# and a steady, feathered shade where those lines sit: the echo block top left in the bridge inserts, the
+# vertical column on the right over the window and the clock
+READING_SHADE = {"S45e": (0, 0, 1000, 400), "S45f": (0, 0, 1000, 400), "S45g": (0, 0, 1000, 400),
+                 "S45b": (0, 0, 1000, 400), "S11": (1440, 40, 1920, 780), "S12": (1440, 40, 1920, 780),
+                 "S13": (1440, 40, 1920, 780), "S16": (1440, 40, 1920, 780)}
+for _sid, _rect in READING_SHADE.items():
+    _s = next(_s for _s in SHOTS if _s["id"] == _sid)
+    _s["fx"] = list(_s.get("fx", [])) + [{"type": "darken", "rect": _rect, "feather": 90, "amount": 0.5}]
 # light type over lit windows, the reactor's rings and the gears' highlights: a wider, firmer backing
 for _sid in ("S11", "S12", "S13", "S22", "S25", "S53", "S58", "S62", "S63"):
     next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.25

@@ -341,8 +341,8 @@ def score(t, u, mode="calm", **kw):
 
 def tinnitus(t, u, pose="rin_ears_covered", close=False, **kw):
     # sized so her bow and elbows stay inside the frame
-    base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=1.15 if not close else 1.45,
-                cx=W * (0.68 if not close else 0.6), cy=H * (0.64 if not close else 0.8),
+    scale, cx, cy = (1.15, W * 0.68, H * 0.64) if not close else (1.45, W * 0.6, H * 0.8)
+    base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=scale, cx=cx, cy=cy,
                 duotone=((0.03, 0.0, 0.01), (1.0, 0.16, 0.12)))
     s = surface()
     c = s.getCanvas()
@@ -355,6 +355,9 @@ def tinnitus(t, u, pose="rin_ears_covered", close=False, **kw):
     c.drawPath(path, paint((1, 1, 1), 0.95, stroke=2.2))
     c.drawPath(path, paint((1, 0.6, 0.6), 0.6, stroke=10, blur=10))
     lay = to_array(s)
+    # the ringing runs behind her: drawn over her it crossed her face and hair like a second outline
+    _rgb, a = _img(CHAR / pose / "color.png")
+    lay = lay * (1 - _place(a, scale * H / a.shape[0], cx, cy)[..., None])
     return base * (1 - lay[..., 3:4]) + lay[..., :3]
 
 
