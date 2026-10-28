@@ -288,7 +288,8 @@ S("S34", lambda: L(24) - 0.2, scene="dusk", setup=dict(place="balcony", lights=0
 
 # ================================================================ B2 (blue hour, curtains, bubbles)
 S("S35", lambda: L(26) - 0.2, scene="room", setup=dict(tod="night", wind=1.2), finish=NIGHT,
-  cam=dict(keys=[(0, (2.95, 0.5, 1.32), (1.05, 2.3, 1.0), 24), (1, (2.78, 0.66, 1.27), (1.05, 2.3, 0.97), 26)], fstop=3.2),
+  # the camera sits far enough left that the reactor ring stays inside one pane of the window
+  cam=dict(keys=[(0, (2.6, 0.5, 1.32), (1.0, 2.3, 1.0), 24), (1, (2.52, 0.6, 1.29), (0.97, 2.3, 0.98), 25)], fstop=3.2),
   cards=[dict(pose="rin_sit_knees", h=1.05, loc=(0.6, 1.45, 0.38), rot=(90, 0, 90), face_cam=True,
               contact=SIT,
               props=dict(key_dir=(0.6, 0.3, 0.5), key_col=(0.25, 0.32, 0.55), amb_col=(0.14, 0.16, 0.26),
