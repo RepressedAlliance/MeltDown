@@ -284,7 +284,7 @@ def sparks(img, t, fx, u):
     return radial_glow(img, x0, y0, 420, (1.0, 0.55, 0.2), 0.5 * flash)
 
 
-_MEM_SOURCES = ["S05", "S09", "S11", "S17", "S30", "S35", "S16", "S32"]
+_MEM_SOURCES = ["S05", "S09", "S11", "S17", "S30", "S35", "S16", "S32"]   # also in tools/stale_segments.py
 
 
 def memories(img, t, u, shot):

@@ -3,8 +3,9 @@ render_parallel.py.
 
 python src/tools/stale_segments.py [--also S65c]
 A segment is stale when any frame it reads changed after it was written: its own Blender frames, the
-frames it re-cuts from another shot (frames_from), or the outgoing shot it dissolves or zooms from
-(iris / dissolve / zoom transitions render that shot under the cut).
+frames it re-cuts from another shot (frames_from), the outgoing shot it dissolves or zooms from
+(iris / dissolve / zoom transitions render that shot under the cut), or the earlier shots whose frames
+drift through it (the "memories" effect).
 """
 import argparse
 import sys
@@ -15,6 +16,8 @@ sys.path.insert(0, str(ROOT / "src"))
 import storyboard  # noqa: E402
 
 FPS = 24
+# the shots whose frames the "memories" effect floats through the picture (src/comp/render_comp.py)
+MEMORY_SOURCES = ["S05", "S09", "S11", "S17", "S30", "S35", "S16", "S32"]
 
 
 def newest(shot_id):
@@ -42,6 +45,8 @@ def main():
         srcs = [s["id"]]
         if s.get("frames_from"):
             srcs.append(s["frames_from"]["id"])
+        if any(fx.get("type") == "memories" for fx in s.get("fx", [])):
+            srcs += MEMORY_SOURCES
         if s.get("in") in ("iris", "dissolve", "zoom") and k > 0:
             prev = shots[k - 1]
             srcs.append(prev["id"])
