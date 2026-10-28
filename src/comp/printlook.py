@@ -63,33 +63,38 @@ def _shift(a, dx, dy):
     return cv2.warpAffine(a, M, (W, H), borderMode=cv2.BORDER_REPLICATE)
 
 
+# Rin's yellow ink also takes the shaded strands of her hair, which render warmer (hue 30-40) than its band:
+# without them the shading printed in the key ink alone, a grey copy of her hair under the yellow one ("two
+# layers of hair"). (lowest hue, saturation floor there): her skin (hue 18-28, saturation up to 0.3) stays out
+HAIR_SHADE = (28, 0.38)
+
 INKSETS = {
     # paper, key ink, [(spot ink, hue lo, hue hi, sat min)], key curve (lo, hi luminance), inverted paper
     "night": dict(paper=(0.93, 0.9, 0.83), key=(0.1, 0.13, 0.3), keytop=0.9,
-                  spots=[((1.0, 0.83, 0.0), 40, 66, 0.3), ((1.0, 0.45, 0.16), 8, 38, 0.35),
+                  spots=[((1.0, 0.83, 0.0), 38, 72, 0.3), ((1.0, 0.45, 0.16), 8, 38, 0.35),
                          ((0.0, 0.66, 0.74), 165, 215, 0.25)]),
     "graphic": dict(paper=(0.07, 0.09, 0.2), key=(0.93, 0.9, 0.83), solid=True,
                     spots=[((0.2, 0.82, 0.9), 165, 215, 0.2), ((1.0, 0.55, 0.2), 10, 40, 0.3),
                            ((1.0, 0.83, 0.0), 40, 66, 0.3)]),
     # Rin's hair washes out in the overexposed dream room: a low saturation floor keeps it yellow
     "dream": dict(paper=(0.97, 0.95, 0.91), key=(0.36, 0.33, 0.34), keyamp=1.0, keytop=0.95,
-                  spots=[((1.0, 0.83, 0.0), 40, 66, 0.12), ((0.0, 0.66, 0.74), 165, 215, 0.25),
+                  spots=[((1.0, 0.83, 0.0), 40, 72, 0.12, HAIR_SHADE), ((0.0, 0.66, 0.74), 165, 215, 0.25),
                          ((1.0, 0.55, 0.62), 330, 360, 0.2)]),
     "core": dict(paper=(0.9, 0.93, 0.95), key=(0.03, 0.14, 0.5),
-                 spots=[((0.15, 0.78, 1.0), 170, 230, 0.15), ((1.0, 0.83, 0.0), 40, 66, 0.3),
+                 spots=[((0.15, 0.78, 1.0), 170, 230, 0.15), ((1.0, 0.83, 0.0), 40, 72, 0.3, HAIR_SHADE),
                         ((0.55, 0.4, 1.0), 240, 300, 0.2)]),
     "dusk": dict(paper=(0.96, 0.88, 0.8), key=(0.33, 0.05, 0.16),
                  spots=[((1.0, 0.22, 0.14), 0, 22, 0.35), ((1.0, 0.6, 0.22), 22, 45, 0.35),
                         ((1.0, 0.83, 0.0), 45, 66, 0.3), ((0.1, 0.62, 0.9), 180, 230, 0.25)]),
     "white": dict(paper=(0.95, 0.96, 0.97), key=(0.24, 0.3, 0.38), keyamp=0.8,
-                  spots=[((0.25, 0.8, 1.0), 170, 230, 0.12), ((1.0, 0.83, 0.0), 40, 66, 0.3)]),
+                  spots=[((0.25, 0.8, 1.0), 170, 230, 0.12), ((1.0, 0.83, 0.0), 40, 72, 0.3, HAIR_SHADE)]),
     "mono": dict(paper=(0.9, 0.89, 0.86), key=(0.07, 0.07, 0.07), cell=7.5,
                  spots=[((0.9, 0.12, 0.1), 340, 360, 0.4), ((0.9, 0.12, 0.1), 0, 10, 0.4)]),
     "agitato": dict(paper=(0.07, 0.03, 0.03), key=(1.0, 0.2, 0.15), invert=True, spots=[]),
     "score": dict(paper=(0.05, 0.045, 0.045), key=(0.95, 0.92, 0.85), invert=True, cell=4.5,
                   spots=[((1.0, 0.25, 0.2), 340, 360, 0.3), ((1.0, 0.25, 0.2), 0, 15, 0.3)]),
     "void": dict(paper=(0.035, 0.04, 0.07), key=(0.6, 0.72, 1.0), invert=True,
-                 spots=[((1.0, 0.83, 0.0), 40, 66, 0.3)]),
+                 spots=[((1.0, 0.83, 0.0), 40, 72, 0.3, HAIR_SHADE)]),
     "dawn": dict(paper=(0.97, 0.92, 0.82), key=(0.35, 0.22, 0.14),
                  spots=[((1.0, 0.72, 0.1), 28, 60, 0.25), ((0.45, 0.72, 1.0), 180, 235, 0.15),
                         ((1.0, 0.45, 0.35), 0, 28, 0.3)]),
@@ -149,11 +154,15 @@ def riso(img, t, inks="night", cell=None, mis=1.4, contrast=1.15):
         out = ev("o * (1 - k * (1 - key))", o=out, k=kc[..., None], key=key, out=out)
     angles = (67.5, 7.5, 52.5, 37.5)
     vs = ev("where(v * s > 1, 1, v * s)", v=val, s=1.25)
-    for k, (col, h0, h1, smin) in enumerate(cfg["spots"]):
-        band = ev("where((h >= a) & (h <= b), one, zero)", h=hue, a=h0, b=h1, one=1.0, zero=0.0)
+    for k, spot in enumerate(cfg["spots"]):
+        col, h0, h1, smin = spot[:4]
+        # an optional (lower hue, saturation floor) extends the band down to warmer, more saturated colours
+        lo, sm_lo = spot[4] if len(spot) > 4 else (h0, smin)
+        band = ev("where((h >= a) & (h <= b), one, zero)", h=hue, a=lo, b=h1, one=1.0, zero=0.0)
         band = cv2.GaussianBlur(band, (0, 0), 1.0)
+        sm = ev("where(h < a, s1, s0)", h=hue, a=h0, s1=sm_lo, s0=smin) if lo < h0 else smin
         sd = ev("bd * where(st < sm, 0, where((st - sm) * iq > 1, 1, (st - sm) * iq)) * vs",
-                bd=band, st=sat, sm=smin, iq=1 / 0.45, vs=vs)
+                bd=band, st=sat, sm=sm, iq=1 / 0.45, vs=vs)
         sc = _shift(halftone(sd, angles[k % 4], cell * 0.9), -mis * 0.7 * (k + 1) / 2, mis * 0.5)
         col = np.array(col, np.float32)
         if cfg.get("invert"):
