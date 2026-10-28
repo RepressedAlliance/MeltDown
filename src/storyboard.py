@@ -259,8 +259,10 @@ S("S29", 97.1, scene="dusk", setup=dict(place="balcony"), finish=DUSK, in_="glit
            ease="inout", shake=(0.0, 0.05, 0.3)))
 
 # ================================================================ A3 / A4 (dusk)
+# from her whole figure with a strip of the balcony floor under her feet, a slow push and tilt up to a
+# cut at mid-thigh (the old push ended on her boot tops, a crop at the knee)
 S("S30", 102.55, scene="dusk", setup=dict(place="balcony"), finish=DUSK,
-  cam=dict(keys=[(0, (1501.6, 902.3, 151.25), (1490, 886, 150.6), 32), (1, (1501.2, 901.7, 151.2), (1490, 886, 150.6), 36)],
+  cam=dict(keys=[(0, (1501.6, 902.3, 151.25), (1490, 886, 149.5), 32), (1, (1501.2, 901.7, 151.45), (1490, 886, 151.1), 36)],
            fstop=4.0),
   cards=[dict(pose="rin_back_stand", h=1.5, loc=(1499.6, 899.5, 150.0), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(0.0, 0.3, -0.6), key_col=(0.2, 0.1, 0.1), amb_col=(0.25, 0.14, 0.14),
