@@ -584,6 +584,7 @@ for i in (13, 16, 31, 34, 49):
 LYRIC_STYLES[34]["y"] = 900  # under Rin, who floats across the middle of S42
 LYRIC_STYLES[14] = dict(style="tate", x=1660, y=120, size=84, face="mincho_b", attack=0.3, color=(0.85, 0.95, 1.0))
 LYRIC_STYLES[17] = dict(style="impact", x=960, y=905, size=64, face="mincho_b", overshoot=0.1, slam=0.5)
+LYRIC_STYLES[16]["at_shot"] = {"S27": dict(y=965, size=96)}   # carried into the close-up: below her chin
 # long lines start higher so they keep most of their size inside the frame (14 / 16 characters)
 LYRIC_STYLES[32] = dict(style="tate", x=1660, y=70, size=84, face="mincho_b", attack=0.3, color=(1, 1, 1))
 # light type (it flips to the key ink where the core whites out): the grey frame swallowed dark ink
@@ -650,7 +651,8 @@ for _sid in ("S45e", "S45f", "S45g", "S45b"):
 # vertical column on the right over the window and the clock
 READING_SHADE = {"S45e": (0, 0, 1000, 400), "S45f": (0, 0, 1000, 400), "S45g": (0, 0, 1000, 400),
                  "S45b": (0, 0, 1000, 400), "S11": (1440, 40, 1920, 780), "S12": (1440, 40, 1920, 780),
-                 "S13": (1440, 40, 1920, 780), "S16": (1440, 40, 1920, 780)}
+                 "S13": (1440, 40, 1920, 780), "S16": (1440, 40, 1920, 780), "S53": (1440, 40, 1920, 780),
+                 "S62": (1440, 40, 1920, 780)}
 for _sid, _rect in READING_SHADE.items():
     _s = next(_s for _s in SHOTS if _s["id"] == _sid)
     _s["fx"] = list(_s.get("fx", [])) + [{"type": "darken", "rect": _rect, "feather": 90, "amount": 0.5}]
@@ -725,12 +727,12 @@ CHORUS = dict(base=0.1, energy=0.08, hits=0.3)
 BURN = {
     "S01": 0.12, "S06": 0.15, "S12": 0.1, "S08": 0.12, "S25": CHORUS,
     "S22": dict(keys=[(0, 0.08), (0.75, 0.35), (1, 1.0)]),
-    "S23": CHORUS, "S24": CHORUS, "S26": CHORUS,
+    "S23": CHORUS, "S24": 0.0, "S26": 0.0,
     # S40 and S42 hold her in the white light: no burn, or her white clothes and face (brighter than any
     # threshold once bloomed) burn away to a blank silhouette
     "S38": CHORUS, "S39": CHORUS, "S40": 0.0, "S41": CHORUS, "S42": 0.0,
     "S42b": dict(keys=[(0, 0.3), (1, 1.0)]),
-    "S53": dict(keys=[(0, 0.55), (0.15, 0.12), (1, 0.3)]), "S56": CHORUS,
+    "S53": dict(keys=[(0, 0.55), (0.15, 0.12), (1, 0.3)]), "S56": 0.0,
     "S58": CHORUS, "S59": dict(keys=[(0, 0.2), (1, 0.9)]), "S60": dict(base=0.3, energy=0.4, hits=0.3),
 }
 # plasma interiors render near white: print them a little darker so the filaments keep ink and shape

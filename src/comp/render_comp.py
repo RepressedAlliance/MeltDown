@@ -540,7 +540,13 @@ def adapt_type(lay, k, light, dark, mode="flip", plate=0.9):
     lc = ev("where(a > e, where(l > a, 1, l / where(a > e, a, e)), 0)", l=lum, a=a, e=1e-4)
     w = ev("k * (1 - where(mx > e, (mx - mn) / where(mx > e, mx, e), 0))", k=k, mx=mx, mn=mn, e=1e-4)
     out = ev("w * (dk * lc + lt * (1 - lc)) * a + (1 - w) * rgb * lt", w=w, dk=dk, lt=lt, lc=lc, a=a, rgb=rgb)
-    return out, a, ev("o * (1 - k)", o=out, k=k)
+    # type turned to the dark ink sits on a soft halo of the light ink (the mirror of "plate"), so it keeps
+    # its edge where the page behind it is grey or crossed by dark structure
+    cloud = cv2.GaussianBlur(cv2.dilate(a[..., 0], np.ones((9, 9), np.uint8)), (0, 0), 9)[..., None]
+    h = ev("where(c * k * q > 1, 1, c * k * q)", c=cloud, k=k, q=0.75)
+    out = ev("o + (1 - a) * h * lt", o=out, a=a, h=h, lt=lt)
+    alpha = ev("a + h * (1 - a)", a=a, h=h)
+    return out, alpha, ev("o * (1 - k)", o=out, k=k)
 
 
 # ---------------------------------------------------------------- transitions
