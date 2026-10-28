@@ -234,22 +234,100 @@ def pillow_mesh(name, center, a, b, c_top, c_bot, coll, mat, yaw=0.0, dent=None,
     return ob
 
 
-def bed_set(coll, pillow_dent=None, quilt=None):
-    """Low wooden bed: frame on short legs with a headboard under the window sill, a thick mattress
-    in a fitted sheet, a pillow at the head end and a cloth-simulated quilt (bedding.py): spread over
-    the bed below the pillow (the default; she sits on it), or tucked over her as she lies."""
+def wood_mat(name, axis, light=(0.42, 0.32, 0.24), dark=(0.3, 0.21, 0.14)):
+    """Solid wood with its grain along `axis` ("X", "Y" or "Z"): noise stretched along the board into
+    streaks of two tones of the same timber, with a faint matching relief."""
+    m = mat_principled(name, light, rough=0.45)
+    nt = node_tree(m)
+    N, L = nt.nodes, nt.links
+    p = N.get("Principled BSDF")
+    geo = N.new("ShaderNodeNewGeometry")
+    mp = N.new("ShaderNodeMapping")
+    mp.inputs["Scale"].default_value = {"X": (1.2, 70, 70), "Y": (70, 1.2, 70), "Z": (70, 70, 1.2)}[axis]
+    L.new(geo.outputs["Position"], mp.inputs["Vector"])
+    nz = N.new("ShaderNodeTexNoise")
+    nz.inputs["Scale"].default_value = 1.0
+    nz.inputs["Detail"].default_value = 6.0
+    nz.inputs["Distortion"].default_value = 1.2
+    L.new(mp.outputs["Vector"], nz.inputs["Vector"])
+    ramp = N.new("ShaderNodeValToRGB")
+    lo, hi = ramp.color_ramp.elements
+    lo.position, hi.position = 0.38, 0.62
+    lo.color, hi.color = (*dark, 1.0), (*light, 1.0)
+    L.new(nz.outputs["Fac"], ramp.inputs["Fac"])
+    L.new(ramp.outputs["Color"], p.inputs["Base Color"])
+    bump = N.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.04
+    L.new(nz.outputs["Fac"], bump.inputs["Height"])
+    L.new(bump.outputs["Normal"], p.inputs["Normal"])
+    return m
+
+
+def bed_frame(coll):
+    """A low bed in solid wood, built the way one is: four posts outside the mattress corners, rails
+    between them that the mattress sits down into, and at the head two taller posts carrying a top rail
+    over a row of slats (under the window sill). Returns the parts the bedding collides with."""
+    wx, wy, wz = wood_mat("BedWoodX", "X"), wood_mat("BedWoodY", "Y"), wood_mat("BedWoodZ", "Z")
+    t, p = 0.022, 0.045                      # rail thickness, post section
+    rz0, rz1 = 0.1, 0.25                     # rails: bottom and top (the mattress sits 13 cm proud of them)
+    top = 0.585                              # headboard top, just under the sill
+    xl, xr = MAT_X0 - p / 2, MAT_X1 + p / 2  # post centres, outside the mattress
+    yf, yh = MAT_Y0 - p / 2, MAT_Y1 + p / 2
+    parts = []
+    for k, (x, y, zt) in enumerate(((xl, yf, rz1 + 0.02), (xr, yf, rz1 + 0.02), (xl, yh, top), (xr, yh, top))):
+        parts.append(box(f"BedPost{k}", (p, p, zt), (x, y, zt / 2), wz, coll, bevel=0.005, seg=2))
+    rh, rc = rz1 - rz0, (rz0 + rz1) / 2
+    for nm, size, loc, mat in (
+            ("BedRailL", (t, MAT_Y1 - MAT_Y0, rh), (MAT_X0 - t / 2, (MAT_Y0 + MAT_Y1) / 2, rc), wy),
+            ("BedRailR", (t, MAT_Y1 - MAT_Y0, rh), (MAT_X1 + t / 2, (MAT_Y0 + MAT_Y1) / 2, rc), wy),
+            ("BedRailFoot", (MAT_X1 - MAT_X0, t, rh), ((MAT_X0 + MAT_X1) / 2, MAT_Y0 - t / 2, rc), wx),
+            ("BedRailHead", (MAT_X1 - MAT_X0, t, rh), ((MAT_X0 + MAT_X1) / 2, MAT_Y1 + t / 2, rc), wx)):
+        parts.append(box(nm, size, loc, mat, coll, bevel=0.003, seg=2))
+    # the slats the mattress rests on (only seen from very low)
+    parts.append(box("BedDeck", (MAT_X1 - MAT_X0, MAT_Y1 - MAT_Y0, 0.02),
+                     ((MAT_X0 + MAT_X1) / 2, (MAT_Y0 + MAT_Y1) / 2, MAT_TOP - 0.19), wx, coll))
+    # headboard: a top rail with a slight overhang over seven slats
+    parts.append(box("HeadRail", (xr - xl + p + 0.02, p + 0.012, 0.04), ((xl + xr) / 2, yh, top - 0.02), wx, coll,
+                     bevel=0.006, seg=2))
+    n, sw = 7, 0.06
+    gap = (MAT_X1 - MAT_X0 - n * sw) / (n + 1)
+    for k in range(n):
+        x = MAT_X0 + gap + sw / 2 + k * (sw + gap)
+        parts.append(box(f"HeadSlat{k}", (sw, 0.016, top - 0.04 - rz1), (x, yh, (rz1 + top - 0.04) / 2), wz, coll,
+                         bevel=0.003, seg=2))
+    return parts
+
+
+def mattress_dent(ob, sit, depth=0.025, along=0.32, across=0.2):
+    """Where she sits the mattress gives: a shallow hollow under her seat and feet. sit = (x, y, ax, ay):
+    the middle of it and the horizontal direction her drawing spans."""
+    x0, y0, ax, ay = sit
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=30, use_grid_fill=True)
+    (sx, sy, sz), (cx, cy, _cz) = ob.scale, ob.location
+    for v in bm.verts:
+        if v.co.z > 0.499:
+            dx, dy = cx + v.co.x * sx - x0, cy + v.co.y * sy - y0
+            a, c = dx * ax + dy * ay, -dx * ay + dy * ax
+            v.co.z -= depth / sz * math.exp(-(a / along) ** 2 - (c / across) ** 2)
+    bm.to_mesh(ob.data)
+    bm.free()
+    ob["dent"] = [round(float(v), 4) for v in (*sit, depth, along, across)]
+
+
+def bed_set(coll, pillow_dent=None, quilt=None, sit=None):
+    """Low wooden bed (bed_frame) with its head under the window sill, a thick mattress in a fitted
+    sheet, a pillow at the head end and a cloth-simulated quilt (bedding.py): spread over the bed below
+    the pillow (the default; she sits on it), or tucked over her as she lies. sit: where she sits on it
+    (see mattress_dent); the quilt settles into the hollow."""
     import bedding
-    wood = mat_principled("BedFrame", (0.42, 0.32, 0.24), rough=0.5)
-    base = box("BedBase", (BED_X1 - BED_X0, BED_Y1 - BED_Y0, 0.12),
-               ((BED_X0 + BED_X1) / 2, (BED_Y0 + BED_Y1) / 2, 0.14), wood, coll, bevel=0.012, seg=3)
-    for k, (lx, ly) in enumerate(((BED_X0 + 0.05, BED_Y0 + 0.05), (BED_X1 - 0.05, BED_Y0 + 0.05),
-                                  (BED_X0 + 0.05, BED_Y1 - 0.05), (BED_X1 - 0.05, BED_Y1 - 0.05))):
-        box(f"BedLeg{k}", (0.055, 0.055, 0.08), (lx, ly, 0.04), wood, coll, bevel=0.006)
-    head = box("Headboard", (BED_X1 - BED_X0 + 0.02, 0.04, 0.5), ((BED_X0 + BED_X1) / 2, BED_Y1 + 0.03, 0.33),
-               wood, coll, bevel=0.015, seg=4)
+    frame = bed_frame(coll)
     sheet = bedding.add_wrinkles(cloth_mat("Sheet", (0.8, 0.83, 0.88)), scale=4.0, strength=0.1)
     mat_ob = box("Mattress", (MAT_X1 - MAT_X0, MAT_Y1 - MAT_Y0, 0.18), ((MAT_X0 + MAT_X1) / 2, (MAT_Y0 + MAT_Y1) / 2,
                                                                         MAT_TOP - 0.09), sheet, coll)
+    if sit:
+        mattress_dent(mat_ob, sit)
     b = mat_ob.modifiers.new("Bevel", "BEVEL")
     b.width, b.segments = 0.035, 4
     s = mat_ob.modifiers.new("Sub", "SUBSURF")
@@ -269,7 +347,7 @@ def bed_set(coll, pillow_dent=None, quilt=None):
     q.update(quilt or {})
     if q["mode"] == "none":
         return
-    ob = bedding.simulate_quilt(coll, [mat_ob, pillow, head, base], (MAT_X0, MAT_X1, MAT_Y0, MAT_Y1, MAT_TOP),
+    ob = bedding.simulate_quilt(coll, [mat_ob, pillow, *frame], (MAT_X0, MAT_X1, MAT_Y0, MAT_Y1, MAT_TOP),
                                 q["edge"], field=q.get("field"))
     bedding.dress_quilt(ob, bedding.gingham_mat("QuiltCover"))
 
@@ -574,11 +652,11 @@ def crt_tv(coll, loc=(2.3, 0.3, 0.0)):
 
 
 def build(sc, time_of_day="night", lamp_on=None, city_plate=None, wind=0.0, seed=3, void=False, pillow_dent=None,
-          quilt=None, sun=None):
+          quilt=None, sun=None, sit=None):
     sun_opts = sun
     col = collection("Room")
     if void:
-        return build_void(sc, col, city_plate, pillow_dent=pillow_dent, quilt=quilt)
+        return build_void(sc, col, city_plate, pillow_dent=pillow_dent, quilt=quilt, sit=sit)
     wm = wall_mat()
     # shell (floor, ceiling, walls; window wall has an opening)
     box("Floor", (W, D, 0.02), (W / 2, D / 2, -0.01), floor_mat(), col)
@@ -639,11 +717,12 @@ def build(sc, time_of_day="night", lamp_on=None, city_plate=None, wind=0.0, seed
     curtain("Lace", WIN_X0 + 1.6, WIN_X1 + 0.05, WIN_Z0 - 0.2, WIN_Z1 + 0.15, D - 0.06, lace, col, folds=14,
             depth=0.03, wind=wind)
     drape = cloth_mat("Drape", (0.22, 0.25, 0.32), rough=0.95)
-    curtain("DrapeL", WIN_X0 - 0.15, WIN_X0 + 0.35, 0.3, WIN_Z1 + 0.15, D - 0.12, drape, col, folds=4, depth=0.05,
+    # the drape over the bed head stops just above the headboard instead of hanging into the pillow
+    curtain("DrapeL", WIN_X0 - 0.15, WIN_X0 + 0.35, 0.62, WIN_Z1 + 0.15, D - 0.12, drape, col, folds=4, depth=0.05,
             wind=wind * 0.4)
     curtain("DrapeR", WIN_X1 - 0.3, WIN_X1 + 0.15, 0.3, WIN_Z1 + 0.15, D - 0.12, drape, col, folds=4, depth=0.05,
             wind=wind * 0.4)
-    bed_set(col, pillow_dent=pillow_dent, quilt=quilt)
+    bed_set(col, pillow_dent=pillow_dent, quilt=quilt, sit=sit)
     props = desk_props(col)
     hands = wall_clock(col)
     tv = crt_tv(col)
@@ -725,14 +804,14 @@ def test_view(sc, opts):
     return cam
 
 
-def build_void(sc, col, city_plate=None, pillow_dent=None, quilt=None):
+def build_void(sc, col, city_plate=None, pillow_dent=None, quilt=None, sit=None):
     """The midnight room grown infinite: black mirror floor, no walls; the bed, the
     window frame and the ring lamp hang in nothing, the city far away."""
     floor = add_prim("plane", "VoidFloor", col)
     floor.scale = (400, 400, 1)
     floor.location = (W / 2, D / 2, 0)
     assign(floor, mat_principled("VoidFloorMat", (0.004, 0.004, 0.006), rough=0.08, spec=0.6))
-    bed_set(col, pillow_dent=pillow_dent, quilt=quilt)
+    bed_set(col, pillow_dent=pillow_dent, quilt=quilt, sit=sit)
     alu = mat_principled("Alu", (0.55, 0.56, 0.58), rough=0.3, metal=0.9)
     fw = 0.035
     cx, cz = (WIN_X0 + WIN_X1) / 2, (WIN_Z0 + WIN_Z1) / 2
@@ -786,6 +865,22 @@ def _quilt(q):
     return q
 
 
+def _sit(shot):
+    """The hollow under a card sitting on the bed: its spot and the direction its drawing spans (across
+    the line of sight from the middle of the camera move, since the card turns to face the camera)."""
+    for c in shot.get("cards", []):
+        if (c.get("contact") or {}).get("kind") != "sit":
+            continue
+        keys = shot["cam"]["keys"]
+        cx = (keys[0][1][0] + keys[-1][1][0]) / 2 - c["loc"][0]
+        cy = (keys[0][1][1] + keys[-1][1][1]) / 2 - c["loc"][1]
+        n = math.hypot(cx, cy) or 1.0
+        # her seat ends up behind her feet as seen from the camera (bedding.seat_card): centre the
+        # hollow between them
+        return (c["loc"][0] - 0.1 * cx / n, c["loc"][1] - 0.1 * cy / n, -cy / n, cx / n)
+    return None
+
+
 def build_shot(sc, shot):
     from common import setup_compositor, world_color
     st = shot.get("setup", {})
@@ -794,7 +889,8 @@ def build_shot(sc, shot):
     default_plate = {"dusk": PLATE_DUSK, "morning": PLATE_DAWN}.get(tod, PLATE)
     objs = build(sc, time_of_day=tod, lamp_on=st.get("lamp"),
                  city_plate=st.get("plate", default_plate), wind=st.get("wind", 0.0), void=st.get("void", False),
-                 pillow_dent=st.get("pillow_dent"), quilt=_quilt(st.get("quilt")), sun=st.get("sun"))
+                 pillow_dent=st.get("pillow_dent"), quilt=_quilt(st.get("quilt")), sun=st.get("sun"),
+                 sit=_sit(shot))
     for nm in st.get("hide", []):
         ob = bpy.data.objects.get(nm)
         if ob:
@@ -810,7 +906,7 @@ def build_shot(sc, shot):
     return objs
 
 
-def ground_cards(cards, specs):
+def ground_cards(cards, specs, cam=None, frame=None):
     """Sitting cards rest their drawing's lowest line on the quilt with a pressed blot under them; cards
     lying on the bed get a soft silhouette shadow."""
     import bedding
@@ -819,11 +915,23 @@ def ground_cards(cards, specs):
         if not c:
             continue
         if c.get("kind") == "sit":
-            z = bedding.surface_below(card.location.x, card.location.y, z_from=card.location.z + 0.6)
+            with bedding.without_cards():
+                z = bedding.surface_below(card.location.x, card.location.y, z_from=card.location.z + 0.6)
             if z is None:
                 continue
             card.location.z = z - c.get("sink", 0.008) - bedding.drawing_floor(spec["pose"]) * spec.get("h", 1.5)
-            bedding.sitting_blot(card, z, size=c.get("size", (0.78, 0.52)), strength=c.get("strength", 0.72))
+            shift = (0.0, -0.05)
+            if cam is not None:
+                sc = bpy.context.scene
+                keep = sc.frame_current
+                if frame is not None:
+                    sc.frame_set(frame)
+                push = bedding.seat_card(card, spec["pose"], spec.get("h", 1.5), cam)
+                sc.frame_set(keep)
+                if push is not None:
+                    shift = (0.5 * push.x, 0.5 * push.y)
+            bedding.sitting_blot(card, z, size=c.get("size", (0.78, 0.52)), strength=c.get("strength", 0.72),
+                                 shift=shift, conform=True)
         else:
             bedding.lying_shadow(card, spec["pose"], blur=c.get("blur", 0.01), strength=c.get("strength", 0.55),
                                  cast=c.get("cast", 0.04), cast_strength=c.get("cast_strength", 0.3),
@@ -832,7 +940,7 @@ def ground_cards(cards, specs):
 
 def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
     from common import key_light, key_socket
-    ground_cards(cards, shot.get("cards", []))
+    ground_cards(cards, shot.get("cards", []), cam=cam, frame=(f0 + f1) // 2)
     an = shot.get("anim", {})
     dur = (f1 + 1 - f0) / 24  # the rendered range (may run past the cut, see render_to)
     if "lamp" in an:

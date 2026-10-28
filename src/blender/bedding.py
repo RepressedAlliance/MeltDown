@@ -12,9 +12,11 @@ quilt modes (setup quilt=dict(...)):
 """
 import hashlib
 import json
+from contextlib import contextmanager
 import math
 import random
 
+import bmesh
 import bpy
 import numpy as np
 from mathutils import Euler, Matrix, Vector
@@ -23,7 +25,7 @@ from common import ROOT, assign, link, node_tree
 
 CACHE = ROOT / "work" / "cache" / "bedding"
 CHAR = ROOT / "assets" / "char"
-VERSION = 18          # bump when the simulation or the shapes change, so stale caches are not reused
+VERSION = 19          # bump when the simulation or the shapes change, so stale caches are not reused
 
 
 # ---------------------------------------------------------------- her drawing, placed as a card
@@ -197,6 +199,14 @@ def _cache_key(**kw):
     return hashlib.md5(s.encode()).hexdigest()[:16]
 
 
+def _shape_key(ob):
+    co = np.empty(len(ob.data.vertices) * 3, np.float32)
+    ob.data.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    return (ob.name, co.min(axis=0).round(3).tolist(), co.max(axis=0).round(3).tolist(), co.mean(axis=0).round(4).tolist(),
+            [round(v, 4) for v in (*ob.location, *ob.rotation_euler, *ob.scale)], list(ob.get("dent", ())))
+
+
 def simulate_quilt(coll, colliders, bed, edge, field=None, frames=45, seed=4, name="Quilt"):
     """Build the quilt, let it settle under gravity (or load the settled shape), return the object."""
     verts, faces, uvs = quilt_rest(bed, edge, field, seed=seed)
@@ -209,7 +219,10 @@ def simulate_quilt(coll, colliders, bed, edge, field=None, frames=45, seed=4, na
             uvl.data[li].uv = uvs[me.loops[li].vertex_index]
     ob = bpy.data.objects.new(name, me)
     link(ob, coll)
-    key = _cache_key(bed=bed, edge=edge, frames=frames, seed=seed, n=len(verts),
+    # what it falls onto is part of the key, read from the mesh data and the object's own transform (its
+    # evaluated bounds may still be stale here): a changed bed frame re-runs the simulation
+    shapes = sorted(_shape_key(c) for c in colliders if c is not None)
+    key = _cache_key(bed=bed, edge=edge, frames=frames, seed=seed, n=len(verts), colliders=shapes,
                      field=None if field is None else [field[0], field[1], field[2], float(field[3].sum())])
     path = CACHE / f"quilt_{key}.npy"
     if path.exists():
@@ -543,16 +556,147 @@ def lying_shadow(card, pose, blur=0.01, strength=0.55, cast=0.04, cast_strength=
     return sh
 
 
-def sitting_blot(card, surface_z, size=(0.62, 0.5), strength=0.5, shift=(0.0, -0.05), falloff=(0.05, 0.45)):
-    """Where she sits the cloth is pressed and shaded: a soft blot on the surface under her."""
+def sitting_blot(card, surface_z, size=(0.62, 0.5), strength=0.5, shift=(0.0, -0.05), falloff=(0.05, 0.45),
+                 conform=False):
+    """Where she sits the cloth is pressed and shaded: a soft blot on the surface under her. conform:
+    the blot is laid onto the cloth (each point dropped onto the surface below it), so it follows the
+    hollow and the folds instead of floating flat over them."""
     from common import add_prim
     coll = card.users_collection[0]
     pl = add_prim("plane", card.name + "_blot", coll)
     pl.scale = (size[0], size[1], 1)
     pl.location = (card.location.x + shift[0], card.location.y + shift[1], surface_z + 0.004)
+    if conform:
+        bm = bmesh.new()
+        bm.from_mesh(pl.data)
+        # dense enough (about 2 cm) that the cloth between samples cannot rise through it at a fold
+        bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=64, use_grid_fill=True)
+        bm.to_mesh(pl.data)
+        bm.free()
+        with without_cards():                   # her card and this blot itself
+            for v in pl.data.vertices:
+                wx, wy = pl.location.x + v.co.x * pl.scale.x, pl.location.y + v.co.y * pl.scale.y
+                z = surface_below(wx, wy, z_from=surface_z + 0.3)
+                if z is not None:
+                    v.co.z = (z + 0.006 - pl.location.z) / pl.scale.z
+        pl.data.update()
     assign(pl, _shadow_material(card.name + "_blotmat", strength=strength, falloff=falloff))
     pl.visible_shadow = False
     return pl
+
+
+def _bottom_edge(low, nu):
+    """The drawing's bottom edge (rows from the bottom of the image) at nu + 1 columns, each column taking
+    the lowest point across its own width."""
+    ww = len(low)
+    half = max(1, ww // (2 * nu))
+    cols = np.clip(np.round(np.linspace(0, 1, nu + 1) * (ww - 1)).astype(int), 0, ww - 1)
+    return np.array([low[max(0, c - half):c + half + 1].min() for c in cols])
+
+
+def _seat_push(edge, floor, hh, h, w, mw, cpos, sink, reach):
+    """How far back along its camera ray each column of the bottom edge must go to rest on the surface;
+    columns that bear no weight (higher than `reach` above the lowest point) are interpolated."""
+    us = np.linspace(0, 1, len(edge))
+    rise = (edge - floor) / hh * h
+    push = np.full(len(edge), np.nan)
+    for i, u in enumerate(us):
+        if edge[i] >= hh or rise[i] > reach:
+            continue
+        p = mw @ Vector(((u - 0.5) * w, 0.0, edge[i] / hh * h))
+        r = (p - cpos).normalized()
+        tt = 0.0
+        while tt < 0.6:
+            qq = p + r * tt
+            s = surface_below(qq.x, qq.y, z_from=qq.z + 0.5)
+            if s is not None and qq.z <= s - sink:
+                push[i] = tt
+                break
+            tt += 0.005
+    ok = ~np.isnan(push)
+    if not ok.any():
+        return None
+    return np.interp(us, us[ok], push[ok])
+
+
+def seat_card(card, pose, h, cam, sink=0.004, reach=0.1, band=0.15):
+    """A sitting drawing is drawn from above, so only its lowest point (her toes) touches the bed when the
+    card stands upright: her seat, drawn higher, floats over the quilt. Slide the bottom of the card back
+    along the camera's rays until each part of that edge that bears weight (within `reach` of the lowest
+    point) rests on the surface behind it, easing back to the flat card over `band` metres above the
+    edge. From the camera the drawing is unchanged; in the scene her seat now sits on the quilt behind
+    her feet. Call with the scene at a representative frame (the card's tracking evaluated). Returns the
+    mean horizontal push of the weight-bearing edge (world x, y), or None."""
+    a = alpha_grid(pose)
+    hh, ww = a.shape
+    w = h * ww / hh
+    low = np.array([np.nonzero(a[:, c] > 0.5)[0][0] if (a[:, c] > 0.5).any() else hh for c in range(ww)], float)
+    if not (low < hh).any():
+        return None
+    floor = low.min()
+    # the mesh: columns across the drawing, rows dense near the bottom where it bends
+    nu = 64
+    vs = np.unique(np.concatenate([np.linspace(0, 0.32, 33), np.linspace(0.32, 1.0, 18)]))
+    me = card.data
+    mats = list(me.materials)
+    me.clear_geometry()
+    verts = [((u - 0.5) * w, 0.0, v * h) for v in vs for u in np.linspace(0, 1, nu + 1)]
+    faces = [(j * (nu + 1) + i, j * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i + 1, (j + 1) * (nu + 1) + i)
+             for j in range(len(vs) - 1) for i in range(nu)]
+    me.from_pydata(verts, [], faces)
+    uvl = me.uv_layers.new(name="UVMap")
+    for poly in me.polygons:
+        for li in poly.loop_indices:
+            vx, _vy, vz = verts[me.loops[li].vertex_index]
+            uvl.data[li].uv = (vx / w + 0.5, vz / h)
+    me.uv_layers.active = uvl
+    uvl.active_render = True
+    for m in mats:
+        if m.name not in [x.name for x in me.materials]:
+            me.materials.append(m)
+    me.update()
+    bpy.context.view_layer.update()
+    mw, cpos = card.matrix_world.copy(), cam.matrix_world.translation.copy()
+    inv = mw.inverted()
+    edge = _bottom_edge(low, nu)
+    with without_cards():
+        push = _seat_push(edge, floor, hh, h, w, mw, cpos, sink, reach)
+    if push is None:
+        return None
+    base = np.where(edge < hh, edge / hh * h, floor / hh * h)
+    moved = []
+    for k, v in enumerate(me.vertices):
+        i = k % (nu + 1)
+        x, z = v.co.x, v.co.z
+        above = z - base[i]
+        f = 1.0 if above <= 0 else max(0.0, 1.0 - above / band)
+        f = f * f * (3 - 2 * f)
+        if f <= 0 or push[i] <= 0:
+            continue
+        p = mw @ Vector((x, 0.0, z))
+        p2 = p + (p - cpos).normalized() * push[i] * f
+        v.co = inv @ p2
+        if above <= 0:
+            moved.append((p2 - p).xy)
+    me.update()
+    if not moved:
+        return Vector((0.0, 0.0))
+    return sum(moved, Vector((0.0, 0.0))) / len(moved)
+
+
+@contextmanager
+def without_cards(prefix="Rin_"):
+    """Take her cards (and their blots) out of the scene while rays are cast onto the bed. Skipping a hit
+    is not enough: a card dips a little into the quilt, so a ray that goes on from where it met the card
+    can be under the quilt's top already and find its underside."""
+    obs = [o for o in bpy.context.scene.objects if o.name.startswith(prefix) and not o.hide_viewport]
+    for o in obs:
+        o.hide_viewport = True
+    try:
+        yield
+    finally:
+        for o in obs:
+            o.hide_viewport = False
 
 
 def surface_below(x, y, z_from=1.0, skip=("Rin_",)):
