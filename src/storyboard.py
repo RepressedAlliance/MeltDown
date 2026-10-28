@@ -155,8 +155,9 @@ S("S14", lambda: L(4) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
              (0.8, 265), (1.0, 265)]}])
 S("S15", lambda: L(5) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   fx=[{"type": "heat", "amount": 3.0}],
-  # wide enough for her bow and the hand on her stomach together, creeping in a little
-  cam=dict(keys=[(0, (1.62, 1.5, 0.88), (1.0, 2.2, 1.0), 32), (1, (1.56, 1.57, 0.88), (1.0, 2.2, 1.0), 33.5)],
+  # wide enough for her bow and the hand on her stomach together; the camera creeps in while the lens
+  # widens a touch, so the frame holds both and only the room behind her tightens
+  cam=dict(keys=[(0, (1.62, 1.5, 0.88), (1.0, 2.2, 0.96), 30), (1, (1.56, 1.57, 0.88), (1.0, 2.2, 0.96), 29)],
            fstop=2.0),
   render=dict(samples=64),
   # the line about a burning stomach: she presses a hand to it, wincing. Drawn with both arms inside the canvas and
