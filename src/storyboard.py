@@ -155,7 +155,8 @@ S("S14", lambda: L(4) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
              (0.8, 265), (1.0, 265)]}])
 S("S15", lambda: L(5) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   fx=[{"type": "heat", "amount": 3.0}],
-  cam=dict(keys=[(0, (1.62, 1.5, 0.88), (1.0, 2.2, 0.85), 42), (1, (1.56, 1.57, 0.88), (1.0, 2.2, 0.85), 46)],
+  # wide enough for her bow and the hand on her stomach together, creeping in a little
+  cam=dict(keys=[(0, (1.62, 1.5, 0.88), (1.0, 2.2, 1.0), 32), (1, (1.56, 1.57, 0.88), (1.0, 2.2, 1.0), 33.5)],
            fstop=2.0),
   render=dict(samples=64),
   # the line about a burning stomach: she presses a hand to it, wincing. Drawn with both arms inside the canvas and
@@ -170,8 +171,8 @@ S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
            fstop=2.8, focus=1.3),
   fx=[{"type": "darken", "rect": (630, 600, 890, 1080), "feather": 25, "amount": 0.9},
       {"type": "darken", "rect": (900, 860, 1920, 1080), "feather": 90, "amount": 0.45},
-      {"type": "ghost", "pose": "rin_face_close", "x": 1180, "y": 640, "scale": 1.05, "opacity": 0.72,
-       "holdout": 0.55, "drift": -60},
+      {"type": "ghost", "pose": "rin_face_close", "x": 1180, "y": 640, "scale": 1.05, "opacity": 0.75,
+       "holdout": 0.8, "drift": -60},
       {"type": "zoom", "z": [(0, 1.0), (1, 1.07)], "cx": 220, "cy": 60}, {"type": "kick", "amount": 0.008}])
 
 # ================================================================ B1 (white afternoon dream)
@@ -200,7 +201,8 @@ S("S20", lambda: L(11) - 0.2, scene="room", setup=dict(tod="morning", plate=None
   fx=[{"type": "exposure", "ev": [(0, -0.3), (0.7, 0.2), (1, 1.6)]}, {"type": "glitch", "on": [(0, 0), (0.6, 0), (0.62, 1), (1, 1)],
                                                          "amount": 1.0}],
   hud=dict(level=1, alarm=True),
-  cam=dict(keys=[(0, (1.62, 1.5, 0.95), (1.0, 2.2, 0.95), 60), (1, (1.42, 1.73, 0.95), (1.0, 2.2, 0.95), 78)],
+  # from her whole head, bow included, a decisive push to her eyes
+  cam=dict(keys=[(0, (1.62, 1.5, 0.98), (1.0, 2.2, 1.0), 37), (1, (1.42, 1.73, 0.95), (1.0, 2.2, 0.95), 78)],
            fstop=2.0),
   render=dict(samples=64),
   # the line about eyes close to tears: tears welling on the lower lids (aligned to rin_face_close)

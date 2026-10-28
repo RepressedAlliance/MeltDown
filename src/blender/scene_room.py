@@ -338,7 +338,8 @@ def bed_set(coll, pillow_dent=None, quilt=None, sit=None):
     press = None
     if pillow_dent:
         press = (PILLOW_C[0] + pillow_dent[0], PILLOW_C[1] + pillow_dent[1])
-    pillow = bedding.simulate_pillow(coll, mat_ob, PILLOW_C, MAT_TOP, head=press)
+    # nobody's head on it: plumped up (more air in it), so it reads as a soft pillow, not a slab
+    pillow = bedding.simulate_pillow(coll, mat_ob, PILLOW_C, MAT_TOP, head=press, pressure=6.5 if press else 11.0)
     sp = pillow.modifiers.new("Sub", "SUBSURF")
     sp.levels = sp.render_levels = 2
     pillow.data.shade_smooth()
