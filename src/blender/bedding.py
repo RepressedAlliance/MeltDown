@@ -25,7 +25,7 @@ from common import ROOT, assign, link, node_tree
 
 CACHE = ROOT / "work" / "cache" / "bedding"
 CHAR = ROOT / "assets" / "char"
-VERSION = 20          # bump when the simulation or the shapes change, so stale caches are not reused
+VERSION = 21          # bump when the simulation or the shapes change, so stale caches are not reused
 
 
 # ---------------------------------------------------------------- her drawing, placed as a card
@@ -81,7 +81,7 @@ def _dilate(a, n):
     return out
 
 
-def body_field(spec, edge, top, res=0.02, clear=0.03, dilate=0.04, close=0.12, blur=0.08):
+def body_field(spec, edge, top, res=0.02, clear=0.03, dilate=0.04, close=0.12, blur=0.08, dome_r=0.12, dome_h=0.05):
     """Heightfield (x0, y0, res, height above top-0.03) of her body under the quilt: wherever the covered
     part of her drawing lies (world y < edge, plus a little), the body reaches `clear` above the card, so
     the cloth passes just over her. The silhouette is closed (a quilt bridges the gaps between knees,
@@ -115,12 +115,22 @@ def body_field(spec, edge, top, res=0.02, clear=0.03, dilate=0.04, close=0.12, b
     mask = 1.0 - _dilate(1.0 - _dilate(mask, k), k)          # closing: dilate, then erode
     f = _blur(_dilate(mask, max(1, int(round(dilate / res)))), blur / res)
     f = np.clip(f * 1.5, 0, 1) ** 0.6
+    # rounded like a body, not a slab: highest along the middle of her silhouette (hips, thighs), lower
+    # towards its edges, so the cloth over her has a crown and slopes that the light can model. Depth in
+    # from the outline, counted by eroding one cell at a time (no OpenCV in Blender's Python)
+    steps = max(1, int(round(dome_r / res)))
+    cur, depth = (mask > 0.5).astype(np.float32), np.zeros_like(mask)
+    for _ in range(steps):
+        depth += cur
+        cur = 1.0 - _dilate(1.0 - cur, 1)
+    dome = depth / steps
+    dome = _blur(dome * dome * (3 - 2 * dome), 0.04 / res)
     # full height right up to the quilt's edge (so its rim, not a slope, is where she comes out), gone
     # a few centimetres past it
     ys = (y0 + np.arange(ny) * res)[:, None]
-    f *= np.clip((edge + 0.08 - ys) / 0.06, 0, 1)
+    ramp = np.clip((edge + 0.08 - ys) / 0.06, 0, 1)
     hz = np.clip(zc + clear - (top - 0.03), 0, None)
-    return x0, y0, res, f * hz
+    return x0, y0, res, (f * (0.55 + 0.45 * dome) * hz + dome_h * dome) * ramp
 
 
 # ---------------------------------------------------------------- the quilt
