@@ -1,6 +1,8 @@
 """The share version of the film: x264 crf 19 (about half the master's size), audio copied, fast start.
 
 python src/tools/encode_share.py [master] [out]
+Threads and lookahead are fixed so the encoder's memory stays near 1 GB: with its defaults x264 starts
+a thread per half core and its memory grows with them.
 """
 import subprocess
 import sys
@@ -13,7 +15,8 @@ def main():
     src = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "out" / "roshin_yuukai_mv.mp4"
     dst = Path(sys.argv[2]) if len(sys.argv) > 2 else src.with_name(src.stem + "_share.mp4")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-c:v", "libx264", "-preset", "slow", "-crf", "19",
-                    "-tune", "film", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", str(dst)],
+                    "-tune", "film", "-threads", "8", "-x264-params", "rc-lookahead=30", "-pix_fmt", "yuv420p",
+                    "-c:a", "copy", "-movflags", "+faststart", str(dst)],
                    check=True)
     print("wrote", dst, round(dst.stat().st_size / 1e6), "MB")
 
