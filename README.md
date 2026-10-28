@@ -77,19 +77,19 @@
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/images/stills/01.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/02.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/03.jpg" alt=""></td>
+    <td width="33%"><img src="docs/images/stills/01.jpg" alt="凌晨两点，她抱着膝坐在床上"></td>
+    <td width="33%"><img src="docs/images/stills/02.jpg" alt="打火机的火石轮擦出火花"></td>
+    <td width="33%"><img src="docs/images/stills/03.jpg" alt="侧脸，眼角有一滴泪"></td>
   </tr>
   <tr>
-    <td width="33%"><img src="docs/images/stills/04.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/05.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/06.jpg" alt=""></td>
+    <td width="33%"><img src="docs/images/stills/04.jpg" alt="漂浮在炉心里"></td>
+    <td width="33%"><img src="docs/images/stills/05.jpg" alt="黄昏的阳台，城市在脚下"></td>
+    <td width="33%"><img src="docs/images/stills/06.jpg" alt="话语从唇边化作气泡"></td>
   </tr>
   <tr>
-    <td width="33%"><img src="docs/images/stills/07.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/08.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/09.jpg" alt=""></td>
+    <td width="33%"><img src="docs/images/stills/07.jpg" alt="满墙的电视里都是她"></td>
+    <td width="33%"><img src="docs/images/stills/08.jpg" alt="无边的黑暗里只剩一张床"></td>
+    <td width="33%"><img src="docs/images/stills/09.jpg" alt="清晨，她在枕头上熟睡"></td>
   </tr>
 </table>
 

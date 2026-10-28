@@ -78,19 +78,19 @@ This is not a one-click MV template. It is the whole production of one film: fol
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/images/stills/01.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/02.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/03.jpg" alt=""></td>
+    <td width="33%"><img src="docs/images/stills/01.jpg" alt="2 a.m., hugging her knees on the bed"></td>
+    <td width="33%"><img src="docs/images/stills/02.jpg" alt="Sparks off the lighter's flint wheel"></td>
+    <td width="33%"><img src="docs/images/stills/03.jpg" alt="Profile, a tear at the corner of her eye"></td>
   </tr>
   <tr>
-    <td width="33%"><img src="docs/images/stills/04.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/05.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/06.jpg" alt=""></td>
+    <td width="33%"><img src="docs/images/stills/04.jpg" alt="Floating inside the reactor"></td>
+    <td width="33%"><img src="docs/images/stills/05.jpg" alt="The balcony at sunset, the city below"></td>
+    <td width="33%"><img src="docs/images/stills/06.jpg" alt="Words leaving her lips as bubbles"></td>
   </tr>
   <tr>
-    <td width="33%"><img src="docs/images/stills/07.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/08.jpg" alt=""></td>
-    <td width="33%"><img src="docs/images/stills/09.jpg" alt=""></td>
+    <td width="33%"><img src="docs/images/stills/07.jpg" alt="A wall of TVs, every one showing her"></td>
+    <td width="33%"><img src="docs/images/stills/08.jpg" alt="Only the bed left in the endless dark"></td>
+    <td width="33%"><img src="docs/images/stills/09.jpg" alt="Morning: asleep on her pillow"></td>
   </tr>
 </table>
 
