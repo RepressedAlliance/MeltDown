@@ -52,12 +52,12 @@ def white(t, u, level=1.0, tint=(1.0, 0.98, 0.95), **kw):
     return np.ones((H, W, 3), np.float32) * np.array(tint, np.float32) * level
 
 
-def ring(t, u, radius=210.0, draw=1.0, color=(0.45, 0.85, 1.0), breathe=True, **kw):
-    """A thin glowing ring that draws itself: the first image of the film."""
+def ring(t, u, radius=210.0, draw=1.0, color=(0.45, 0.85, 1.0), breathe=True, grow=False, **kw):
+    """A thin glowing ring: the first image of the film. grow: it draws itself over the shot."""
     s = surface()
     c = s.getCanvas()
     r = radius * (1 + (0.015 * math.sin(t * 2.2) if breathe else 0))
-    sweep = 360.0 * max(0.0, min(1.0, draw))
+    sweep = 360.0 * max(0.0, min(1.0, draw if not grow else u / 0.75))
     rect = skia.Rect.MakeXYWH(W / 2 - r, H / 2 - r, 2 * r, 2 * r)
     p = paint(color, 1.0, stroke=2.2)
     p.setStrokeCap(skia.Paint.kRound_Cap)

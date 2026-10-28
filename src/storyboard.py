@@ -317,7 +317,9 @@ S("S36", lambda: L(28) - 0.25, scene="room", setup=dict(tod="night", wind=0.6), 
               blink=True,
               props=dict(key_dir=(0.7, 0.2, 0.5), key_col=(0.3, 0.38, 0.6), amb_col=(0.12, 0.14, 0.22),
                          rim_dir=(1, 0.2, 0), rim_col=(0.6, 0.75, 1.0), exposure=1.0))])
-S("S37", 138.24, bg="black", finish=NIGHT, out="white", out_dur=0.35)
+# the break before the white chorus: in the dark the film's ring draws itself again, then flashes into the
+# reactor's ring (S38)
+S("S37", 138.24, bg="ring", bg_args=dict(radius=170, grow=True), finish=NIGHT, out="white", out_dur=0.35)
 
 # ================================================================ CHORUS 2 (white)
 S("S38", 139.98, scene="core", setup=dict(mood="white", exterior=True), finish=WHITE, in_="flash",
@@ -642,6 +644,13 @@ for _s in SHOTS:
             _c["blink"] = True
         if _s["id"] in SWAY:
             _c.setdefault("props", {})["sway"] = SWAY[_s["id"]]
+# in the blue reactor her black boots print as the same ink as the dark behind them: a thin cool line all
+# round her keeps the silhouette whole (character.py, outline_col)
+OUTLINE = {"S24": (0.3, 0.5, 0.8), "S26": (0.3, 0.5, 0.8), "S56": (0.3, 0.5, 0.8), "S59": (0.3, 0.5, 0.8)}
+for _s in SHOTS:
+    for _c in _s.get("cards", []):
+        if _s["id"] in OUTLINE:
+            _c.setdefault("props", {})["outline_col"] = OUTLINE[_s["id"]]
 
 
 # ================================================================ thermal stress before each meltdown: red slips first, then the type

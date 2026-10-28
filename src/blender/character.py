@@ -7,7 +7,7 @@ set per shot to match the set (sodium orange, plasma blue, dawn gold) with
 hard anime-style terminators. Every control is an object custom property read by
 Attribute nodes, so shots can keyframe them:
   key_dir (vec, card space: +x right, +y up, +z toward camera), key_col, amb_col,
-  rim_dir, rim_col, key_soft, exposure, dissolve (0..1), dissolve_col, sway, alpha
+  rim_dir, rim_col, outline_col, key_soft, exposure, dissolve (0..1), dissolve_col, sway, alpha
 """
 import json
 import math
@@ -210,6 +210,19 @@ def card_material(pose):
     L.new(rstep.outputs["Result"], rim.inputs["Factor"])
     L.new(lit.outputs["Result"], rim.inputs["A"])
     L.new(rim_col, rim.inputs["B"])
+    # outline: the same thin outermost line all the way round, whatever the light: dark clothes keep their
+    # silhouette against a dark set (her black boots in the reactor printed as one ink with the background)
+    ostep = N.new("ShaderNodeMapRange")
+    ostep.interpolation_type = "SMOOTHSTEP"
+    ostep.inputs["From Min"].default_value = 0.5
+    ostep.inputs["From Max"].default_value = 0.64
+    L.new(edge.outputs["Color"], ostep.inputs["Value"])
+    outline = N.new("ShaderNodeMix")
+    outline.data_type = "RGBA"
+    outline.blend_type = "ADD"
+    L.new(ostep.outputs["Result"], outline.inputs["Factor"])
+    L.new(rim.outputs["Result"], outline.inputs["A"])
+    L.new(_attr(N, "outline_col", "Color"), outline.inputs["B"])
 
     # dissolve: noise threshold with a glowing edge
     nz = N.new("ShaderNodeTexNoise")
@@ -226,7 +239,7 @@ def card_material(pose):
     glow.data_type = "RGBA"
     glow.blend_type = "ADD"
     L.new(m("MULTIPLY", edge_band, m("GREATER_THAN", diss, bv=0.001)), glow.inputs["Factor"])
-    L.new(rim.outputs["Result"], glow.inputs["A"])
+    L.new(outline.outputs["Result"], glow.inputs["A"])
     L.new(dcol, glow.inputs["B"])
 
     expo = _attr(N, "exposure")
@@ -245,6 +258,11 @@ def card_material(pose):
     L.new(em.outputs[0], mix.inputs[2])
     L.new(mix.outputs[0], out.inputs["Surface"])
     mat.surface_render_method = "DITHERED"
+    # never wrap: a bust drawing is opaque along its bottom edge, and a repeating texture sampled at the
+    # top edge of the card blends that row in, drawing a thin dark line across the canvas top in frame
+    for node in N:
+        if node.type == "TEX_IMAGE":
+            node.extension = "EXTEND"
     return mat
 
 
@@ -252,6 +270,7 @@ DEFAULTS = {
     "key_dir": (0.6, 0.5, 0.6), "key_col": (0.55, 0.5, 0.45), "amb_col": (0.45, 0.47, 0.55),
     "rim_dir": (-0.8, 0.3, 0.0), "rim_col": (0.0, 0.0, 0.0), "key_soft": 0.06, "exposure": 1.0,
     "dissolve": 0.0, "dissolve_col": (1.0, 0.8, 0.4), "sway": 0.0, "alpha": 1.0, "blink": 0.0, "key_wash": 1.0,
+    "outline_col": (0.0, 0.0, 0.0),
 }
 
 
