@@ -219,11 +219,11 @@ S("S23", lambda: L(13) - 0.15, scene="core", setup=dict(mood="blue"), finish=COR
   cam=dict(keys=[(0, ring_pos(0.0, R + 1.6, 0.5), ring_pos(0.35, R, 0.0), 20, -5),
                  (1, ring_pos(0.55, R + 1.6, 0.4), ring_pos(0.9, R, 0.0), 20, 8)], ease="linear",
            shake=(0.03, 0.4, 1.2)))
-# the floating shots (S24, S40, S59) drift in on her: the aim rises as the camera nears so her bow keeps
-# a margin under the top edge, ending on a frame cut below the knees
+# the floating shots (S24, S40, S59) open on her whole figure, bow to feet inside the frame, and push in
+# to a cut at mid-thigh; the aim rises with the push so her bow keeps its margin under the top edge
 S("S24", lambda: L(14) - 0.15, scene="core", setup=dict(mood="blue"), finish=COREB,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.5), ring_pos(0.16, R + 2.2, 0.12), 30, -6),
-                 (1, ring_pos(0.03, R + 2.5, 0.3), ring_pos(0.16, R + 2.2, 0.22), 29, -2)], fstop=2.0),
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.5), ring_pos(0.16, R + 2.2, 0.03), 25.6, -6),
+                 (1, ring_pos(0.03, R + 2.5, 0.3), ring_pos(0.16, R + 2.2, 0.34), 36, -2)], fstop=2.0),
   cards=[dict(pose="rin_float", h=1.7, loc=ring_pos(0.16, R + 2.2, -0.9), rot=(90, -10, 0), face_cam=True,
               props=dict(key_dir=(-0.7, 0.3, 0.6), key_col=(0.25, 0.5, 0.85), amb_col=(0.12, 0.18, 0.35),
                          rim_dir=(-0.9, 0.2, 0.0), rim_col=(0.55, 0.85, 1.0), exposure=1.0),
@@ -333,8 +333,8 @@ S("S39", lambda: L(31) - 0.15, scene="core", setup=dict(mood="white"), finish=WH
                  (1, ring_pos(0.25, R + 1.6, 0.3), ring_pos(0.55, R, 0.0), 22)], ease="linear"))
 # on the beat before the line opens (the first-pass timeline put the cut two frames after its first word)
 S("S40", lambda: greet(32), free=True, scene="core", setup=dict(mood="white"), finish=WHITE,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.4), ring_pos(0.16, R + 2.2, 0.13), 30, 4),
-                 (1, ring_pos(0.03, R + 2.5, 0.2), ring_pos(0.16, R + 2.2, 0.22), 29, -3)], fstop=2.0),
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.4), ring_pos(0.16, R + 2.2, 0.02), 25.2, 4),
+                 (1, ring_pos(0.03, R + 2.5, 0.2), ring_pos(0.16, R + 2.2, 0.33), 36, -3)], fstop=2.0),
   # the line about memories melting into white: limp, head bowed, as if fainting into the light (the first
   # chorus had her open-armed, looking up)
   cards=[dict(pose="rin_float_limp", h=1.7, loc=ring_pos(0.16, R + 2.2, -0.9), rot=(90, 8, 0), face_cam=True,
@@ -481,8 +481,8 @@ S("S58", 273.07, scene="core", setup=dict(mood="blue", exterior=True), finish=CO
   cam=dict(keys=[(0, (26, -30, 4), (0, 0, 0), 24), (1, (36, -14, 18), (0, 0, -1), 28)], shake=(0.1, 0.2, 1.0)),
   anim=dict(plasma=[(0, 2.0), (1, 2.6)]))
 S("S59", lambda: L(49) - 0.15, scene="core", setup=dict(mood="blue"), finish=COREB,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.5), ring_pos(0.16, R + 2.2, 0.10), 29, -4),
-                 (1, ring_pos(0.04, R + 2.5, 0.3), ring_pos(0.16, R + 2.2, 0.24), 27, 3)], fstop=2.0),
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.5), ring_pos(0.16, R + 2.2, 0.03), 25.6, -4),
+                 (1, ring_pos(0.04, R + 2.5, 0.3), ring_pos(0.16, R + 2.2, 0.34), 33.5, 3)], fstop=2.0),
   cards=[dict(pose="rin_float", h=1.7, loc=ring_pos(0.16, R + 2.2, -0.9), rot=(90, -6, 0), face_cam=True,
               props=dict(key_dir=(-0.7, 0.3, 0.6), key_col=(0.3, 0.55, 0.9), amb_col=(0.12, 0.18, 0.35),
                          rim_dir=(-0.9, 0.2, 0.0), rim_col=(0.6, 0.9, 1.0), exposure=1.0,
