@@ -214,10 +214,11 @@ def log(c, line, t, x, y, size=24, color=(0.55, 0.85, 1.0), prefix="", cursor=Tr
 # ---------------------------------------------------------------- 4. bubbles
 
 def bubbles(c, line, t, x, y, size=46, face="mincho", color=(0.92, 0.97, 1.0), rise=360.0, life=3.2,
-            spread=150.0, seed=0):
+            spread=150.0, seed=0, tracking=0.0, bubble=1.0):
     """Each character appears at her lips, centred on (x, y), as it is sung and is lifted off in a
-    thin soap bubble, wobbles upward and pops."""
-    blk = layout(line["text"], face, size, vertical=False)
+    thin soap bubble, wobbles upward and pops. tracking spaces the characters (in ems) and bubble scales
+    the bubbles, so neighbouring bubbles need not cross."""
+    blk = layout(line["text"], face, size, vertical=False, tracking=tracking)
     ct = char_times(line)
     rnd = np.random.default_rng(seed + len(line["text"]))
     offs = rnd.uniform(-1, 1, (len(line["text"]), 3))
@@ -239,7 +240,7 @@ def bubbles(c, line, t, x, y, size=46, face="mincho", color=(0.92, 0.97, 1.0), r
         ox, ph, sp = offs[g.index]
         bx = hx + ox * spread * 0.5 * ease_out(u, 2) + math.sin(age * 2.3 + ph * 6) * 18 * min(1.0, u * 4)
         by = hy - rise * (u ** 0.8) * (0.8 + 0.4 * (sp * 0.5 + 0.5))
-        r = size * (0.62 + 0.25 * u)
+        r = size * (0.62 + 0.25 * u) * bubble
         a = 1 - ease_in((u - 0.82) / 0.18, 2) if u > 0.82 else 1.0
         pop = clamp01((u - 0.86) / 0.14)
         rr = r * (1 + pop * 0.6)

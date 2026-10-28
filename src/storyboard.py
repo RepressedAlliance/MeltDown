@@ -597,8 +597,11 @@ for i, x in ((24, 1720), (25, 1624)):
     LYRIC_STYLES[i] = dict(style="tate", x=x, y=150, size=58, color=(1.0, 0.8, 0.7), index=i + 1, melt=1.0)
 LYRIC_STYLES.update(_tate_cols([26, 27], 1720, 96, size=58, color=(0.82, 0.88, 1.0)))
 # the words wait just in front of her parted lips (S36 frame, measured from the render) and float off
-LYRIC_STYLES[28] = dict(style="bubbles", x=1290, y=695, size=54, shots=("S36",))
-LYRIC_STYLES[29] = dict(style="bubbles", x=1310, y=695, size=54, seed=5, shots=("S36",))
+# spaced so neighbouring bubbles do not cross, starting clear of her face and reading left to right
+LYRIC_STYLES[28] = dict(style="bubbles", x=1500, y=720, size=46, tracking=0.55, bubble=0.8, spread=40.0,
+                        rise=320.0, shots=("S36",))
+LYRIC_STYLES[29] = dict(style="bubbles", x=1500, y=720, size=46, tracking=0.55, bubble=0.8, spread=40.0,
+                        rise=320.0, seed=5, shots=("S36",))
 for i, (x, y) in zip(range(36, 40), ((140, 120), (1000, 120), (140, 120), (1000, 120))):
     LYRIC_STYLES[i] = dict(style="echo", x=x, y=y, size=54, copies=10, dx=6.0, tail=6.0,
                            shots=("S43", "S43b", "S43c", "S44", "S44b", "S44c", "S44d", "S45", "S45c", "S45d",
