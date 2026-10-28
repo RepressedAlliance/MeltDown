@@ -1,0 +1,14 @@
+{
+ "name": "rin_face_close",
+ "source": "rin_face_close_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  30,
+  11,
+  989,
+  1535
+ ]
+}

@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Asset type: alternate expression for a cut-out animation layer (it replaces the original in another shot, so it must line up exactly with it)
+Primary request: edit the attached image so that she is awake: her eyes are open, tired and blank, looking past the viewer toward the right as if at a window; brows relaxed; mouth closed.
+Constraints: change only the eyes, eyelids and brows. Keep everything else pixel-identical: same framing, size, position, pose, hair, headset, bow, clothing, colors, line style and transparent background. Do not move, rescale or redraw anything else.
+Background: fully transparent PNG alpha background, exactly as in the attached image.

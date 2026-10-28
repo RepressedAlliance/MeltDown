@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Asset type: closed-eye frame for a cut-out animation layer (it is swapped with the original, so it must line up exactly)
+Primary request: edit the attached image so that her eyes are gently closed, asleep: upper lids fully down, lashes lowered, relaxed calm face, the faint smile softened to a resting mouth.
+Constraints: change only the eyes, eyelids and the mouth corners. Keep everything else pixel-identical: same framing, size, position, hair, headset, bow, clothing, colors, line style and transparent background. Do not move, rescale or redraw anything else.
+Background: fully transparent PNG alpha background, exactly as in the attached image.

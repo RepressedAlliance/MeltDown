@@ -1,0 +1,16 @@
+{
+ "name": "rin_teary",
+ "source": "rin_teary_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  38,
+  35,
+  973,
+  1513
+ ],
+ "aligned_to": "rin_face_close",
+ "align_scale": 0.9739
+}

@@ -1,0 +1,14 @@
+{
+ "name": "rin_chest_clutch",
+ "source": "rin_chest_clutch_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  211,
+  9,
+  965,
+  1497
+ ]
+}

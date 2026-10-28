@@ -1,0 +1,14 @@
+{
+ "name": "rin_ears_covered",
+ "source": "rin_ears_covered_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  26,
+  10,
+  994,
+  1535
+ ]
+}

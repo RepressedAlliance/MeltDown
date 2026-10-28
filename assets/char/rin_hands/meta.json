@@ -1,0 +1,14 @@
+{
+ "name": "rin_hands",
+ "source": "rin_hands_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  65,
+  7,
+  961,
+  1535
+ ]
+}

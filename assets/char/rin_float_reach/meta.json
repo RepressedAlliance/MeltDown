@@ -1,0 +1,14 @@
+{
+ "name": "rin_float_reach",
+ "source": "rin_float_reach_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  215,
+  12,
+  815,
+  1510
+ ]
+}

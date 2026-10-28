@@ -1,0 +1,14 @@
+{
+ "name": "rin_back_stand",
+ "source": "rin_back_stand_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  241,
+  6,
+  784,
+  1502
+ ]
+}

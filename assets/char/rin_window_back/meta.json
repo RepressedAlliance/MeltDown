@@ -1,0 +1,14 @@
+{
+ "name": "rin_window_back",
+ "source": "rin_window_back_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  39,
+  11,
+  1007,
+  1535
+ ]
+}

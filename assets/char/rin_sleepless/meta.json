@@ -1,0 +1,16 @@
+{
+ "name": "rin_sleepless",
+ "source": "rin_sleepless_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  67,
+  30,
+  988,
+  1461
+ ],
+ "aligned_to": "rin_face_close",
+ "align_scale": 0.9332
+}

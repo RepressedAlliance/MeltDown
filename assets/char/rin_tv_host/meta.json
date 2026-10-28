@@ -1,0 +1,14 @@
+{
+ "name": "rin_tv_host",
+ "source": "rin_tv_host_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  79,
+  16,
+  1021,
+  1535
+ ]
+}

@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Asset type: alternate frame for an extreme close-up of an eye (it replaces the original in another shot, so the eye must stay exactly where it is)
+Primary request: edit the attached image so the eye looks swollen from crying: the lower eyelid and the skin just around the eye are a little puffy and flushed pink-red, a thin line of welling tears sits along the lower lid, and one round tear has gathered at the outer corner of the eye, about to fall. The iris stays the same aqua with the same catchlight.
+Constraints: keep everything else pixel-identical: same framing, size, iris position and size, lashes, hair, clip, colors and flat cel style. Do not move, rescale or redraw anything else. Tears and redness drawn as flat cel shapes with hard edges, no glossy rendering.
+Background: the image is full-frame, keep it full-frame.

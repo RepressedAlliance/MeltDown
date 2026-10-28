@@ -1,0 +1,16 @@
+{
+ "name": "rin_serene",
+ "source": "rin_serene_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  14,
+  35,
+  1013,
+  1535
+ ],
+ "aligned_to": "rin_face_close",
+ "align_scale": 0.986
+}
