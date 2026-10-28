@@ -65,12 +65,13 @@ This is not a one-click MV template. It is the whole production of one film: fol
 | Note-level lyric alignment | Places every mora of a Vocaloid song on the 16th-note grid. A karaoke file timed by ear is the main reference; acoustic letter probabilities, onsets and the melody pin each one to its exact note | `src/analysis/` |
 | Lyric audits | Whole-song checks: characters inside held notes, lines that vanish while the voice continues, line starts against LRC files; a frame-by-frame simulation of how every line appears, leaves and is laid out | `src/tools/audit_lyrics.py`, `qc_lyrics.py` |
 | 2D character card shader | Makes a flat drawing sit in a 3D set: a thin rim light from pseudo-normals, a broad key-light gradient that never cuts a new shadow across the drawing, blink by image swap, hair that sways by weight, breathing | `src/blender/character.py` |
+| Seating a flat character | An upright card of a drawing touches the bed only at her toes. Sliding the bottom of the card back along the camera's rays leaves the picture unchanged but puts her seat on the quilt, in a hollow the mattress makes, with a contact shadow laid on the cloth | `seat_card` in `src/blender/bedding.py` |
 | Card integrity audit | Projects every opaque pixel of each card through the camera: what hides it, whether the drawing's own canvas edge shows on screen, how far it floats above the surface below | `src/tools/card_audit.py` |
 | Character processing | Generated art to layers: clean alpha, cel flattening, pseudo-normals, rim band, hair sway weights; widening a canvas that cuts a limb; restaging a replacement pose by its eyes | `src/char/` |
-| Procedural sets | A cloth-simulated quilt tucked over a body or spread for sitting, a plump pillow, the room, a city, a tokamak, a gear train | `src/blender/` |
+| Procedural sets | A low solid-wood bed (posts, rails, a slatted headboard), a cloth-simulated quilt tucked over a body or spread for sitting, a sewn and inflated pillow, the room, a city, a tokamak, a gear train | `src/blender/` |
 | Print-look compositing | AM halftone, spot inks, misregistration, paper, the chorus burn-through | `src/comp/printlook.py` |
 | Glyph typography | Japanese vertical setting from font outlines, per-character deformation and melting | `src/typo/glyphs.py`, `src/comp/typo_fx.py` |
-| Review tools | Labelled one-frame-per-second review sheets (no encoding, the whole film in minutes), frames around every cut, foreshortening checks, review sheets for a second reviewer model | `src/tools/` |
+| Review tools | Labelled one-frame-per-second review sheets (no encoding, the whole film in minutes), frames around every cut, a check that a drawing's canvas edge never shows on screen, foreshortening checks, review sheets for a second reviewer model | `src/tools/` |
 | Kagamine Rin assets | 27 poses as source images, processed layers and the prompts that made them | `assets/char/` |
 
 ## Frames
@@ -187,7 +188,7 @@ The film went through eight cuts. [docs/制作手记.md](docs/制作手记.md) (
 - **The "AI look" comes from hair, folds and soft light.** Generate one TV-anime model sheet first and use it as the reference for every pose; ask for 6–9 large hair locks, only the essential folds, strictly two-tone hard shading.
 - **Don't trust a beat tracker's BPM.** It reported 110; the song is a constant 165. A 16th-note grid fitted on the drum stem (±6 ms) carries every cut and effect.
 - **Lyrics follow how the singer actually sings.** A pickup word sung alone, a line split by a held note, a chorus tail in processed vocals: that is what listeners notice. A karaoke file timed by ear beat every automatic alignment, and our hand corrections from the spectrogram were wrong half the time.
-- **A flat character in a 3D set is staged shot by shot.** Check that the drawing's own canvas edge never shows on screen, that she never sinks into furniture, that cards are not seen at an angle, and that no code-made shadow is laid over the drawn one.
+- **A flat character in a 3D set is staged shot by shot.** Check that the drawing's own canvas edge never shows on screen, that she never sinks into furniture, that cards are not seen at an angle, and that no code-made shadow is laid over the drawn one. A drawing seen from above floats when it stands upright: slide its bottom back along the line of sight and she sits.
 - **Review matters more than rendering.** Find the class of every problem and fix it across the whole film, and have a second reviewer (another model, or another person) go through every shot.
 
 ## Credits
