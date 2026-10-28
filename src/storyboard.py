@@ -219,9 +219,11 @@ S("S23", lambda: L(13) - 0.15, scene="core", setup=dict(mood="blue"), finish=COR
   cam=dict(keys=[(0, ring_pos(0.0, R + 1.6, 0.5), ring_pos(0.35, R, 0.0), 20, -5),
                  (1, ring_pos(0.55, R + 1.6, 0.4), ring_pos(0.9, R, 0.0), 20, 8)], ease="linear",
            shake=(0.03, 0.4, 1.2)))
+# the floating shots (S24, S40, S59) drift in on her: the aim rises as the camera nears so her bow keeps
+# a margin under the top edge, ending on a frame cut below the knees
 S("S24", lambda: L(14) - 0.15, scene="core", setup=dict(mood="blue"), finish=COREB,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.5), ring_pos(0.16, R + 2.2, -0.0), 32, -6),
-                 (1, ring_pos(0.03, R + 2.5, 0.3), ring_pos(0.16, R + 2.2, -0.05), 36, -2)], fstop=2.0),
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.5), ring_pos(0.16, R + 2.2, 0.12), 30, -6),
+                 (1, ring_pos(0.03, R + 2.5, 0.3), ring_pos(0.16, R + 2.2, 0.22), 29, -2)], fstop=2.0),
   cards=[dict(pose="rin_float", h=1.7, loc=ring_pos(0.16, R + 2.2, -0.9), rot=(90, -10, 0), face_cam=True,
               props=dict(key_dir=(-0.7, 0.3, 0.6), key_col=(0.25, 0.5, 0.85), amb_col=(0.12, 0.18, 0.35),
                          rim_dir=(-0.9, 0.2, 0.0), rim_col=(0.55, 0.85, 1.0), exposure=1.0),
@@ -231,16 +233,20 @@ S("S25", lambda: L(15) - 0.15, scene="core", setup=dict(mood="blue", exterior=Tr
                  (1, (30, 30, 10), (0, 0, -1), 30)], ease="inout"),
   anim=dict(plasma=[(0, 0.8), (1, 1.4)]))
 S("S26", lambda: L(16) - 0.15, scene="core", setup=dict(mood="blue"), finish=COREB,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.0, -2.6), ring_pos(0.08, R + 1.6, 0.6), 24, 0),
-                 (1, ring_pos(0.02, R + 2.0, -2.4), ring_pos(0.08, R + 1.4, 0.9), 26, 10)], fstop=2.8),
+  # seen from below she fills the frame fast: the aim sits high and the camera creeps only half as far,
+  # so her raised hand and bow stay under the top edge
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.0, -2.6), ring_pos(0.08, R + 1.6, 1.1), 24, 0),
+                 (1, ring_pos(0.01, R + 2.0, -2.5), ring_pos(0.08, R + 1.4, 1.3), 23, 10)], fstop=2.8,
+           focus="card", focus_at=0.78),
   cards=[dict(pose="rin_float_reach", h=1.7, loc=ring_pos(0.08, R + 1.8, -1.3), rot=(90, 0, 0), face_cam="full",
               props=dict(key_dir=(0.0, 0.8, 0.5), key_col=(0.3, 0.6, 1.0), amb_col=(0.1, 0.16, 0.3),
                          rim_dir=(0, 1, 0), rim_col=(0.7, 0.9, 1.0), exposure=1.0))])
 S("S27", lambda: L(17) - 0.15, scene="core", setup=dict(mood="blue"), finish=COREB,
   cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.3), ring_pos(0.05, R + 2.3, 0.15), 70),
-                 (1, ring_pos(0.008, R + 2.38, 0.3), ring_pos(0.05, R + 2.3, 0.15), 80)], fstop=1.8),
+                 (1, ring_pos(0.008, R + 2.38, 0.3), ring_pos(0.05, R + 2.3, 0.15), 80)], fstop=1.8,
+           focus="card", focus_at=0.56),
   # the line about being forgiven: lids lowered, a faint smile (aligned to rin_face_close)
-  cards=[dict(pose="rin_serene", h=0.62, loc=ring_pos(0.05, R + 2.3, -0.2), rot=(90, 0, 0), face_cam="full",
+  cards=[dict(pose="rin_serene", h=0.62, loc=ring_pos(0.05, R + 2.3, -0.2), rot=(90, 0, 0), face_cam="screen",
               blink=True,
               props=dict(key_dir=(-0.8, 0.2, 0.5), key_col=(0.3, 0.55, 0.9), amb_col=(0.12, 0.17, 0.3),
                          rim_dir=(-1, 0.2, 0), rim_col=(0.6, 0.9, 1.0), exposure=1.0))])
@@ -323,8 +329,8 @@ S("S39", lambda: L(31) - 0.15, scene="core", setup=dict(mood="white"), finish=WH
                  (1, ring_pos(0.25, R + 1.6, 0.3), ring_pos(0.55, R, 0.0), 22)], ease="linear"))
 # on the beat before the line opens (the first-pass timeline put the cut two frames after its first word)
 S("S40", lambda: greet(32), free=True, scene="core", setup=dict(mood="white"), finish=WHITE,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.4), ring_pos(0.16, R + 2.2, 0.0), 32, 4),
-                 (1, ring_pos(0.03, R + 2.5, 0.2), ring_pos(0.16, R + 2.2, -0.05), 36, -3)], fstop=2.0),
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.4), ring_pos(0.16, R + 2.2, 0.13), 30, 4),
+                 (1, ring_pos(0.03, R + 2.5, 0.2), ring_pos(0.16, R + 2.2, 0.22), 29, -3)], fstop=2.0),
   # the line about memories melting into white: limp, head bowed, as if fainting into the light (the first
   # chorus had her open-armed, looking up)
   cards=[dict(pose="rin_float_limp", h=1.7, loc=ring_pos(0.16, R + 2.2, -0.9), rot=(90, 8, 0), face_cam=True,
@@ -455,7 +461,8 @@ S("S55", lambda: L(46) - 0.2, bg="chest_core", bg_args=dict(pose="rin_float", mo
   fx=[{"type": "zoom", "z": [(0, 1.05), (1, 1.25)]}, {"type": "heat", "amount": 2.5}])
 S("S56", lambda: L(47) - 0.2, scene="core", setup=dict(mood="blue"), finish=COREB,
   cam=dict(keys=[(0, ring_pos(0.0, R + 2.0, -2.6), ring_pos(0.08, R + 1.6, 0.6), 24, 0),
-                 (1, ring_pos(0.015, R + 2.0, -2.3), ring_pos(0.08, R + 1.4, 0.9), 26, -10)], fstop=2.8),
+                 (1, ring_pos(0.015, R + 2.0, -2.3), ring_pos(0.08, R + 1.4, 0.9), 26, -10)], fstop=2.8,
+           focus="card", focus_at=0.8),
   # the line about not being able to breathe: a hand pressed to her chest, head thrown back, mouth open
   cards=[dict(pose="rin_chest_clutch", h=1.7, loc=ring_pos(0.08, R + 1.8, -1.3), rot=(90, 0, 0), face_cam="full",
               props=dict(key_dir=(0.0, 0.8, 0.5), key_col=(0.4, 0.7, 1.0), amb_col=(0.12, 0.18, 0.32),
@@ -468,8 +475,8 @@ S("S58", 273.07, scene="core", setup=dict(mood="blue", exterior=True), finish=CO
   cam=dict(keys=[(0, (26, -30, 4), (0, 0, 0), 24), (1, (36, -14, 18), (0, 0, -1), 28)], shake=(0.1, 0.2, 1.0)),
   anim=dict(plasma=[(0, 2.0), (1, 2.6)]))
 S("S59", lambda: L(49) - 0.15, scene="core", setup=dict(mood="blue"), finish=COREB,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.5), ring_pos(0.16, R + 2.2, 0.0), 30, -4),
-                 (1, ring_pos(0.04, R + 2.5, 0.3), ring_pos(0.16, R + 2.2, -0.1), 34, 3)], fstop=2.0),
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.5), ring_pos(0.16, R + 2.2, 0.10), 29, -4),
+                 (1, ring_pos(0.04, R + 2.5, 0.3), ring_pos(0.16, R + 2.2, 0.24), 27, 3)], fstop=2.0),
   cards=[dict(pose="rin_float", h=1.7, loc=ring_pos(0.16, R + 2.2, -0.9), rot=(90, -6, 0), face_cam=True,
               props=dict(key_dir=(-0.7, 0.3, 0.6), key_col=(0.3, 0.55, 0.9), amb_col=(0.12, 0.18, 0.35),
                          rim_dir=(-0.9, 0.2, 0.0), rim_col=(0.6, 0.9, 1.0), exposure=1.0,

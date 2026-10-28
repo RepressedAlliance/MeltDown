@@ -63,7 +63,7 @@ def setup_camera(sc, shot, t0, dur, f0, f1):
         s = {"pos": p, "target": q, "roll": roll, "lens": sample_keys(lens_k, t)}
         if fstop:
             s["fstop"] = fstop
-            s["focus"] = (q - p).length if focus == "target" else float(focus)
+            s["focus"] = (q - p).length if focus in ("target", "card") else float(focus)
         return s
 
     # bake one frame before/after for motion blur continuity
@@ -92,7 +92,14 @@ def setup_cards(sc, shot, cam, f0, dur):
             from mathutils import Matrix
             ob.rotation_euler = (Matrix.Rotation(math.radians(spec["tilt"]), 3, "X") @
                                  ob.rotation_euler.to_matrix()).to_euler()
-        if spec.get("face_cam") == "full":
+        if spec.get("face_cam") == "screen":
+            # parallel to the image plane, the camera's up as its up: a close-up stays square-on and all of
+            # it sits at one depth, so a long lens wide open keeps the whole face in focus
+            ob.rotation_euler = (math.radians(-90), 0.0, 0.0)
+            c = ob.constraints.new("COPY_ROTATION")
+            c.target = cam
+            c.mix_mode = "BEFORE"
+        elif spec.get("face_cam") == "full":
             c = ob.constraints.new("DAMPED_TRACK")
             c.target = cam
             c.track_axis = "TRACK_NEGATIVE_Y"
@@ -176,6 +183,14 @@ def prepare(shot_id, preview=False, pct=None, samples=None):
     objs = mod.build_shot(sc, shot) if hasattr(mod, "build_shot") else mod.build(sc, **shot.get("setup", {}))
     cam = setup_camera(sc, shot, t0, dur, f0, f1)
     cards = setup_cards(sc, shot, cam, f0, dur)
+    if shot["cam"].get("focus") == "card" and cards:
+        # focus on her face, riding on the card: a card that turns to the camera tilts away from the aim
+        # point, and a long lens wide open has only a centimetre or two in focus
+        foc = bpy.data.objects.new("FocusPoint", None)
+        sc.collection.objects.link(foc)
+        foc.parent = cards[0]
+        foc.location = (0.0, 0.0, shot["cam"].get("focus_at", 0.75) * shot["cards"][0].get("h", 1.5))
+        cam.data.dof.focus_object = foc
     if hasattr(mod, "animate"):
         mod.animate(sc, objs, shot, f0, f1, cards=cards, cam=cam)
     if "comp_blender" in shot:
