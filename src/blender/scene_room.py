@@ -652,7 +652,7 @@ def crt_tv(coll, loc=(2.3, 0.3, 0.0)):
 
 
 def build(sc, time_of_day="night", lamp_on=None, city_plate=None, wind=0.0, seed=3, void=False, pillow_dent=None,
-          quilt=None, sun=None, sit=None):
+          quilt=None, sun=None, sit=None, rake=None):
     sun_opts = sun
     col = collection("Room")
     if void:
@@ -766,6 +766,8 @@ def build(sc, time_of_day="night", lamp_on=None, city_plate=None, wind=0.0, seed
     blo = link(bpy.data.objects.new("CityBounce", bl), col)
     blo.location = (W / 2, D + 1.0, 0.0)
     blo.rotation_euler = (math.radians(-60), 0, 0)
+    if rake:
+        bed_rake(col, **(rake if isinstance(rake, dict) else {}))
     if time_of_day in ("dusk", "morning"):
         sun = bpy.data.lights.new("Sun", "SUN")
         sun.color = sky[0]
@@ -802,6 +804,22 @@ def test_view(sc, opts):
     cam.location = pos
     cam.rotation_euler = look_rotation(pos, tgt)
     return cam
+
+
+def bed_rake(col, energy=8.0, color=(0.62, 0.72, 1.0), height=0.5, aim=1.0):
+    """Moonlight through the bottom of the window, grazing along the bed from its head: the folds of the
+    quilt and the pillow's swell get a lit side and a shaded side, which the print keeps (the big soft
+    window light alone leaves the bedding one flat tone)."""
+    from common import look_rotation
+    lt = bpy.data.lights.new("BedRake", "AREA")
+    lt.shape = "RECTANGLE"
+    lt.size, lt.size_y = 0.8, 0.3
+    lt.color, lt.energy = color, energy
+    lt.use_shadow = False                    # shading only: no extra shadow maps for Eevee's pool
+    ob = link(bpy.data.objects.new("BedRake", lt), col)
+    ob.location = ((MAT_X0 + MAT_X1) / 2, D - 0.3, MAT_TOP + height)     # clear of the drape
+    ob.rotation_euler = look_rotation(ob.location, Vector(((MAT_X0 + MAT_X1) / 2, aim, MAT_TOP)))
+    return ob
 
 
 def build_void(sc, col, city_plate=None, pillow_dent=None, quilt=None, sit=None):
@@ -890,7 +908,7 @@ def build_shot(sc, shot):
     objs = build(sc, time_of_day=tod, lamp_on=st.get("lamp"),
                  city_plate=st.get("plate", default_plate), wind=st.get("wind", 0.0), void=st.get("void", False),
                  pillow_dent=st.get("pillow_dent"), quilt=_quilt(st.get("quilt")), sun=st.get("sun"),
-                 sit=_sit(shot))
+                 sit=_sit(shot), rake=st.get("rake"))
     for nm in st.get("hide", []):
         ob = bpy.data.objects.get(nm)
         if ob:

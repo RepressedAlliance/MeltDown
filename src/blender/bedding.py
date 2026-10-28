@@ -25,7 +25,7 @@ from common import ROOT, assign, link, node_tree
 
 CACHE = ROOT / "work" / "cache" / "bedding"
 CHAR = ROOT / "assets" / "char"
-VERSION = 19          # bump when the simulation or the shapes change, so stale caches are not reused
+VERSION = 20          # bump when the simulation or the shapes change, so stale caches are not reused
 
 
 # ---------------------------------------------------------------- her drawing, placed as a card
@@ -156,6 +156,8 @@ def quilt_rest(bed, edge, field=None, res=0.025, over=(0.03, 0.3, 0.26), lift=0.
     ol, orr, of = over
     wander = _waves(seed, n=3, amp=0.025, lam=(0.35, 0.8))
     lump = _waves(seed + 5, n=6, amp=0.008, lam=(0.15, 0.45))
+    # the hanging sides start in loose vertical waves, so they settle into folds instead of a flat wall
+    fold = _waves(seed + 11, n=4, amp=0.028, lam=(0.16, 0.36))
     u0, u1 = -ol, (mx1 - mx0) + orr
     va, vb = -of, (edge - my0)
     nu, nv = int((u1 - u0) / res), int((vb - va) / res)
@@ -186,6 +188,13 @@ def quilt_rest(bed, edge, field=None, res=0.025, over=(0.03, 0.3, 0.26), lift=0.
             x = mx1 + dx if xf > mx1 else (mx0 - dx if xf < mx0 else xf)
             y = my0 - dy if yf < my0 else yf
             drop = max(dzx, dzy)
+            hang = min(1.0, max(0.0, (drop - 0.02) / 0.12))
+            if xf > mx1:
+                x += fold(0.0, yf) * hang
+            elif xf < mx0:
+                x -= fold(0.0, yf) * hang
+            if yf < my0:
+                y -= fold(xf, 0.0) * hang
             z = ground(min(max(xf, mx0), mx1), max(yf, my0)) + lift + lump(xf, yf) * (1 - min(1, drop / 0.05)) - drop
             verts.append((x, y, z))
             uvs.append((u / 0.04, v / 0.04))
@@ -423,8 +432,11 @@ def dress_quilt(ob, mat, thick=0.04):
 
 # ---------------------------------------------------------------- materials
 
-def gingham_mat(name, base=(0.93, 0.91, 0.85), ink=(0.93, 0.78, 0.34), cell=1.0, rough=0.85, sheen=0.5):
-    """Quilt cover in a soft gingham (her yellow), in UV cells: the check follows every fold."""
+def gingham_mat(name, base=(0.93, 0.9, 0.82), ink=(0.74, 0.47, 0.08), cell=2.0, rough=0.85, sheen=0.5):
+    """Quilt cover in a gingham of her yellow, in UV cells: the check follows every fold. The print
+    (src/comp/printlook.py) has to carry it: 4 cm checks in a deep ochre against cream read as darker
+    dots even where the blue night light washes their colour out; finer or paler checks fell between
+    the halftone dots and below the yellow ink's threshold, and the quilt printed as a flat grey slab."""
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     nt = m.node_tree
