@@ -39,6 +39,8 @@ SLEEP_QUILT = dict(mode="tucked", edge=2.01, body=dict(pose="rin_sleep", h=0.85,
 # and fill the room the way white walls do in daylight (the backs of the folds go grey without it)
 BED_SUN = dict(elev=40, angle=6.0, energy=0.45)
 MORNING_FILL = (0.42, 0.36, 0.3)
+# seen from straight above, the drape over the bed head is only a stack of grey blades at the frame edge
+OVERHEAD_HIDE = ["DrapeL"]
 # lying on her back (S09, S54): the quilt up to her hips, her hands on her stomach above it
 LIE_UP = dict(h=1.45, loc=(0.55, 1.024, 0.42), rot=(0, 0, 0), tilt=4.0, contact=dict(kind="lie"))
 LIE_QUILT = dict(mode="tucked", edge=1.83, body=dict(pose="rin_lie_up", h=1.45, loc=(0.55, 1.024, 0.42),
@@ -105,7 +107,8 @@ S("S08", 22.7, scene="core", setup=dict(mood="blue", exterior=True), finish=CORE
   tail=0.6,
   cam=dict(keys=[(0, (40, -26, 6), (0, 0, -1), 35), (1, (30, -38, 14), (0, 0, -1), 35)], ease="linear"),
   anim=dict(plasma=[(0, 0.35), (1, 0.6)]))
-S("S09", 26.0, scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.03, 0.12, 0.035), quilt=LIE_QUILT),
+S("S09", 26.0, scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.03, 0.12, 0.035), quilt=LIE_QUILT,
+                                         hide=OVERHEAD_HIDE),
   finish=NIGHT, render=dict(exposure=-1.8), in_="dissolve", in_dur=0.6, tail=0.6,
   cam=dict(keys=[(0, (0.55, 1.95, 1.92), (0.551, 1.95, 0.4), 35, 0), (1, (0.55, 1.95, 2.06), (0.551, 1.95, 0.4), 32, 14)],
            ease="linear"),
@@ -262,6 +265,7 @@ S("S31", lambda: L(19) - 0.2, scene="dusk", setup=dict(place="stairs"), finish=D
 # drains from her face over the line. Exactly the framing of the last morning (S65b), where she lies there
 # asleep; she blinks with the sleeping drawing (color_blink = rin_sleep). Staged as SLEEP_ON_BED (below).
 S("S32", lambda: L(20) - 0.2, scene="room", setup=dict(tod="dusk", pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT,
+                                                       hide=OVERHEAD_HIDE,
                                                        sun=dict(elev=30, angle=6.0, energy=0.6),
                                                        world=(0.38, 0.24, 0.2)), finish=DUSK,
   cam=dict(keys=[(0, (0.62, 2.24, 1.6), (0.621, 2.24, 0.47), 30, 0), (1, (0.62, 2.25, 1.58), (0.621, 2.25, 0.47), 31, 3)],
@@ -499,13 +503,15 @@ S("S64", lambda: greet(54), free=True, scene="dusk", setup=dict(place="balcony",
 FLAT_MORNING = dict(key_dir=(0.3, 0.7, 0.6), key_col=(0.0, 0.0, 0.0), amb_col=(1.04, 0.98, 0.92),
                     rim_dir=(0, 1, 0), rim_col=(0.0, 0.0, 0.0), exposure=1.0)
 # the whole bed from above, the morning sun across it; the camera sinks a little and turns level
-S("S65", 301.45, scene="room", setup=dict(tod="morning", wind=0.35, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT, sun=BED_SUN, world=MORNING_FILL), finish=DAWN,
+S("S65", 301.45, scene="room", setup=dict(tod="morning", wind=0.35, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT, sun=BED_SUN,
+                                         world=MORNING_FILL, hide=OVERHEAD_HIDE), finish=DAWN,
   hud=dict(level=1, alpha=0.75), render=dict(exposure=-0.7),
   cam=dict(keys=[(0, (0.62, 1.7, 1.98), (0.621, 1.7, 0.45), 24, -10), (1, (0.62, 1.8, 1.82), (0.621, 1.8, 0.45), 26, 0)],
            ease="inout"),
   cards=[dict(pose="rin_sleep", **SLEEP_ON_BED, props=dict(FLAT_MORNING))])
 # closer, her face on the pillow (the framing of the dusk S32)
-S("S65b", 309.6, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT, sun=BED_SUN, world=MORNING_FILL), finish=DAWN,
+S("S65b", 309.6, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT, sun=BED_SUN,
+                                          world=MORNING_FILL, hide=OVERHEAD_HIDE), finish=DAWN,
   hud=dict(level=1, alpha=0.85),
   cam=dict(keys=[(0, (0.62, 2.24, 1.6), (0.621, 2.24, 0.47), 30, 0), (1, (0.62, 2.25, 1.58), (0.621, 2.25, 0.47), 31, 3)],
            fstop=8.0),
@@ -516,7 +522,7 @@ S("S65b", 309.6, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent=
 # her as the song rings out, and the film goes to black with the silence. The card lies flat on the
 # pillow, sized so her eyes are the same distance apart as in the other close-ups.
 S("S65c", 316.73, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT,
-                                           sun=BED_SUN, world=MORNING_FILL),
+                                           sun=BED_SUN, world=MORNING_FILL, hide=OVERHEAD_HIDE),
   finish=DAWN,
   render=dict(exposure=-0.5, samples=64),
   cam=dict(keys=[(0, (0.575, 2.38, 1.11), (0.575, 2.40, 0.51), 55, -3),
