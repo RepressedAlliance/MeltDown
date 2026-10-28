@@ -503,15 +503,34 @@ def bright_behind(bg, lo=0.49, hi=0.57):
     return cv2.resize(k, (W, H), interpolation=cv2.INTER_LINEAR)[..., None]
 
 
-def adapt_type(lay, k, light, dark, mode="flip"):
+def line_ink(alpha, bg, lo=0.4, hi=0.6):
+    """Which ink each lyric line takes in "flip" mode, decided once per line: its glyphs are merged into one
+    blob and the picture's mean brightness under the blob picks dark or light ink for all of it. A choice
+    made pixel by pixel split a line that crossed a light/dark edge into dark and light pieces."""
+    small = cv2.resize(alpha, (W // 4, H // 4), interpolation=cv2.INTER_AREA)
+    m = (small > 0.02).astype(np.uint8)
+    k = np.zeros((H // 4, W // 4), np.float32)
+    if m.any():
+        n, lab = cv2.connectedComponents(cv2.dilate(m, np.ones((15, 15), np.uint8)))
+        lum = cv2.resize(np.clip(bg, 0, 1), (W // 4, H // 4), interpolation=cv2.INTER_AREA) @ _LUMA
+        for i in range(1, n):
+            sel = lab == i
+            v = min(1.0, max(0.0, (float(lum[sel].mean()) - lo) / (hi - lo)))
+            k[sel] = v * v * (3 - 2 * v)
+    return cv2.resize(k, (W, H), interpolation=cv2.INTER_NEAREST)[..., None]
+
+
+def adapt_type(lay, k, light, dark, mode="flip", plate=0.9):
     """Light type over bright picture: 'flip' prints it in the dark ink (its dark halo turns to paper);
     'plate' keeps it light on a soft dark-ink cloud. Saturated accents keep their colour.
     Returns (premultiplied rgb, alpha, glow source)."""
     rgb, a = lay[..., :3], lay[..., 3:4]
     lt, dk = np.array(light, np.float32), np.array(dark, np.float32)
     if mode == "plate":
-        cloud = cv2.GaussianBlur(cv2.dilate(lay[..., 3], np.ones((9, 9), np.uint8)), (0, 0), 9)[..., None]
-        p = ev("where(c * k * q > 1, 1, c * k * q)", c=cloud, k=k, q=0.9)
+        # plate > 1 spreads the cloud wider as well as darker, for type over busy, bright pictures
+        r = 9 if plate <= 1 else 15
+        cloud = cv2.GaussianBlur(cv2.dilate(lay[..., 3], np.ones((r, r), np.uint8)), (0, 0), r)[..., None]
+        p = ev("where(c * k * q > 1, 1, c * k * q)", c=cloud, k=k, q=min(1.0, plate))
         out = ev("(1 - a) * p * dk + rgb * lt", a=a, p=p, dk=dk, rgb=rgb, lt=lt)
         alpha = ev("a + p * (1 - a)", a=a, p=p)
         return out, alpha, rgb * lt
@@ -790,7 +809,8 @@ def render_frame(shots, f, preview, raw=False):
     # so a line crossing a lit window or a white bow never splits into dark and light halves; on the white
     # pages (dream room, white chorus) the type turns to the dark ink instead ("flip")
     mode = shot.get("type_mode") or ("flip" if shot.get("ink") in ("white", "dream") else "plate")
-    a_rgb, a_alpha, a_glow = adapt_type(lay_a, bright_behind(img), tint, dark, mode)
+    behind = line_ink(lay_a[..., 3], img) if mode == "flip" else bright_behind(img)
+    a_rgb, a_alpha, a_glow = adapt_type(lay_a, behind, tint, dark, mode, plate=shot.get("plate", 0.9))
     sec = current_section(t)
     g_str, g_col = SECTION_GLOW.get(sec, (0.4, (0.55, 0.75, 1.0)))
     gcol = np.array(shot.get("glow_col", g_col), np.float32)
