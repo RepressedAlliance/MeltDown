@@ -377,8 +377,9 @@ S("S44", 186.0, scene="room", setup=dict(tod="night", lamp=False), finish=MONO, 
             crt_static=[(0, 1.0), (0.04, 1.0), (0.32, 0.2), (1, 0.2)]))
 # the singing speeds up through the bridge, so does the cutting: TV, Rin and the clock intercut on the
 # bars, then on the beats, into the wall of TVs. Inserts re-frame frames already rendered for S43-S44.
+# a decisive punch-in on the screen (a 1.3x step on the same axis read as a jump cut)
 S("S44b", 190.36, frames_from=dict(id="S44", at=4.4), finish=MONO,
-  fx=[{"type": "zoom", "z": [(0, 1.22), (1, 1.4)], "cy": 20}])
+  fx=[{"type": "zoom", "z": [(0, 1.7), (1, 1.85)], "cy": 30}])
 # reverse shot: the real Rin on the bed, chin on her knees, watching herself smile on the screen. Shot from
 # beside the TV (behind the camera), so only the flicker of its light reaches her; the card stands where
 # her head is in S43c, sized like the other close-ups (aligned to rin_face_close)
@@ -399,9 +400,10 @@ S("S45c", 201.07, frames_from=dict(id="S43", at=4.0), finish=MONO,
 S("S45d", 203.09, bg="static", bg_args=dict(signal=0.35, pose="rin_laugh"), finish=MONO,
   fx=[{"type": "strobe", "amount": 0.3}])
 S("S45e", 204.18, frames_from=dict(id="S44", at=7.0), finish=MONO,
-  fx=[{"type": "zoom", "z": [(0, 1.55), (1, 1.7)], "cy": 20}])
-S("S45f", 205.28, frames_from=dict(id="S44c", at=1.5), finish=MONO,
-  fx=[{"type": "zoom", "z": [(0, 1.12), (1, 1.18)], "cy": -40}, {"type": "tvflicker"}])
+  # the push is centred near the top of her bow, so the bow stays in and the frame grows downward
+  fx=[{"type": "zoom", "z": [(0, 1.4), (1, 1.5)], "cy": -380}])
+S("S45f", 205.28, frames_from=dict(id="S44c", at=0.3), finish=MONO,
+  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.04)], "cy": -480}, {"type": "tvflicker"}])
 S("S45g", 205.83, frames_from=dict(id="S12", at=1.2), finish=MONO,
   fx=[{"type": "zoom", "z": [(0, 1.15), (1, 1.2)]}])
 S("S45b", 206.37, bg="tv_wall", finish=MONO,
@@ -582,7 +584,8 @@ LYRIC_STYLES[17] = dict(style="impact", x=960, y=905, size=64, face="mincho_b", 
 # long lines start higher so they keep most of their size inside the frame (14 / 16 characters)
 LYRIC_STYLES[32] = dict(style="tate", x=1660, y=70, size=84, face="mincho_b", attack=0.3, color=(1, 1, 1))
 # light type (it flips to the key ink where the core whites out): the grey frame swallowed dark ink
-LYRIC_STYLES[35] = dict(style="impact", x=960, y=800, size=64, face="mincho_b", overshoot=0.1, slam=0.5,
+# under the reactor on the open page, not inside its glowing lower half
+LYRIC_STYLES[35] = dict(style="impact", x=960, y=1000, size=64, face="mincho_b", overshoot=0.1, slam=0.5,
                         color=(0.97, 0.98, 1.0))
 LYRIC_STYLES.update(_tate_cols([18, 19], 1720, 96, size=58, color=(1.0, 0.86, 0.78)))
 LYRIC_STYLES.update(_tate_cols([20, 21], 326, 96, size=58, color=(1.0, 0.86, 0.78)))
@@ -623,7 +626,9 @@ DESIGN = {
     "S21": dict(marks=True, glow=0.0, stamps=[dict(text="臨界", x=1400, y=560, size=300, at=0.12)]),
     "S23": dict(in_="iris", in_dur=0.35),
     # small mincho over a mid-tone face: keep the type light on a soft dark-ink plate
-    "S27": dict(type_mode="plate"),
+    # her face fills the frame: a soft shade along the bottom lets the light line read over her chin
+    "S27": dict(type_mode="plate", fx=[{"type": "darken", "rect": (240, 850, 1680, 1080), "feather": 140,
+                                         "amount": 0.4}]),
     "S28": dict(marks=True),
     "S38": dict(in_="iris", in_dur=0.4),
     "S50": dict(marks=True),
@@ -633,6 +638,8 @@ DESIGN = {
 for _s in SHOTS:
     for _k, _v in DESIGN.get(_s["id"], {}).items():
         _s[_k] = _v
+for _sid in ("S45e", "S45f", "S45g", "S45b"):
+    next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.4
 # the TV caption sits low on the left, where a broadcast puts it: clear of her hands (S44c), the host's
 # face and waving hand (S45) and most of the clock (S44d)
 LYRIC_STYLES[37] = dict(style="telop", x=110, y=952, w=760, size=44, tail=1.5)
@@ -647,8 +654,10 @@ for _s in SHOTS:
         if _s["id"] in SWAY:
             _c.setdefault("props", {})["sway"] = SWAY[_s["id"]]
 # in the blue reactor her black boots print as the same ink as the dark behind them: a thin cool line all
-# round her keeps the silhouette whole (character.py, outline_col)
-OUTLINE = {"S24": (0.3, 0.5, 0.8), "S26": (0.3, 0.5, 0.8), "S56": (0.3, 0.5, 0.8), "S59": (0.3, 0.5, 0.8)}
+# round her keeps the silhouette whole (character.py, outline_col); at dusk a warm one parts her legs from
+# the dark city below the balcony
+OUTLINE = {"S24": (0.3, 0.5, 0.8), "S26": (0.3, 0.5, 0.8), "S56": (0.3, 0.5, 0.8), "S59": (0.3, 0.5, 0.8),
+           "S30": (0.5, 0.3, 0.2)}
 for _s in SHOTS:
     for _c in _s.get("cards", []):
         if _s["id"] in OUTLINE:
@@ -659,7 +668,7 @@ for _s in SHOTS:
 THERMAL = {
     "S20": dict(fx=[{"type": "rgbsplit", "px": [(0, 0.0), (0.6, 2.0), (1, 16.0)]}],
                 lyric_glitch=[(0, 0.0), (0.7, 0.0), (1, 1.0)]),
-    "S49": dict(fx=[{"type": "rgbsplit", "px": [(0, 1.0), (1, 7.0)]}], lyric_glitch=[(0, 0.2), (1, 1.0)]),
+    "S49": dict(lyric_glitch=[(0, 0.2), (1, 0.6)]),
     "S56": dict(fx=[{"type": "rgbsplit", "px": [(0, 0.0), (0.7, 2.0), (1, 8.0)]}],
                 lyric_glitch=[(0, 0.0), (0.75, 0.0), (1, 0.8)]),
     "S57": dict(lyric_glitch=[(0, 0.3), (1, 0.9)]),

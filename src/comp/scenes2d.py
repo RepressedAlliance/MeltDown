@@ -259,11 +259,12 @@ def static(t, u, **kw):
     roll = ((yy / H + t * 0.3) % 1.0)
     bar = 1.0 + 0.5 * np.exp(-((roll - 0.5) / 0.06) ** 2)
     g = _signal(t, base=kw.get("signal", 0.55))
-    # the picture sits inside a margin of snow, so the host's bow and waving hand are never cut by the frame
+    # snow above and beside the picture keeps the host's bow and waving hand inside the frame; the bust's
+    # bottom edge stays on the frame's bottom edge (inside the frame it would show as a straight cut)
     pw, ph = 1300, 975
     pic = rin_picture(kw.get("pose", "rin_tv_host"), pw, ph)
     full = np.zeros((H, W), np.float32)
-    x0, y0 = (W - pw) // 2, (H - ph) // 2
+    x0, y0 = (W - pw) // 2, H - ph
     full[y0:y0 + ph, x0:x0 + pw] = pic
     # weak signal: the picture tears sideways in bands
     if g < 0.6:
@@ -339,8 +340,9 @@ def score(t, u, mode="calm", **kw):
 # ---------------------------------------------------------------- tinnitus
 
 def tinnitus(t, u, pose="rin_ears_covered", close=False, **kw):
-    base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=1.25 if not close else 1.7,
-                cx=W * 0.68, cy=H * (0.62 if not close else 0.78),
+    # sized so her bow and elbows stay inside the frame
+    base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=1.15 if not close else 1.45,
+                cx=W * (0.68 if not close else 0.6), cy=H * (0.64 if not close else 0.8),
                 duotone=((0.03, 0.0, 0.01), (1.0, 0.16, 0.12)))
     s = surface()
     c = s.getCanvas()
