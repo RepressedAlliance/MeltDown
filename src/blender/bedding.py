@@ -23,7 +23,7 @@ from common import ROOT, assign, link, node_tree
 
 CACHE = ROOT / "work" / "cache" / "bedding"
 CHAR = ROOT / "assets" / "char"
-VERSION = 16          # bump when the simulation or the shapes change, so stale caches are not reused
+VERSION = 18          # bump when the simulation or the shapes change, so stale caches are not reused
 
 
 # ---------------------------------------------------------------- her drawing, placed as a card
@@ -300,6 +300,103 @@ def simulate_quilt(coll, colliders, bed, edge, field=None, frames=45, seed=4, na
     return ob
 
 
+def simulate_pillow(coll, mattress, center, top, half=(0.31, 0.21), head=None, pressure=6.5, frames=60,
+                    name="Pillow"):
+    """A pillow the way one is made: two layers of a case sewn at the edges and inflated by the cloth
+    solver's pressure, so it puffs up, pinches at the seam and creases. head = (x, y): a head comes down
+    on it there and leaves its hollow and the creases around it. Cached like the quilt."""
+    a, b = half
+    nx, ny = 31, 21
+    cx, cy = center
+    z0 = top + 0.03
+    verts, faces = [], []
+    for dz in (0.012, -0.012):
+        for j in range(ny + 1):
+            for i in range(nx + 1):
+                verts.append((cx - a + 2 * a * i / nx, cy - b + 2 * b * j / ny, z0 + dz))
+    row, n1 = nx + 1, (nx + 1) * (ny + 1)
+    for j in range(ny):
+        for i in range(nx):
+            q = (j * row + i, j * row + i + 1, (j + 1) * row + i + 1, (j + 1) * row + i)
+            faces.append(q)
+            faces.append(tuple(v + n1 for v in q[::-1]))
+    border = ([(0, i) for i in range(nx)] + [(j, nx) for j in range(ny)] +
+              [(ny, i) for i in range(nx, 0, -1)] + [(j, 0) for j in range(ny, 0, -1)])
+    for k in range(len(border)):
+        (j0, i0), (j1, i1) = border[k], border[(k + 1) % len(border)]
+        a0, a1 = j0 * row + i0, j1 * row + i1
+        faces.append((a0, a1, a1 + n1, a0 + n1))          # the seam
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(verts, [], faces)
+    me.update()
+    ob = bpy.data.objects.new(name, me)
+    link(ob, coll)
+    key = _cache_key(kind="pillow", center=center, top=top, half=half, head=head, pressure=pressure, frames=frames)
+    path = CACHE / f"pillow_{key}.npy"
+    if path.exists():
+        me.vertices.foreach_set("co", np.load(path).ravel())
+        me.update()
+        return ob
+    sc = bpy.context.scene
+    temp, added = [], []
+    if not any(m.type == "COLLISION" for m in mattress.modifiers):
+        mattress.modifiers.new("Collision", "COLLISION")
+        added.append(mattress)
+    mattress.collision.thickness_outer = 0.004
+    if head is not None:
+        from common import add_prim
+        hd = add_prim("sphere", "PillowHead", coll, seg=32, rings=16, r=0.11)
+        hd.scale = (1.0, 0.85, 0.75)
+        hd.location = (head[0], head[1], z0 + 0.35)
+        hd.keyframe_insert("location", frame=1)
+        hd.keyframe_insert("location", frame=28)
+        hd.location = (head[0], head[1], z0 + 0.07)
+        hd.keyframe_insert("location", frame=46)
+        hd.modifiers.new("Collision", "COLLISION")
+        hd.collision.thickness_outer = 0.004
+        temp.append(hd)
+    cl = ob.modifiers.new("Cloth", "CLOTH")
+    st = cl.settings
+    st.quality = 10
+    st.mass = 0.15
+    st.air_damping = 2.0
+    st.tension_stiffness = st.compression_stiffness = 25.0
+    st.shear_stiffness = 10.0
+    st.bending_stiffness = 0.6
+    st.use_pressure = True
+    st.uniform_pressure_force = pressure
+    cs = cl.collision_settings
+    cs.distance_min = 0.004
+    cs.use_self_collision = True
+    cs.self_distance_min = 0.004
+    cl.point_cache.frame_start, cl.point_cache.frame_end = 1, frames
+    keep, fs, fe = sc.frame_current, sc.frame_start, sc.frame_end
+    sc.frame_start, sc.frame_end = 1, frames
+    for f in range(1, frames + 1):
+        sc.frame_set(f)
+    ev = ob.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
+    co = np.empty(len(ev.vertices) * 3, np.float32)
+    ev.vertices.foreach_get("co", co)
+    ob.modifiers.remove(cl)
+    for t in temp:
+        bpy.data.objects.remove(t, do_unlink=True)
+    for c in added:
+        for md in [md for md in c.modifiers if md.type == "COLLISION"]:
+            c.modifiers.remove(md)
+    sc.frame_start, sc.frame_end = fs, fe
+    sc.frame_set(keep)
+    c3 = co.reshape(-1, 3)
+    if not np.isfinite(c3).all() or c3[:, 2].max() > top + 0.3 or c3[:, 2].min() < top - 0.05:
+        print("PILLOW_SIM_DIVERGED")
+        return ob
+    me.vertices.foreach_set("co", co)
+    me.update()
+    CACHE.mkdir(parents=True, exist_ok=True)
+    np.save(path, c3)
+    print("PILLOW_SIM_OK")
+    return ob
+
+
 def dress_quilt(ob, mat, thick=0.04):
     so = ob.modifiers.new("Thick", "SOLIDIFY")
     so.thickness, so.offset = thick, 0.0
@@ -417,13 +514,17 @@ def _shadow_material(name, image=None, strength=0.45, falloff=None):
     return m
 
 
-def lying_shadow(card, pose, blur=0.018, strength=0.42, depth=0.008, shift=(0.012, -0.012)):
-    """A soft copy of her silhouette just under a card that lies on the bed (the light is mostly
-    from above, so it hugs her outline), parented to the card so it breathes with it."""
-    a = alpha_grid(pose)
-    hh, ww = a.shape
-    sig = blur / card.dimensions.z * hh if card.dimensions.z > 0 else 2.0
-    a = np.clip(_blur(a, max(1.0, sig)), 0, 1)
+def lying_shadow(card, pose, blur=0.01, strength=0.55, cast=0.04, cast_strength=0.3, depth=0.008,
+                 shift=(0.012, -0.012)):
+    """Under a card that lies on the bed: a tight dark contact line hugging her outline (where hair,
+    elbow and hip press on the sheet) plus a wider, fainter cast shadow, as one texture on a copy of the
+    card just beneath it, parented to the card so it breathes with it."""
+    a0 = alpha_grid(pose)
+    hh, ww = a0.shape
+    rows_per_m = hh / card.dimensions.z if card.dimensions.z > 0 else 1000.0
+    a = (strength * _blur(a0, max(1.0, blur * rows_per_m)) +
+         cast_strength * _blur(a0, max(1.0, cast * rows_per_m)))
+    a = np.clip(a, 0, 1)
     img = bpy.data.images.new(f"{pose}_contact", ww, hh, alpha=True)
     img.colorspace_settings.name = "Non-Color"
     rgba = np.ones((hh, ww, 4), np.float32)
@@ -431,7 +532,7 @@ def lying_shadow(card, pose, blur=0.018, strength=0.42, depth=0.008, shift=(0.01
     img.pixels.foreach_set(rgba.ravel())
     me = card.data.copy()
     me.materials.clear()
-    me.materials.append(_shadow_material(f"Contact_{pose}", image=img, strength=strength))
+    me.materials.append(_shadow_material(f"Contact_{pose}", image=img, strength=1.0))
     sh = bpy.data.objects.new(card.name + "_contact", me)
     for c in card.users_collection:
         c.objects.link(sh)
@@ -442,14 +543,14 @@ def lying_shadow(card, pose, blur=0.018, strength=0.42, depth=0.008, shift=(0.01
     return sh
 
 
-def sitting_blot(card, surface_z, size=(0.62, 0.5), strength=0.5, shift=(0.0, -0.05)):
+def sitting_blot(card, surface_z, size=(0.62, 0.5), strength=0.5, shift=(0.0, -0.05), falloff=(0.05, 0.45)):
     """Where she sits the cloth is pressed and shaded: a soft blot on the surface under her."""
     from common import add_prim
     coll = card.users_collection[0]
     pl = add_prim("plane", card.name + "_blot", coll)
     pl.scale = (size[0], size[1], 1)
     pl.location = (card.location.x + shift[0], card.location.y + shift[1], surface_z + 0.004)
-    assign(pl, _shadow_material(card.name + "_blotmat", strength=strength, falloff=(0.08, 0.5)))
+    assign(pl, _shadow_material(card.name + "_blotmat", strength=strength, falloff=falloff))
     pl.visible_shadow = False
     return pl
 

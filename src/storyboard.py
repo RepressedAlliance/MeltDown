@@ -32,7 +32,7 @@ VOID = dict(grade=dict(lift=(0.0, 0.0, 0.006), gain=(0.82, 0.88, 1.0), sat=0.75,
 # soft copy of her silhouette under the card grounds her on the sheet.
 SLEEP_ON_BED = dict(h=0.85, loc=(0.107, 1.911, 0.475), rot=(0, 0, -90), tilt=4.0, motion="breath",
                     contact=dict(kind="lie"))
-SLEEP_DENT = (0.2, -0.02, 0.12, 0.035)       # the hollow her head makes in the pillow (pillow-local x, y, r, depth)
+SLEEP_DENT = (0.11, -0.04, 0.12, 0.035)      # where her head presses the pillow (offset from its centre, x, y)
 SLEEP_QUILT = dict(mode="tucked", edge=2.01, body=dict(pose="rin_sleep", h=0.85, loc=(0.107, 1.911, 0.475),
                                                      rot=(0, 0, -90), tilt=4.0))
 # a sun low over the bed drags long dark shadows behind every fold of the quilt: lift it and soften it,
@@ -86,14 +86,14 @@ S("S03", 9.6, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.4,
 S("S04", 11.8, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.5,
   cam=dict(keys=[(0, (-760, 115, 22), (-460, 115.5, 26), 22), (1, (-520, 115, 30), (-230, 117, 75), 22)],
            ease="linear", shake=(0.12, 0.25, 1.5)))
-S("S05", 13.82, scene="room", setup=dict(tod="night"), finish=NIGHT, in_="zoom", in_dur=0.5, tail=0.5,
+S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200"), finish=NIGHT, in_="zoom", in_dur=0.5, tail=0.5,
   cam=dict(keys=[(0, (3.2, 0.35, 1.25), (0.8, 2.3, 0.85), 24), (1, (2.85, 0.7, 1.15), (0.75, 2.25, 0.8), 26)],
            fstop=4.0),
   # she sits in the middle of the bed facing the window, clear of the pillow; the card turns to the camera
   cards=[dict(pose="rin_sit_knees", h=1.05, loc=(0.6, 1.45, 0.38), rot=(90, 0, 90), face_cam=True,
               contact=SIT,
-              props=dict(key_dir=(0.6, 0.3, 0.5), key_col=(0.25, 0.32, 0.5), amb_col=(0.12, 0.14, 0.22),
-                         rim_dir=(0.9, 0.2, 0), rim_col=(0.9, 0.6, 0.35), exposure=1.0))])
+              props=dict(key_dir=(0.8, 0.25, 0.4), key_col=(0.42, 0.52, 0.8), amb_col=(0.08, 0.09, 0.15),
+                         rim_dir=(0.9, 0.2, 0), rim_col=(0.7, 0.82, 1.2), exposure=1.0))])
 S("S06", 16.0, scene="city", finish=NIGHT, in_="dissolve", in_dur=0.5, tail=0.5,
   cam=dict(keys=[(0, (480, -760, 40), (900, -1150, 30), 50), (1, (520, -800, 140), (900, -1150, 45), 45)],
            shake=(0.3, 0.05, 0.5)), hud=dict(level=1, alpha=0.8))
@@ -264,8 +264,8 @@ S("S31", lambda: L(19) - 0.2, scene="dusk", setup=dict(place="stairs"), finish=D
 S("S32", lambda: L(20) - 0.2, scene="room", setup=dict(tod="dusk", pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT,
                                                        sun=dict(elev=30, angle=6.0, energy=0.6),
                                                        world=(0.38, 0.24, 0.2)), finish=DUSK,
-  cam=dict(keys=[(0, (0.62, 2.24, 1.6), (0.621, 2.24, 0.47), 30, 0), (1, (0.62, 2.26, 1.52), (0.621, 2.26, 0.47), 32, 3)],
-           fstop=4.0),
+  cam=dict(keys=[(0, (0.62, 2.24, 1.6), (0.621, 2.24, 0.47), 30, 0), (1, (0.62, 2.25, 1.58), (0.621, 2.25, 0.47), 31, 3)],
+           fstop=8.0),
   render=dict(samples=64),
   cards=[dict(pose="rin_sleep_awake", **SLEEP_ON_BED, blink=True,
               props=dict(key_dir=(0.3, 0.7, 0.6), key_col=(0.0, 0.0, 0.0), amb_col=(1.12, 0.68, 0.55),
@@ -287,13 +287,15 @@ S("S34", lambda: L(24) - 0.2, scene="dusk", setup=dict(place="balcony", lights=0
   cam=dict(keys=[(0, (1499.0, 901.5, 152.0), (300, -900, 80), 50), (1, (1499.0, 901.5, 152.0), (300, -900, 70), 55)]))
 
 # ================================================================ B2 (blue hour, curtains, bubbles)
-S("S35", lambda: L(26) - 0.2, scene="room", setup=dict(tod="night", wind=1.2), finish=NIGHT,
+S("S35", lambda: L(26) - 0.2, scene="room", setup=dict(tod="night", wind=1.2, hide=[
+    "Lace", "DeskTop", "DeskLeg", "DeskLeg.001", "DeskLeg.002", "DeskLeg.003", "DeskClock", "DeskClockDisplay",
+    "Lighter", "Glass"]), finish=NIGHT,
   # the camera sits far enough left that the reactor ring stays inside one pane of the window
   cam=dict(keys=[(0, (2.6, 0.5, 1.32), (1.0, 2.3, 1.0), 24), (1, (2.52, 0.6, 1.29), (0.97, 2.3, 0.98), 25)], fstop=3.2),
   cards=[dict(pose="rin_sit_knees", h=1.05, loc=(0.6, 1.45, 0.38), rot=(90, 0, 90), face_cam=True,
               contact=SIT,
-              props=dict(key_dir=(0.6, 0.3, 0.5), key_col=(0.25, 0.32, 0.55), amb_col=(0.14, 0.16, 0.26),
-                         rim_dir=(0.9, 0.2, 0), rim_col=(0.5, 0.65, 1.0), exposure=1.0))])
+              props=dict(key_dir=(0.8, 0.25, 0.4), key_col=(0.42, 0.52, 0.85), amb_col=(0.09, 0.1, 0.17),
+                         rim_dir=(0.9, 0.2, 0), rim_col=(0.7, 0.82, 1.2), exposure=1.0))])
 # the line about words spilling from her lips: a tighter profile, lips parted as she murmurs.
 # The card is sized so her eye sits where the old profile's did (the drawing has less shoulder).
 S("S36", lambda: L(28) - 0.25, scene="room", setup=dict(tod="night", wind=0.6), finish=NIGHT,
@@ -505,8 +507,8 @@ S("S65", 301.45, scene="room", setup=dict(tod="morning", wind=0.35, pillow_dent=
 # closer, her face on the pillow (the framing of the dusk S32)
 S("S65b", 309.6, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT, sun=BED_SUN, world=MORNING_FILL), finish=DAWN,
   hud=dict(level=1, alpha=0.85),
-  cam=dict(keys=[(0, (0.62, 2.24, 1.6), (0.621, 2.24, 0.47), 30, 0), (1, (0.62, 2.26, 1.52), (0.621, 2.26, 0.47), 32, 3)],
-           fstop=4.0),
+  cam=dict(keys=[(0, (0.62, 2.24, 1.6), (0.621, 2.24, 0.47), 30, 0), (1, (0.62, 2.25, 1.58), (0.621, 2.25, 0.47), 31, 3)],
+           fstop=8.0),
   render=dict(exposure=-0.7, samples=64),
   cards=[dict(pose="rin_sleep", **SLEEP_ON_BED, props=dict(FLAT_MORNING))])
 # the last image: the morning she thought she would not see. Seen from above on the pillow, she sleeps,
@@ -519,7 +521,7 @@ S("S65c", 316.73, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent
   render=dict(exposure=-0.5, samples=64),
   cam=dict(keys=[(0, (0.575, 2.38, 1.11), (0.575, 2.40, 0.51), 55, -3),
                  (1, (0.575, 2.385, 1.09), (0.575, 2.40, 0.51), 60, 1)], fstop=2.8, ease="linear"),
-  cards=[dict(pose="rin_wake", h=0.329, loc=(0.565, 2.269, 0.51), rot=(0, 0, 0), contact=dict(kind="lie", blur=0.008),
+  cards=[dict(pose="rin_wake", h=0.329, loc=(0.565, 2.269, 0.51), rot=(0, 0, 0), contact=dict(kind="lie", blur=0.006, strength=0.65, cast=0.025, cast_strength=0.35),
               props=dict(FLAT_MORNING, amb_col=(1.08, 1.02, 0.95)),
               keys={"blink": [(("s", 0.0), 1.0), (("s", 2.17), 1.0), (("s", 2.19), 0.0),
                               (("s", 5.85), 0.0), (("s", 5.87), 1.0), (("s", 5.96), 1.0), (("s", 5.98), 0.0)]})],

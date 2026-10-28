@@ -255,8 +255,16 @@ def bed_set(coll, pillow_dent=None, quilt=None):
     s = mat_ob.modifiers.new("Sub", "SUBSURF")
     s.levels = s.render_levels = 1
     mat_ob.data.shade_smooth()
-    case = bedding.add_wrinkles(cloth_mat("Pillowcase", (0.93, 0.93, 0.9)), scale=9.0, strength=0.08)
-    pillow = pillow_mesh("Pillow", PILLOW_C, 0.3, 0.2, 0.1, 0.025, coll, case, yaw=-3.0, dent=pillow_dent)
+    case = bedding.add_wrinkles(cloth_mat("Pillowcase", (0.93, 0.93, 0.9)), scale=9.0, strength=0.05)
+    # an inflated, sewn pillowcase (bedding.simulate_pillow); a head pressed into it where she lies
+    press = None
+    if pillow_dent:
+        press = (PILLOW_C[0] + pillow_dent[0], PILLOW_C[1] + pillow_dent[1])
+    pillow = bedding.simulate_pillow(coll, mat_ob, PILLOW_C, MAT_TOP, head=press)
+    sp = pillow.modifiers.new("Sub", "SUBSURF")
+    sp.levels = sp.render_levels = 2
+    pillow.data.shade_smooth()
+    assign(pillow, case)
     q = dict(mode="spread", edge=1.95)
     q.update(quilt or {})
     if q["mode"] == "none":
@@ -815,9 +823,10 @@ def ground_cards(cards, specs):
             if z is None:
                 continue
             card.location.z = z - c.get("sink", 0.008) - bedding.drawing_floor(spec["pose"]) * spec.get("h", 1.5)
-            bedding.sitting_blot(card, z, size=c.get("size", (0.78, 0.52)), strength=c.get("strength", 0.62))
+            bedding.sitting_blot(card, z, size=c.get("size", (0.78, 0.52)), strength=c.get("strength", 0.72))
         else:
-            bedding.lying_shadow(card, spec["pose"], blur=c.get("blur", 0.018), strength=c.get("strength", 0.42),
+            bedding.lying_shadow(card, spec["pose"], blur=c.get("blur", 0.01), strength=c.get("strength", 0.55),
+                                 cast=c.get("cast", 0.04), cast_strength=c.get("cast_strength", 0.3),
                                  shift=c.get("shift", (0.012, -0.012)))
 
 
