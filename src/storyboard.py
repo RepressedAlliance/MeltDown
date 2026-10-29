@@ -675,25 +675,28 @@ FLOW = {
                 fx=[{"type": "darken", "rect": (-200, 0, 380, 1080), "feather": 140, "amount": 0.5}]),  # the lamp-lit wall
     "S02": dict(in_="iris", in_dur=0.5, in_r0=330),               # the lamp's ring (r 345 at the cut) opens on her eye
     "S05": dict(in_="zoom", in_dur=0.4, in_anchor=(1500, 450), in_radial=True),      # the canyon's lights -> her window's
-    "S06": dict(in_="zoom", in_dur=0.6, in_anchor=(1807, 285), in_push=0.15, in_radial=True),  # the reactor in her window
-    "S07": dict(in_="flash"),                                     # the reactor flares: the title over the city
-    "S08": dict(in_="zoom", in_dur=0.45, in_radial=True, out="white", out_dur=0.35),  # down onto the core, whose
-    "S09": dict(in_="white", in_dur=0.45),                        # light floods the frame and leaves her in bed
+    "S06": dict(in_="zoom", in_dur=0.6, in_anchor=(1807, 285), in_push=0.15, in_radial=True,  # the reactor in her
+                out="white", out_dur=0.3, out_anchor=(1030, 465)),  # window; its light grows to fill the frame
+    "S07": dict(in_="white", in_dur=0.4, in_anchor=(960, 540)),   # and the title city comes out of its middle
+    "S08": dict(in_="zoom", in_dur=0.45, in_radial=True, out="white", out_dur=0.35, out_anchor=(960, 540)),  # the
+    "S09": dict(in_="white", in_dur=0.45, in_anchor=(960, 540)),  # core's light floods out and leaves her in bed
     "S10": dict(in_="zoom", in_dur=0.45, in_radial=True),
     "S11": dict(in_="dissolve", in_dur=0.4, in_anchor=(380, 360), in_radial=True),  # her back -> her face, first line
-    "S14": dict(in_="flash"),                                     # the lighter's spark
+    "S13": dict(out="white", out_dur=0.25, out_anchor=(940, 540)),  # the light at the street's end grows,
+    "S14": dict(in_="white", in_dur=0.3, in_anchor=(1280, 340)),  # and the lighter comes out of its spark
     "S15b": dict(in_="zoom", in_dur=0.3, in_anchor=(935, 800), in_radial=True),   # into her chest: the diagram
     "S16": dict(in_="dissolve", in_dur=0.3, out="white", out_dur=0.35),   # and up into the white room
     "S18": dict(in_="zoom", in_dur=0.3, in_anchor=(955, 470), in_radial=True),    # into her eye, where it is
     "S24": dict(in_="flash"),                                     # out of the burnt-white page
-    "S27": dict(out="black", out_dur=0.3),                        # the chorus closes on black,
-    # the map comes up out of it, and its ring rises and grows to where the sun will be
-    "S28": dict(in_="black", in_dur=0.4, fx=[{"type": "zoom", "z": [(0, 1.0), (0.7, 1.0), (1, 1.3)], "cy": 1300}]),
-    "S29": dict(in_="zoom", in_dur=0.4, in_anchor=(960, 150), in_radial=True, in_bloom=0.3),  # ... and opens on the sun
-    "S30": dict(in_="dissolve", in_dur=0.4, in_anchor=(960, 120), in_radial=True,  # from the big sun out, so two
-                out="black", out_dur=0.25),                       # suns never show; then dark to the stairs,
-    "S31": dict(in_="black", in_dur=0.35, out="white", out_dur=0.3),  # and the stairs whiten into
-    "S32": dict(in_="white", in_dur=0.4),                         # her lit room
+    # the map opens out of her eye, and its ring (r 210) grows 1.8x about (970, 1090) onto the sun (r 380 at
+    # (952, 100))
+    "S28": dict(in_="dissolve", in_dur=0.5, in_anchor=(910, 490), in_radial=True,
+                fx=[{"type": "zoom", "z": [(0, 1.0), (0.65, 1.0), (1, 1.8)], "cx": 10, "cy": 550}]),
+    "S29": dict(in_="zoom", in_dur=0.4, in_anchor=(952, 100), in_radial=True, in_bloom=0.3),  # ... and opens on the sun
+    "S30": dict(in_="dissolve", in_dur=0.4, in_anchor=(960, 120), in_radial=True),  # from the big sun out (one sun)
+    "S31": dict(in_="dissolve", in_dur=0.5, in_anchor=(930, 720), in_radial=True,  # the stairwell out of the dark
+                out="white", out_dur=0.35, out_anchor=(990, 640)),  # city below her; the lit steps grow
+    "S32": dict(in_="white", in_dur=0.4, in_anchor=(990, 640)),   # into the light her room comes out of
     # through the sun in her eye: the eye pushed 1.6x about (2295, 920) carries its sun to where S34's is
     "S34": dict(in_="zoom", in_dur=0.5, in_anchor=(2295, 920), in_push=0.6),
     "S35": dict(in_="dissolve", in_dur=0.6, in_bloom=0.3),       # dusk -> blue hour
@@ -706,10 +709,11 @@ FLOW = {
     "S46": dict(in_="glitch"),
     "S49": dict(out="black", out_dur=0.25),                       # the red figure and its trace dim together,
     "S50": dict(in_="black", in_dur=0.9),                         # and her dark room comes up sooner
-    # the push onto her bed lands on her sleepless face; the city opens out of her teary eye, goes dark, and
+    # the push onto her bed lands on her sleepless face; the push goes on into her teary eye, the city opens
+# out of it, goes dark, and
     # leaves only her bed in the dark
     "S52": dict(in_="zoom", in_dur=0.8, in_anchor=(940, 520), in_push=0.6, in_radial=True),
-    "S53": dict(in_="dissolve", in_dur=0.5, in_anchor=(870, 290), in_radial=True, out="black", out_dur=0.3),
+    "S53": dict(in_="zoom", in_dur=0.6, in_anchor=(870, 290), in_push=1.2, in_radial=True, out="black", out_dur=0.3),
     "S54": dict(in_="black", in_dur=0.5),
     "S55": dict(in_="zoom", in_dur=0.4, in_anchor=(1030, 430), in_push=0.5, in_radial=True),  # her chest -> the diagram
     "S56": dict(in_="zoom", in_dur=0.3),

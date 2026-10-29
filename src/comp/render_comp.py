@@ -631,6 +631,37 @@ def _scaled(img, s, c=(W / 2, H / 2)):
     return cv2.warpAffine(img, m, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
 
 
+def _anchor(shot):
+    return tuple(float(v) for v in shot.get("in_anchor", (W / 2, H / 2)))
+
+
+def _disc(c, w):
+    """A soft disc around c that covers nothing at w = 0 and the whole frame at w = 1."""
+    far = max(math.hypot(x - c[0], y - c[1]) for x in (0, W) for y in (0, H))
+    soft = 0.35 * far
+    yy, xx = np.ogrid[0:H, 0:W]
+    dist = np.sqrt((xx - c[0]) ** 2 + (yy - c[1]) ** 2)
+    return np.clip((w * (far + soft) - dist) / soft, 0, 1).astype(np.float32)[..., None]
+
+
+def _push_curve(shot, dt):
+    """Scale and blur of the outgoing picture for a dolly-through into `shot`, dt seconds from its cut: one
+    eased move from in_pre seconds before the cut to in_dur after it, fastest around the cut."""
+    d = shot.get("in_dur", 0.5)
+    pre = shot.get("in_pre", 0.6 * d)
+    u = min(1.0, max(0.0, (dt + pre) / (pre + d)))
+    return 1 + shot.get("in_push", 0.3) * u * u * (3 - 2 * u), 0.09 * math.sin(math.pi * u)
+
+
+def pre_push(img, t, nxt):
+    """The outgoing shot's last frames before a dolly-through into `nxt`: the push has already begun."""
+    s, bl = _push_curve(nxt, t - nxt["t0"])
+    if s - 1 < 1e-3:
+        return img
+    c = _anchor(nxt)
+    return _zoom_blur(_scaled(img, s, c), bl, c=c)
+
+
 def cross_blend(img, f, t, shot, prev_shot, preview):
     """Soft cuts that keep both shots moving: the outgoing shot is rendered at the same instant (its
     Blender render runs a `tail` past the cut) and mixed in over the first in_dur seconds.
@@ -641,7 +672,8 @@ def cross_blend(img, f, t, shot, prev_shot, preview):
     in_anchor (x, y) is the point the cut pushes into (the frame centre by default): a light the old shot
     flies towards, where the new one carries on; in_push is how far the old shot pushes in (0.3); with
     in_radial the new shot opens out of the anchor in a soft disc instead of over the whole frame, so the
-    two pictures never lie on top of each other"""
+    two pictures never lie on top of each other. The push starts in_pre seconds before the cut (pre_push),
+    so its speed builds through the cut instead of bursting out of a still frame after it."""
     d = shot.get("in_dur", 0.5)
     dt = t - shot["t0"]
     if prev_shot is None or dt >= d:
@@ -649,16 +681,13 @@ def cross_blend(img, f, t, shot, prev_shot, preview):
     old = render_frame([prev_shot], f, preview, raw=True)
     k = dt / d
     w = k * k * (3 - 2 * k)
-    c = tuple(float(v) for v in shot.get("in_anchor", (W / 2, H / 2)))
+    c = _anchor(shot)
     if shot["in"] == "zoom":
-        old = _zoom_blur(_scaled(old, 1 + shot.get("in_push", 0.3) * k, c), 0.09 * w, c=c)
+        s, bl = _push_curve(shot, dt)
+        old = _zoom_blur(_scaled(old, s, c), bl, c=c)
         img = _zoom_blur(img, 0.09 * (1 - w), c=c)
     if shot.get("in_radial"):
-        far = max(math.hypot(x - c[0], y - c[1]) for x in (0, W) for y in (0, H))
-        soft = 0.35 * far
-        yy, xx = np.ogrid[0:H, 0:W]
-        dist = np.sqrt((xx - c[0]) ** 2 + (yy - c[1]) ** 2)
-        m = np.clip((w * (far + soft) - dist) / soft, 0, 1).astype(np.float32)[..., None]
+        m = _disc(c, w)
         out = old * (1 - m) + img * m
     else:
         out = old * (1 - w) + img * w
@@ -669,32 +698,36 @@ def cross_blend(img, f, t, shot, prev_shot, preview):
 
 
 def transition(img, t, shot, prev_shot):
+    """Flash, and fades through white or black. With out_anchor the fade-out starts at that point and spreads
+    (a light growing out of the reactor, a spark), with in_anchor the next picture comes out of the white or
+    black from that point outward."""
     tin = shot.get("in")
     dt = t - shot["t0"]
     if tin == "flash":
         k = math.exp(-dt * 10)
         img = img + k * 1.2
-    elif tin == "white":
+    elif tin in ("white", "black"):
         d = shot.get("in_dur", 0.5)
         if dt < d:
-            img = img * (dt / d) + (1 - dt / d)
-    elif tin == "black":
-        d = shot.get("in_dur", 0.5)
-        if dt < d:
-            img = img * (dt / d) ** 1.5
+            k = dt / d
+            if shot.get("in_anchor"):
+                m = _disc(_anchor(shot), k * k * (3 - 2 * k))
+                img = img * m + (1 - m) if tin == "white" else img * m
+            else:
+                img = img * k + (1 - k) if tin == "white" else img * k ** 1.5
     elif tin == "glitch" and dt < 0.25:
         img = glitch(img, t, 2.0)
     tout = shot.get("out")
     left = shot["t1"] - t
-    if tout == "white":
+    if tout in ("white", "black"):
         d = shot.get("out_dur", 0.5)
         if left < d:
             k = 1 - left / d
-            img = img * (1 - k) + k
-    elif tout == "black":
-        d = shot.get("out_dur", 0.5)
-        if left < d:
-            img = img * (left / d) ** 1.5
+            if shot.get("out_anchor"):
+                m = _disc(tuple(float(v) for v in shot["out_anchor"]), k * k * (3 - 2 * k))
+                img = img * (1 - m) + m if tout == "white" else img * (1 - m)
+            else:
+                img = img * (1 - k) + k if tout == "white" else img * (left / d) ** 1.5
     return img
 
 
@@ -867,6 +900,9 @@ def render_frame(shots, f, preview, raw=False):
         img = iris_blend(img, t, shot, prev_shot, preview)
     elif shot.get("in") in ("dissolve", "zoom"):
         img = cross_blend(img, f, t, shot, prev_shot, preview)
+    nxt = shots[idx + 1] if idx + 1 < len(shots) else None
+    if nxt is not None and nxt.get("in") == "zoom":
+        img = pre_push(img, t, nxt)
     img = transition(img, t, shot, prev_shot)
     cfg = dict(shot.get("finish", {}))
     if ink_cfg is not None:
