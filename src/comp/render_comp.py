@@ -582,7 +582,9 @@ def iris_blend(img, t, shot, prev_shot, preview):
     key = prev_shot["id"]
     if key not in _iris_cache:
         f_last = int(round(prev_shot["t1"] * FPS)) - 1
-        _iris_cache[key] = render_frame([prev_shot], f_last, preview, raw=True)
+        # with its fade-out applied, so a shot that fades to white or black opens on that, not on a pop back
+        _iris_cache[key] = transition(render_frame([prev_shot], f_last, preview, raw=True), f_last / FPS,
+                                      prev_shot, None)
     old = _iris_cache[key]
     k = dt / d
     k = 1 - (1 - k) ** 3
@@ -761,7 +763,11 @@ def current_section(t):
 
 def render_frame(shots, f, preview, raw=False):
     t = f / FPS
-    idx = next((i for i, s in enumerate(shots) if s["t0"] <= t < s["t1"]), len(shots) - 1)
+    # a shot owns the frames from the one nearest its cut, as the segments and the Blender ranges are cut;
+    # comparing times instead gave a cut lying a hair past a frame boundary that frame to the outgoing shot,
+    # which then showed its last frame twice or a stale frame left over from an older render
+    idx = next((i for i, s in enumerate(shots) if round(s["t0"] * FPS) <= f < round(s["t1"] * FPS)),
+               len(shots) - 1)
     shot = shots[idx]
     prev_shot = shots[idx - 1] if idx > 0 else None
     u = (t - shot["t0"]) / max(1e-6, shot["t1"] - shot["t0"])
