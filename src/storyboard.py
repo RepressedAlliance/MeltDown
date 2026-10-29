@@ -112,9 +112,12 @@ S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200", rake=True), 
 # out of her window towards the reactor: it starts where her window showed it (upper right, the same
 # size), so the room dissolves away around it, then the camera flies on and turns until it is ahead
 S("S06", 16.0, scene="city", finish=NIGHT, in_="dissolve", in_dur=0.6, tail=0.5,
-  # (105 m up: clear of the 90 m towers on the shore, then out over the bay)
-  cam=dict(keys=[(0, (-133.2, -190.6, 105), (331.0, -347.1, 4.9), 35), (1, (143.472, -447.496, 95.4), (549.304, -714.14, 24.868), 35)],
-           ease="linear"), hud=dict(level=1, alpha=0.8))
+  # (105 m up, out over the bay). It starts 110 m off the shore: starting at the waterfront, its towers rushed
+  # past the left of the frame, growing at 40-110 % a second against the reactor's even 11-14 %. It opens
+  # looking where S05's window showed the reactor, its ring drifting as that one did under the dissolve, then
+  # turns toward it (aim_v0) and ends on the old last frame, where S07 opens out of the ring
+  cam=dict(keys=[(0, (-179.93, -351.9, 103.08), (384.35, -456.23, -27.93), 35), (1, (143.472, -447.496, 95.4), (549.304, -714.14, 24.868), 35)],
+           ease="linear", aim_v0=(79.75, -31.04, -5.62)), hud=dict(level=1, alpha=0.8))
 S("S07", 18.3, scene="city", finish=NIGHT, setup=dict(comp=dict(streaks=0.0)), in_="dissolve", in_dur=0.5,
   in_bloom=0.35, tail=0.45,
   cam=dict(keys=[(0, (-60, 450, 1000), (-60, 450.5, 0), 24, 0), (1, (-60, 430, 638), (-60, 430.5, 0), 24, 18)],

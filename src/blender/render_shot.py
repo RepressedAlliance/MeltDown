@@ -79,12 +79,26 @@ def setup_camera(sc, shot, t0, dur, f0, f1):
                 q = qa * h00 + Vector(drift) * (tb - ta) * h10 + qb * h01
             return q + boom, q, la * (lb / la) ** u, ra + (rb - ra) * u
 
+    aim_v0 = cam_spec.get("aim_v0")
+
     def fn(t, f):
         if dolly:
             p, q, lens, roll = dolly(t)
         else:
             p = sample_keys(pos_k, t)
             q = sample_keys(tgt_k, t)
+            if aim_v0 is not None and len(keys) == 2 and t <= keys[1][0]:
+                # the aim sets off at `aim_v0` (metres per second: so the picture drifts the way the shot it
+                # dissolves out of does) and reaches its end point at the speed of the plain linear move, so
+                # the tail and the cut after it are unchanged
+                (ta, qa), (tb, qb) = (keys[0][0], Vector(keys[0][2])), (keys[1][0], Vector(keys[1][2]))
+                w = (t - ta) / max(1e-6, tb - ta)
+                if w < 0:
+                    q = qa + Vector(aim_v0) * (t - ta)
+                else:
+                    h00, h10 = 2 * w ** 3 - 3 * w ** 2 + 1, w ** 3 - 2 * w ** 2 + w
+                    h01, h11 = -2 * w ** 3 + 3 * w ** 2, w ** 3 - w ** 2
+                    q = qa * h00 + Vector(aim_v0) * (tb - ta) * h10 + qb * h01 + (qb - qa) * h11
             roll = sample_keys(roll_k, t)
             lens = sample_keys(lens_k, t)
             if t > dur:
