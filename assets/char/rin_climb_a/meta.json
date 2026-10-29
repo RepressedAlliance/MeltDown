@@ -1,0 +1,14 @@
+{
+ "name": "rin_climb_a",
+ "source": "rin_climb_a_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  232,
+  10,
+  855,
+  1508
+ ]
+}

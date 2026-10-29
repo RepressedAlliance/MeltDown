@@ -287,9 +287,19 @@ S("S30", 102.55, scene="dusk", setup=dict(place="balcony"), finish=DUSK,
   cards=[dict(pose="rin_back_stand", h=1.5, loc=(1499.6, 899.5, 150.0), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(0.0, 0.3, -0.6), key_col=(0.2, 0.1, 0.1), amb_col=(0.25, 0.14, 0.14),
                          rim_dir=(0.2, 0.9, 0), rim_col=(1.0, 0.45, 0.2), exposure=1.0))])
+# she climbs toward the light a step to the beat, as stop-motion: two drawings of the climb take turns and the
+# edge of each step she reaches lights up under her (scene_dusk.climb). The low sun throws her shadow on the
+# wall beside her: shadow-only cards turned square to the sun, on the same keys.
+CLIMB = dict(h=1.54, loc=(0.05, 0.0, 0.0), motion=None)
+CLIMB_LIGHT = dict(key_dir=(0.92, 0.2, 0.32), key_col=(0.95, 0.5, 0.3), amb_col=(0.2, 0.12, 0.13),
+                   rim_dir=(-0.9, 0.3, 0.0), rim_col=(0.55, 0.3, 0.16), exposure=1.0)
 S("S31", lambda: L(19) - 0.2, scene="dusk", setup=dict(place="stairs"), finish=DUSK,
   cam=dict(keys=[(0, (0.15, -1.6, 0.55), (-0.1, 2.6, 2.2), 22), (1, (0.15, -1.2, 0.62), (-0.1, 2.6, 2.3), 22)]),
-  anim=dict(step_beats=True))
+  cards=[dict(pose="rin_climb_a", climb="a", rot=(90, 0, 0), face_cam=True, props=CLIMB_LIGHT, **CLIMB),
+         dict(pose="rin_climb_b", climb="b", rot=(90, 0, 0), face_cam=True, props=CLIMB_LIGHT, **CLIMB),
+         dict(pose="rin_climb_a", climb="a", rot=(90, 0, 70.7), shadow_only=True, **CLIMB),
+         dict(pose="rin_climb_b", climb="b", rot=(90, 0, 70.7), shadow_only=True, **CLIMB)],
+  anim=dict(step_beats=True, climb_from=4))
 # the dusk verse begins: she lies awake in the sunset and the light
 # drains from her face over the line. Exactly the framing of the last morning (S65b), where she lies there
 # asleep; she blinks with the sleeping drawing (color_blink = rin_sleep). Staged as SLEEP_ON_BED (below).

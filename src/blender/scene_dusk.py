@@ -1,7 +1,7 @@
 """Dusk: the city under a swollen red sun, a balcony, and an outdoor stairwell.
 
 `place`: "balcony" (city behind a railing) or "stairs" (exterior apartment
-stairs raked by the low sun; Rin appears only as a shadow climbing them).
+stairs raked by the low sun; Rin climbs them a step to the beat, her shadow beside her on the wall).
 """
 import math
 
@@ -14,6 +14,7 @@ from common import (add_prim, assign, collection, link, mat_emission, mat_princi
 
 SUN_DIR = Vector((-0.28, -0.96, 0.012)).normalized()   # sets right behind the fusion hall   # from the viewer toward the sun (south-west, low)
 BALCONY = Vector((1500.0, 900.0, 150.0))
+STEPS, RISE, RUN = 14, 0.18, 0.27   # the stairwell: step k's tread is centred at y = k * RUN, its top at RISE * (k + 1)
 
 
 def dusk_sky(sc, strength=1.0):
@@ -104,7 +105,7 @@ def balcony(col, base=BALCONY):
     return edge, fwd, side
 
 
-def stairs(col, origin=Vector((0, 0, 0)), steps=14, rise=0.18, run=0.27, width=1.1):
+def stairs(col, origin=Vector((0, 0, 0)), steps=STEPS, rise=RISE, run=RUN, width=1.1):
     conc = mat_principled("StairConcrete", (0.36, 0.35, 0.33), rough=0.9)
     nt = node_tree(conc)
     nz = nt.nodes.new("ShaderNodeTexNoise")
@@ -248,8 +249,13 @@ def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
     if an.get("step_beats"):
         import timeline as TL
         beats = [b for b in TL.BEATS if shot["t0"] <= b < shot["t1"]]
+        # each beat lights the step she stands on: she starts on `climb_from` and goes up one a beat
+        first = an.get("climb_from", 0)
+        climbers = [(c, spec) for c, spec in zip(cards or [], shot.get("cards", [])) if spec.get("climb")]
+        if climbers:
+            climb(climbers, beats, first)
         for k, b in enumerate(beats):
-            m = bpy.data.materials.get(f"StepEdgeMat{k % 14}")
+            m = bpy.data.materials.get(f"StepEdgeMat{(first + k) % STEPS}")
             if m is None:
                 continue
             em = m.node_tree.nodes["Emission"].inputs["Strength"]
@@ -290,3 +296,42 @@ def plate_view(sc, opts):
     sc.eevee.taa_render_samples = 32
     sc.render.use_motion_blur = False
     return cam
+
+
+def climb(cards, beats, first, ahead=0.09):
+    """Rin up the stairs, a step to the beat, as stop-motion: two drawings of the climb (`climb` "a": left foot
+    up on the next step, "b": right foot up) take turns. On each beat after the first the drawing changes and
+    she stands one step higher: the foot that was up is now the one she stands on, so it stays planted while
+    the other comes through. Both the change and the move fall between two frames, so no frame smears them,
+    and she settles a little into the new step. Shadow cards with the same `climb` follow the same keys.
+    Her card stands `ahead` in front of the middle of the tread: from below, the nosing of the step she is on
+    would otherwise hide her heels."""
+    import bedding
+    sw = [math.ceil(b * 24 - 1e-6) - 0.5 for b in beats[1:]]    # frame times of the changes
+    for c, spec in cards:
+        h = spec.get("h", 1.5)
+        x = spec.get("loc", (0.0, 0.0, 0.0))[0]
+        sink = bedding.drawing_floor(spec["pose"]) * h      # the drawing's margin under her lower sole
+        parity = 0 if spec["climb"] == "a" else 1
+
+        def at(k):
+            return Vector((x, (first + k) * RUN - ahead, RISE * (first + k + 1) - sink))
+
+        c.location = at(0)
+        c.keyframe_insert("location", frame=sw[0] - 1 if sw else 1)
+        c.hide_render = parity != 0
+        c.keyframe_insert("hide_render", frame=sw[0] - 1 if sw else 1)
+        for k, f in enumerate(sw, 1):
+            c.location = at(k)
+            c.keyframe_insert("location", frame=f)
+            c.hide_render = k % 2 != parity
+            c.keyframe_insert("hide_render", frame=f)
+            for df, sx, sz in ((-0.01, 1.0, 1.0), (0.0, 1.015, 0.975), (2.5, 1.0, 1.0)):   # settling onto the step
+                c.scale = (sx, 1.0, sz)
+                c.keyframe_insert("scale", frame=f + df)
+        act = c.animation_data.action
+        curves = list(act.fcurves) if hasattr(act, "fcurves") else [
+            fc for layer in act.layers for strip in layer.strips for bag in strip.channelbags for fc in bag.fcurves]
+        for fc in curves:
+            for kp in fc.keyframe_points:
+                kp.interpolation = "CONSTANT" if fc.data_path in ("location", "hide_render") else "LINEAR"
