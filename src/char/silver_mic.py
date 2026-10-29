@@ -1,10 +1,11 @@
-"""Turn the TV host's black microphone silver, so it reads on the grey, halftone-printed TV screens.
+"""Make the TV host's microphone read on the grey, halftone-printed TV screens: a light grille, a black handle.
 
 python src/char/silver_mic.py            (after process.py rin_tv_host; then src/tools/make_tv_picture.py)
-The drawing's mic is black against her black sailor collar: once the TV picture is grey and printed in
-dots, the two merge and the mic disappears. The mic's shape (a ball grille, a band and a tapered handle,
-in the drawing's pixels) is drawn as a mask; inside it the dark fill is lifted to a light metal while its
-black outline and her fingers stay as drawn, and the grille's mesh texture is kept.
+The drawing's mic is all black. Its ball grille sits against her black sailor collar: once the TV picture
+is grey and printed in dots, the two merge. A mic made light all over came back from the halftone as one
+more pale stroke on her white shirt. So only the grille is lifted to a light metal (its black outline,
+her fingers and the mesh texture stay as drawn); the handle stays black, which prints as a dark bar across
+the white shirt. Run it on the drawing as process.py wrote it (it reads and rewrites color.png).
 """
 import sys
 from pathlib import Path
@@ -20,15 +21,16 @@ GRILLE = ((391, 740), 47)                       # centre, radius
 HANDLE = ((383, 776), (340, 1028), 23, 17)      # top centre, bottom centre, half-width at top and bottom
 
 
-def mic_mask(h, w):
+def mic_mask(h, w, handle=False):
     m = np.zeros((h, w), np.uint8)
     (cx, cy), r = GRILLE
     cv2.circle(m, (cx, cy), r, 255, -1)
-    (x0, y0), (x1, y1), w0, w1 = HANDLE
-    d = np.array([x1 - x0, y1 - y0], np.float32)
-    n = np.array([-d[1], d[0]], np.float32) / np.linalg.norm(d)
-    poly = np.array([[x0, y0] + n * w0, [x1, y1] + n * w1, [x1, y1] - n * w1, [x0, y0] - n * w0], np.int32)
-    cv2.fillPoly(m, [poly], 255)
+    if handle:
+        (x0, y0), (x1, y1), w0, w1 = HANDLE
+        d = np.array([x1 - x0, y1 - y0], np.float32)
+        n = np.array([-d[1], d[0]], np.float32) / np.linalg.norm(d)
+        poly = np.array([[x0, y0] + n * w0, [x1, y1] + n * w1, [x1, y1] - n * w1, [x0, y0] - n * w0], np.int32)
+        cv2.fillPoly(m, [poly], 255)
     return m > 0
 
 
