@@ -136,6 +136,10 @@ def setup_cards(sc, shot, cam, f0, dur):
         rot = tuple(math.radians(a) for a in spec.get("rot", (90, 0, 0)))
         ob = add_card(spec["pose"], height=spec.get("h", 1.5), location=spec.get("loc", (0, 0, 0)),
                       rotation=rot, **spec.get("props", {}))
+        # an upright card seen from well above looks squat (shortened by the cosine of the camera's
+        # elevation): `stretch` lengthens it up from its bottom edge by about 1 / that cosine
+        stretch = spec.get("stretch", 1.0)
+        ob.scale = (1.0, 1.0, stretch)
         if spec.get("tilt"):
             # a card lying on the bed leans along it (degrees about world X, through its origin): head end
             # up on the pillow, feet down on the mattress
@@ -169,7 +173,7 @@ def setup_cards(sc, shot, cam, f0, dur):
             for k in range(0, n + 6, 6):
                 tt = (f0 + k) / FPS
                 if motion == "breath":
-                    sz = 1 + 0.007 * _m.sin(tt * 2 * _m.pi / 3.8 + ph)
+                    sz = (1 + 0.007 * _m.sin(tt * 2 * _m.pi / 3.8 + ph)) * stretch
                     ob.scale = (1.0, 1.0, sz)
                     ob.keyframe_insert("scale", index=2, frame=f0 + k)
                 else:

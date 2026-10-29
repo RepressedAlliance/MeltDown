@@ -55,13 +55,24 @@ def lerp_keys(keys, u):
     return ks[-1][1], ks[-1][2]
 
 
-def card_aspect(spec, campos):
+def card_aspect(spec, campos, aim=None):
     rot = spec.get("rot", (90, 0, 0))
     R = rot_xyz(math.radians(rot[0] - 90), math.radians(rot[1]), math.radians(rot[2]))
     right, up, normal = mv(R, [1, 0, 0]), mv(R, [0, 0, 1]), mv(R, [0, -1, 0])
-    h = spec.get("h", 1.5)
+    h = spec.get("h", 1.5) * spec.get("stretch", 1.0)
     loc = spec.get("loc", (0, 0, 0))
     center = [loc[i] + up[i] * h / 2 for i in range(3)]
+    if aim is not None and not spec.get("face_cam"):
+        # in a close-up only the part of the card at the middle of the frame is seen: measure there (where
+        # the line of sight meets the card), not at the middle of a card mostly out of frame
+        d = norm(sub(aim, campos))
+        den = dot(d, normal)
+        if abs(den) > 1e-6:
+            t = dot(sub(loc, campos), normal) / den
+            hit = [campos[i] + d[i] * t for i in range(3)]
+            rel = sub(hit, loc)
+            if 0 <= dot(rel, up) <= h and abs(dot(rel, right)) <= h:
+                center = hit
     v = norm(sub(campos, center))
     fc = spec.get("face_cam")
     if fc == "full":
@@ -75,6 +86,7 @@ def card_aspect(spec, campos):
     lr = math.sqrt(max(0.0, 1 - dot(right, v) ** 2))
     lu = math.sqrt(max(0.0, 1 - dot(up, v) ** 2))
     ang = math.degrees(math.acos(max(-1.0, min(1.0, abs(dot(normal, v))))))
+    lu *= spec.get("stretch", 1.0)          # a card lengthened along its up axis (render_shot, stretch)
     return (lr / lu if lu > 1e-6 else 9.9), ang
 
 
@@ -88,10 +100,10 @@ def main():
                 continue
             rows = []
             for u in (0.0, 0.5, 1.0):
-                p, _ = lerp_keys(s["cam"]["keys"], u)
-                rows.append(card_aspect(spec, p))
+                p, q = lerp_keys(s["cam"]["keys"], u)
+                rows.append(card_aspect(spec, p, q))
             worst = min(rows, key=lambda r: min(r[0], 1 / max(r[0], 1e-6)))
-            bad = worst[0] < 0.9 or worst[0] > 1.11
+            bad = worst[0] < 0.95 or worst[0] > 1.053      # more than 5 % out of true is visible
             if bad or show_all:
                 print(f"{s['id']:5s} {spec['pose']:24s} face_cam={str(spec.get('face_cam')):5s} "
                       + "  ".join(f"aspect {a:4.2f} angle {g:4.0f}" for a, g in rows) + ("   <<" if bad else ""))

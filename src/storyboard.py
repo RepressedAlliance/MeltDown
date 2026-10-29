@@ -410,15 +410,20 @@ S("S42b", 160.4, scene="core", setup=dict(mood="white", exterior=True), finish=W
   cam=dict(keys=[(0, (24, -30, 14), (0, 0, -1), 30), (1, (60, -80, 40), (0, 0, -1), 30)], ease="in"),
   anim=dict(plasma=[(0, 2.0), (1, 4.0)]), out="white", out_dur=1.2)
 S("S43", 164.72, scene="gears", setup=dict(mood="steel", stud=(0.0, 0.0, 0.2)), finish=MONO, in_="black", in_dur=0.6,
-  # from the whole train of gears in toward her: by the end she is the subject, the gear turning round her
-  cam=dict(keys=[(0, (1.4, -3.6, 2.2), (0.2, 0.0, 0.0), 60), (1, (0.9, -3.2, 1.6), (0.03, -0.1, 0.14), 100)],
+  # from the whole train of gears in toward her: by the end she is the subject, the gear turning round her. The
+  # push ends 2.5 m from her, two fifths of the frame high: stopping at 3.5 m left her a grey speck on the hub
+  # once the bridge's halftone printed her
+  cam=dict(keys=[(0, (1.4, -3.6, 2.2), (0.2, 0.0, 0.0), 60), (1, (0.645, -2.29, 1.255), (0.03, -0.095, 0.22), 100)],
            fstop=2.8),
   # a small Rin on a pin that stands still through the hub of the great gear: she sits on its cap with her
   # legs hanging over the gear that turns beneath her feet. The machine of time is giant, and she is the one
   # still point in it. The card stands just in front of the cap's edge, so her legs hang in front of it.
-  cards=[dict(pose="rin_sit_dangle", h=0.2, loc=(0.032, -0.095, 0.106), rot=(90, 0, 0), face_cam=True,
+  # brighter than the steel: the bridge prints in grey, and at 1.0 she printed as the same mid-grey as the gears.
+  # The camera looks down on her at 25-28 degrees: the card is lengthened 1.117x (1 / cos 26.5) so she is not
+  # squat, and set 1 cm lower so her seat (45 % up the drawing) stays on the cap
+  cards=[dict(pose="rin_sit_dangle", h=0.2, loc=(0.032, -0.095, 0.0955), rot=(90, 0, 0), face_cam=True, stretch=1.117,
               props=dict(key_dir=(-0.8, -0.2, 0.5), key_col=(0.9, 0.38, 0.28), amb_col=(0.14, 0.15, 0.18),
-                         rim_dir=(0.9, 0.2, 0.3), rim_col=(0.55, 0.65, 0.9), exposure=1.0))])
+                         rim_dir=(0.9, 0.2, 0.3), rim_col=(0.55, 0.65, 0.9), exposure=1.35))])
 S("S43b", 172.91, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
   cam=dict(keys=[(0, (3.0, 1.05, 1.88), (3.6, 1.0, 1.85), 70), (1, (3.05, 1.02, 1.86), (3.6, 1.0, 1.85), 85)],
            fstop=2.2),
