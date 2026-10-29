@@ -616,8 +616,9 @@ def cross_blend(img, f, t, shot, prev_shot, preview):
     """Soft cuts that keep both shots moving: the outgoing shot is rendered at the same instant (its
     Blender render runs a `tail` past the cut) and mixed in over the first in_dur seconds.
       dissolve  a plain cross-dissolve (in_bloom > 0 lifts the light at its middle, a light leak)
-      zoom      a dolly through the cut: the old shot pushes in and blurs away while the new one
-                arrives from a slight push, both radially blurred around the midpoint"""
+      zoom      a dolly through the cut: the old shot pushes in and blurs away while the new one comes
+                in moving forward (its own camera; no reverse scaling, which read as a stop), both
+                radially blurred around the midpoint"""
     d = shot.get("in_dur", 0.5)
     dt = t - shot["t0"]
     if prev_shot is None or dt >= d:
@@ -627,7 +628,7 @@ def cross_blend(img, f, t, shot, prev_shot, preview):
     w = k * k * (3 - 2 * k)
     if shot["in"] == "zoom":
         old = _zoom_blur(_scaled(old, 1 + 0.3 * k), 0.09 * w)
-        img = _zoom_blur(_scaled(img, 1 + 0.18 * (1 - k)), 0.09 * (1 - w))
+        img = _zoom_blur(img, 0.09 * (1 - w))
     out = old * (1 - w) + img * w
     b = shot.get("in_bloom", 0.0)
     if b:

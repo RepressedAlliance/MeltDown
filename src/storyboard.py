@@ -70,47 +70,62 @@ def S(id, t, **kw):
 # fly through a lit window into her room; from there soft dissolves (each outgoing 3D shot renders a
 # `tail` past its cut so it keeps moving under the dissolve) carry her gaze to the reactor, the title,
 # the reactor again, her lying awake, and her standing at the window when she starts to sing.
+# Every camera here moves forward at a steady pace (linear, no easing, nothing pulls back), and every
+# dissolve or dolly-through hands one forward movement to the next: one push from the title to the
+# first line, never a stop.
+def _push(z0, z1, n=6, accel=0.0):
+    """Keys for a 2D zoom that grows at a steady rate (exponential), or speeds up smoothly (accel > 0)."""
+    import math
+    a = math.log(z1 / z0)
+    return [(k / n, round(z0 * math.exp(a * ((1 - accel) * k / n + accel * (k / n) ** 2)), 4))
+            for k in range(n + 1)]
+
+
 S("S00", 0.0, free=True, bg="ring", bg_args=dict(radius=230), hud=dict(level=2, alpha=0.8), finish=NIGHT,
-  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.08)]}])
+  fx=[{"type": "zoom", "z": _push(1.0, 1.5)}])
 S("S01", 3.6, scene="room", setup=dict(tod="night_lamp"), finish=NIGHT, in_="dissolve", in_dur=0.7,
   hud=dict(level=1, alpha=0.6),
   render=dict(exposure=-1.6),
-  cam=dict(keys=[(0, (0.61, 1.5, 0.62), (0.6, 1.551, 2.3), 32, 0), (1, (0.6, 1.53, 0.7), (0.6, 1.552, 2.3), 30, 35)],
+  # rising towards the ring lamp, turning slowly, until the ring fills the frame and opens into her eye
+  cam=dict(keys=[(0, (0.61, 1.5, 0.55), (0.6, 1.551, 2.3), 30, 0), (1, (0.6, 1.53, 1.25), (0.6, 1.552, 2.3), 30, 35)],
            ease="linear"),
   anim=dict(lamp=[(0, 1.0), (0.97, 1.0), (1.0, 0.0)]))
 S("S02", 7.41, bg="eye", bg_args=dict(city_plate=PLATE, zoom=(1.04, 1.22), light=0.42), in_="flash", finish=NIGHT,
-  fx=[{"type": "zoom", "z": [(0, 1.0), (0.8, 1.0), (1, 3.2)], "cy": 40}])
+  fx=[{"type": "zoom", "z": _push(1.0, 3.2, accel=0.48), "cy": 40}])
 S("S03", 9.6, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.4,
   cam=dict(keys=[(0, (-900, 1700, 300), (-300, 900, 120), 28), (1, (-250, 980, 210), (380, 120, 60), 32)],
-           ease="inout", shake=(0.6, 0.15, 0.4)))
+           ease="linear", shake=(0.6, 0.15, 0.4)))
 # down a street canyon (y = 115 runs between two rows of blocks, 10 m clear of every wall; the old line
 # cut through the buildings), tilting up to the lit high floors as it nears her block
 S("S04", 11.8, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.5,
   cam=dict(keys=[(0, (-760, 115, 22), (-460, 115.5, 26), 22), (1, (-520, 115, 30), (-230, 117, 75), 22)],
            ease="linear", shake=(0.12, 0.25, 1.5)))
-S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200", rake=True), finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.5,
-  cam=dict(keys=[(0, (3.2, 0.35, 1.25), (0.8, 2.3, 0.85), 24), (1, (2.85, 0.7, 1.15), (0.75, 2.25, 0.8), 26)],
-           fstop=4.0),
+S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200", rake=True), finish=NIGHT, in_="zoom", in_dur=0.4,
+  tail=0.65,
+  cam=dict(keys=[(0, (3.25, 0.3, 1.27), (0.8, 2.3, 0.85), 24), (1, (2.75, 0.8, 1.12), (0.75, 2.25, 0.8), 27)],
+           fstop=4.0, ease="linear"),
   # she sits in the middle of the bed facing the window, clear of the pillow; the card turns to the camera
   cards=[dict(pose="rin_sit_knees", h=1.05, loc=(0.6, 1.45, 0.38), rot=(90, 0, 90), face_cam=True,
               contact=SIT,
               props=dict(key_dir=(0.8, 0.25, 0.4), key_col=(0.42, 0.52, 0.8), amb_col=(0.08, 0.09, 0.15),
                          rim_dir=(0.9, 0.2, 0), rim_col=(0.7, 0.82, 1.2), exposure=1.0))])
-S("S06", 16.0, scene="city", finish=NIGHT, in_="dissolve", in_dur=0.4, tail=0.5,
-  cam=dict(keys=[(0, (480, -760, 40), (900, -1150, 30), 50), (1, (520, -800, 140), (900, -1150, 45), 45)],
-           shake=(0.3, 0.05, 0.5)), hud=dict(level=1, alpha=0.8))
+# out of her window towards the reactor: it starts where her window showed it (upper right, the same
+# size), so the room dissolves away around it, then the camera flies on and turns until it is ahead
+S("S06", 16.0, scene="city", finish=NIGHT, in_="dissolve", in_dur=0.6, tail=0.5,
+  cam=dict(keys=[(0, (-133.2, -190.6, 80), (332.6, -347.6, -11.4), 35), (1, (299.1, -592.0, 70), (673.0, -921.4, 28.2), 35)],
+           ease="linear", shake=(0.15, 0.03, 0.5)), hud=dict(level=1, alpha=0.8))
 S("S07", 18.3, scene="city", finish=NIGHT, setup=dict(comp=dict(streaks=0.0)), in_="dissolve", in_dur=0.5,
   in_bloom=0.35, tail=0.45,
-  cam=dict(keys=[(0, (-60, 450, 1000), (-60, 450.5, 0), 24, 0), (1, (-60, 420, 820), (-60, 420.5, 0), 24, 18)],
+  cam=dict(keys=[(0, (-60, 450, 1000), (-60, 450.5, 0), 24, 0), (1, (-60, 430, 700), (-60, 430.5, 0), 24, 18)],
            ease="linear"))
 S("S08", 22.7, scene="core", setup=dict(mood="blue", exterior=True), finish=COREB, in_="dissolve", in_dur=0.45,
   tail=0.6,
-  cam=dict(keys=[(0, (40, -26, 6), (0, 0, -1), 35), (1, (30, -38, 14), (0, 0, -1), 35)], ease="linear"),
+  cam=dict(keys=[(0, (44, -30, 8), (0, 0, -1), 35), (1, (32, -22, 5.5), (0, 0, -1), 35)], ease="linear"),
   anim=dict(plasma=[(0, 0.35), (1, 0.6)]))
 S("S09", 26.0, scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.03, 0.12, 0.035), quilt=LIE_QUILT,
                                          hide=OVERHEAD_HIDE),
   finish=NIGHT, render=dict(exposure=-1.8), in_="dissolve", in_dur=0.45, tail=0.6,
-  cam=dict(keys=[(0, (0.55, 1.95, 1.92), (0.551, 1.95, 0.4), 35, 0), (1, (0.55, 1.95, 2.06), (0.551, 1.95, 0.4), 32, 14)],
+  cam=dict(keys=[(0, (0.55, 1.95, 2.06), (0.551, 1.95, 0.4), 32, 0), (1, (0.55, 1.95, 1.86), (0.551, 1.95, 0.4), 35, 14)],
            ease="linear"),
   cards=[dict(pose="rin_lie_up", **LIE_UP,
               props=dict(key_dir=(0.0, 0.3, 0.9), key_col=(0.5, 0.55, 0.62), amb_col=(0.25, 0.28, 0.36),
@@ -118,8 +133,8 @@ S("S09", 26.0, scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.0
 # the bar before the first line (about the city lights at night): Rin at the window, her hand on the
 # glass, a silhouette against the city, its lights melting into bokeh behind her
 S("S10", 29.08, scene="room", setup=dict(tod="night"), finish=NIGHT, hud=dict(level=1, alpha=0.7), in_="dissolve",
-  in_dur=0.45,
-  cam=dict(keys=[(0, (2.1, 0.95, 1.33), (1.55, 2.7, 1.26), 38), (1, (1.98, 1.12, 1.34), (1.5, 2.7, 1.26), 40)],
+  in_dur=0.45, tail=0.4,
+  cam=dict(keys=[(0, (2.12, 0.92, 1.33), (1.55, 2.7, 1.26), 38), (1, (1.94, 1.18, 1.34), (1.5, 2.7, 1.26), 41)],
            fstop=2.0, ease="linear"),
   cards=[dict(pose="rin_window_back", h=0.95, loc=(1.25, 2.45, 0.6), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(-0.3, 0.2, 0.6), key_col=(0.18, 0.2, 0.32), amb_col=(0.06, 0.07, 0.12),
@@ -324,7 +339,8 @@ S("S36", lambda: L(28) - 0.25, scene="room", setup=dict(tod="night", wind=0.6), 
                          rim_dir=(1, 0.2, 0), rim_col=(0.6, 0.75, 1.0), exposure=1.0))])
 # the break before the white chorus: in the dark the film's ring draws itself again, then flashes into the
 # reactor's ring (S38)
-S("S37", 138.24, bg="ring", bg_args=dict(radius=170, grow=True), finish=NIGHT, out="white", out_dur=0.35)
+S("S37", 139.08, free=True, bg="ring", bg_args=dict(radius=170, grow=True), finish=NIGHT, out="white",
+  out_dur=0.35)
 
 # ================================================================ CHORUS 2 (white)
 S("S38", 139.98, scene="core", setup=dict(mood="white", exterior=True), finish=WHITE, in_="flash",
@@ -645,6 +661,48 @@ DESIGN = {
 for _s in SHOTS:
     for _k, _v in DESIGN.get(_s["id"], {}).items():
         _s[_k] = _v
+# How each shot comes in where a plain cut jumped (a big change of light or place, a cut in the middle of
+# a quiet sung line, a section change): dissolves where the picture changes place, a dolly-through where
+# it moves into something (her chest, her eye, the sun in her eye), a flash or a fade through white where
+# the light itself changes. Beat cuts stay in the choruses and the bridge montage. The shot before a
+# dissolve or a dolly-through renders a `tail` past the cut, so it keeps moving underneath (TAILS).
+FLOW = {
+    "S11": dict(in_="dissolve", in_dur=0.35),                     # the window -> her face, first line
+    "S15b": dict(in_="zoom", in_dur=0.3),                         # into her chest: the reactor diagram
+    "S16": dict(in_="dissolve", in_dur=0.3, out="white", out_dur=0.35),   # and up into the white room
+    "S18": dict(in_="zoom", in_dur=0.3),                          # into her eye
+    "S24": dict(in_="flash"),                                     # out of the burnt-white page
+    "S28": dict(in_="dissolve", in_dur=0.5),                      # chorus -> the map interlude
+    "S30": dict(in_="dissolve", in_dur=0.4),
+    "S31": dict(in_="dissolve", in_dur=0.4),
+    "S32": dict(in_="dissolve", in_dur=0.5),                      # the dark stairs -> her lit room
+    "S34": dict(in_="zoom", in_dur=0.4),                          # through the sun in her eye
+    "S35": dict(in_="dissolve", in_dur=0.6, in_bloom=0.3),       # dusk -> blue hour
+    "S36": dict(out="black", out_dur=0.35),                       # the room goes dark as the band stops
+    "S43": dict(in_="white", in_dur=1.0),                         # the white chorus settles into the gears
+    "S43b": dict(in_="dissolve", in_dur=0.6),
+    "S43c": dict(in_="dissolve", in_dur=0.6),
+    "S44": dict(in_="dissolve", in_dur=0.5),
+    "S46": dict(in_="glitch"),
+    "S52": dict(in_="dissolve", in_dur=1.0),                      # the empty dark -> her sleepless face
+    "S54": dict(in_="dissolve", in_dur=0.6),
+    "S55": dict(in_="dissolve", in_dur=0.4),
+    "S56": dict(in_="zoom", in_dur=0.3),
+    "S60": dict(in_="dissolve", in_dur=0.5, in_bloom=0.4),       # she dissolves into the light
+    "S61": dict(in_="dissolve", in_dur=0.5),
+    "S64": dict(in_="dissolve", in_dur=0.5),
+    "S65": dict(in_="dissolve", in_dur=0.8),                      # the dawn city -> her morning room
+    "S65b": dict(in_="dissolve", in_dur=0.6),
+    "S65c": dict(in_="dissolve", in_dur=0.6),
+}
+TAILS = {"S15": 0.35, "S17": 0.35, "S27": 0.55, "S29": 0.45, "S30": 0.45, "S31": 0.55, "S34": 0.65, "S43": 0.65,
+         "S43b": 0.65, "S43c": 0.55, "S53": 0.65, "S54": 0.45, "S59": 0.55, "S60": 0.55, "S63": 0.55, "S64": 0.85,
+         "S65": 0.65, "S65b": 0.65}
+for _s in SHOTS:
+    for _k, _v in FLOW.get(_s["id"], {}).items():
+        _s[_k] = _v
+    if _s["id"] in TAILS:
+        _s["tail"] = TAILS[_s["id"]]
 for _sid in ("S45e", "S45f", "S45g", "S45b"):
     next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.4
 # and a steady, feathered shade where those lines sit: the echo block top left in the bridge inserts, the
@@ -665,13 +723,20 @@ LYRIC_STYLES[37] = dict(style="telop", x=110, y=952, w=760, size=44, tail=1.5)
 
 # a little life in the cut-outs: blinks on close-ups, hair moving where there is wind or weightlessness
 # (amplitudes in UV units of the drawing; the sway is a slow smooth warp, see character.py)
-SWAY = {"S17": 0.0024, "S19": 0.0024, "S20": 0.0016, "S24": 0.0048, "S26": 0.0048, "S30": 0.0032, "S35": 0.0024, "S36": 0.0016, "S40": 0.0048, "S42": 0.0032, "S54": 0.004, "S56": 0.005, "S59": 0.0048}
+# Sized from the camera so a hair tip moves about 7-13 px on screen (wind in the room, weightlessness
+# in the reactor): enough to read through the print's 5.5 px dots, slow enough to stay a breeze. The
+# "two layers" the director saw were the print inking the shaded strands grey (fixed in printlook.py).
+# SWAY_RATE slows the motion: a breeze (0.85: one sway in 3.5 s), floating (0.7: in 4.3 s).
+SWAY = {"S17": 0.0109, "S19": 0.0043, "S20": 0.0043, "S24": 0.0168, "S26": 0.015, "S27": 0.004, "S30": 0.0165,
+        "S35": 0.012, "S36": 0.0054, "S40": 0.0165, "S42": 0.0108, "S54": 0.004, "S56": 0.0151, "S59": 0.017}
+FLOATING = ("S24", "S26", "S27", "S40", "S42", "S56", "S59")
 for _s in SHOTS:
     for _c in _s.get("cards", []):
         if _c["pose"] in ("rin_face_close", "rin_profile_close"):
             _c["blink"] = True
         if _s["id"] in SWAY:
             _c.setdefault("props", {})["sway"] = SWAY[_s["id"]]
+            _c["props"]["sway_rate"] = 0.7 if _s["id"] in FLOATING else 0.85
 # in the blue reactor her black boots print as the same ink as the dark behind them: a thin cool line all
 # round her keeps the silhouette whole (character.py, outline_col); at dusk a warm one parts her legs from
 # the dark city below the balcony

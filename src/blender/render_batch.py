@@ -50,6 +50,9 @@ for sid in ids:
         out = common.ROOT / "work" / ("preview" if preview else "render") / sid
         # align preview steps to the global frame grid so shots share sample phases
         a = f0 + (-f0) % step
+        if opts.get("tail_only") == "1":
+            # only the frames past the cut (a dissolve's overlap), with the shot as it stands
+            a = int(round(max(shot["t1"], shot.get("render_to", 0.0)) * 24))
         common.render_frames(sc, out, a, f1, step=step, skip_existing=opts.get("force", "0") != "1")
         n = len(range(a, f1 + 1, step))
         print(f"BATCH_SHOT_OK {sid} frames={n} {time.time() - t:.1f}s peak_commit={peak_commit_mib():.0f}MiB",

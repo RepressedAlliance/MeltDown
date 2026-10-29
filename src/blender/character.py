@@ -44,13 +44,17 @@ def card_material(pose):
     tc = N.new("ShaderNodeTexCoord")
     # hair sway: a slow, smooth warp of the drawing weighted by hair_soft.png (no geometry change).
     # The weights change gradually everywhere (hair_weights.py), so lines bend instead of tearing; the
-    # motion is a breeze, about one sway every three seconds with a slower second wave on top.
+    # motion is a breeze, about one sway every three seconds with a slower second wave on top (times
+    # sway_rate: below 1 slows it, for floating).
     hair = N.new("ShaderNodeTexImage")
     soft = d / "hair_soft.png"
     hair.image = _img(soft if soft.exists() else d / "hair.png", "Non-Color")
     hair.interpolation = "Cubic"
     L.new(tc.outputs["UV"], hair.inputs["Vector"])
     t = frame_value_node(nt, "time")
+    rate = N.new("ShaderNodeAttribute")
+    rate.attribute_type = "OBJECT"
+    rate.attribute_name = "sway_rate"
     sepuv = N.new("ShaderNodeSeparateXYZ")
     L.new(tc.outputs["UV"], sepuv.inputs[0])
 
@@ -66,11 +70,12 @@ def card_material(pose):
             n.inputs[2].default_value = cv
         return n.outputs[0]
 
-    w1 = mm("SINE", mm("ADD", mm("MULTIPLY", t.outputs[0], bv=2.07), mm("MULTIPLY", sepuv.outputs["Y"], bv=5.0)))
-    w2 = mm("SINE", mm("ADD", mm("MULTIPLY", t.outputs[0], bv=1.19),
+    tt = mm("MULTIPLY", t.outputs[0], rate.outputs["Fac"])
+    w1 = mm("SINE", mm("ADD", mm("MULTIPLY", tt, bv=2.07), mm("MULTIPLY", sepuv.outputs["Y"], bv=5.0)))
+    w2 = mm("SINE", mm("ADD", mm("MULTIPLY", tt, bv=1.19),
                        mm("MULTIPLY_ADD", sepuv.outputs["Y"], bv=9.0, cv=1.3)))
     wx = mm("MULTIPLY", mm("ADD", w1, mm("MULTIPLY", w2, bv=0.45)), bv=1 / 1.45)
-    wy = mm("MULTIPLY", mm("SINE", mm("ADD", mm("MULTIPLY", t.outputs[0], bv=1.7),
+    wy = mm("MULTIPLY", mm("SINE", mm("ADD", mm("MULTIPLY", tt, bv=1.7),
                                       mm("MULTIPLY", sepuv.outputs["X"], bv=4.0))), bv=0.35)
     sway = N.new("ShaderNodeAttribute")
     sway.attribute_type = "OBJECT"
@@ -269,7 +274,8 @@ def card_material(pose):
 DEFAULTS = {
     "key_dir": (0.6, 0.5, 0.6), "key_col": (0.55, 0.5, 0.45), "amb_col": (0.45, 0.47, 0.55),
     "rim_dir": (-0.8, 0.3, 0.0), "rim_col": (0.0, 0.0, 0.0), "key_soft": 0.06, "exposure": 1.0,
-    "dissolve": 0.0, "dissolve_col": (1.0, 0.8, 0.4), "sway": 0.0, "alpha": 1.0, "blink": 0.0, "key_wash": 1.0,
+    "dissolve": 0.0, "dissolve_col": (1.0, 0.8, 0.4), "sway": 0.0, "sway_rate": 1.0, "alpha": 1.0, "blink": 0.0,
+    "key_wash": 1.0,
     "outline_col": (0.0, 0.0, 0.0),
 }
 
