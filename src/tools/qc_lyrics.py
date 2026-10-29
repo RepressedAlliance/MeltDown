@@ -89,7 +89,10 @@ def main():
             print(f"L{i:02d} appears late: {first:.2f} vs first note {ln['ct'][0]:.2f}")
             problems += 1
         nxt = TL.LINES[i + 1]["start"] if i + 1 < len(TL.LINES) else 1e9
-        if last < last_note + 0.5 and last < nxt - 0.3:
+        # a line whose section ends in a cut to black goes with that cut (its words must not come up again with
+        # the next section): that is not early, as long as its last note was sung before the cut
+        cut = next((c for c in RC._section_breaks() if last_note < c <= last + 0.25), None)   # (a 0.12 s fade)
+        if last < last_note + 0.5 and last < nxt - 0.3 and cut is None:
             print(f"L{i:02d} gone early: {last:.2f}, last note {last_note:.2f}, next line {nxt:.2f}")
             problems += 1
     # collisions and reading order, frame by frame

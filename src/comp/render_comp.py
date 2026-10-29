@@ -426,9 +426,10 @@ def _yield_to_next(ln):
     last = max(ln["ct"])
     for cut in _section_breaks():
         if ln["start"] < cut < ln["end"] + st.get("hold", 0.7) + 0.5:
-            # gone by the cut; if its last word is sung less than half a second before it (or after it), that
-            # word still gets half a second on screen, a moment into the next section (as long as it is sung)
-            starts.append(cut - 0.02 if last <= cut - 0.45 else last + 0.62)
+            # gone by the cut; if its last word is only sung after it, just long enough to read. (Never longer:
+            # the next section comes up out of black, and a line still held would come up with it, a ghost of
+            # the old section's words in the new one's first second)
+            starts.append(cut - 0.02 if last <= cut - 0.15 else last + 0.44)
     if starts:
         return dict(ln, hold_until=min(ln["end"] + 0.6, min(starts) - 0.14)), 0.12
     return ln, None
