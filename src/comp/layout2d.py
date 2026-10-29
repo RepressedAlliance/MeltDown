@@ -77,14 +77,14 @@ def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ri
         c.drawPath(pth, paint(light if plate_title else col, a))
     pw = 860
     px = 96 if panel == "left" else W - 96 - pw
-    c.drawRect(skia.Rect.MakeXYWH(px, H - 344, pw, 264), paint(ink, a * 0.95))
+    c.drawRect(skia.Rect.MakeXYWH(px, H - 344, pw, 264), paint(ink, a))
     _text(c, "MELTDOWN", "shoulders", 64, px + 24, H - 310, accent, a, tracking=0.25)
     # the credits in one language (English), the song's own credit first, the video's last
     _text(c, "iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 36, px + 28, H - 228, light, a)
     c.drawLine(px + 24, H - 246, px + pw - 24, H - 246, paint(light, a * 0.6, stroke=1.2))
-    _text(c, "music iroha(sasaki) / lyrics kuma / vocal Kagamine Rin", "mono_l", 25, px + 28, H - 172,
+    _text(c, "music iroha(sasaki) / lyrics kuma / vocal Kagamine Rin", "mono_l", 28, px + 28, H - 174,
           light, a, proportional=False)
-    _text(c, "MV  RepressedAlliance  ×  Claude", "mono_l", 25, px + 28, H - 132, light, a, proportional=False)
+    _text(c, "MV  RepressedAlliance  ×  Claude", "mono_l", 28, px + 28, H - 130, light, a, proportional=False)
 
 
 def telop(c, line, t, x, y, w, size=46):

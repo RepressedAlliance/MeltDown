@@ -182,7 +182,7 @@ S("S15", lambda: L(5) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
               props=dict(key_dir=(0.8, -0.3, 0.5), key_col=(0.9, 0.45, 0.2), amb_col=(0.1, 0.08, 0.1),
                          rim_dir=(-0.9, 0.3, 0), rim_col=(0.4, 0.55, 1.0), exposure=1.05))])
 # the diagram at her own half-figure scale, its ring where her hand presses in S15, so the push goes into her
-S("S15b", lambda: L(5) + 1.25, bg="chest_core", bg_args=dict(pose="rin_float", scale=2.0, cx=930, cy=1082), finish=NIGHT,
+S("S15b", lambda: L(5) + 1.25, bg="chest_core", bg_args=dict(pose="rin_float", scale=2.0, cx=930, cy=1130), finish=NIGHT,
   fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.12)]}, {"type": "heat", "amount": 2.0}])
 S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   cam=dict(keys=[(0, (2.75, 1.85, 1.25), (2.0, 2.75, 1.25), 40), (1, (2.65, 1.95, 1.25), (1.9, 2.75, 1.25), 42)],
@@ -217,7 +217,7 @@ S("S19", lambda: L(10) - 0.2, scene="room", setup=dict(tod="morning", wind=1.0, 
                          rim_dir=(1, 0, 0), rim_col=(0.45, 0.45, 0.47), exposure=1.0))])
 S("S20", lambda: L(11) - 0.2, scene="room", setup=dict(tod="morning", plate=None, world=(2.2, 2.2, 2.3)), finish=DAYW,
   fx=[{"type": "exposure", "ev": [(0, -0.3), (0.7, 0.2), (1, 1.6)]}, {"type": "glitch", "on": [(0, 0), (0.6, 0), (0.62, 1), (1, 1)],
-                                                         "amount": 1.0}],
+                                                         "amount": 0.5}],
   hud=dict(level=1, alarm=True),
   # from her whole head, bow included, a decisive push to her eyes
   cam=dict(keys=[(0, (1.62, 1.5, 0.98), (1.0, 2.2, 1.0), 37), (1, (1.42, 1.73, 0.95), (1.0, 2.2, 0.95), 78)],
@@ -684,7 +684,7 @@ FLOW = {
     "S11": dict(in_="dissolve", in_dur=0.4, in_anchor=(380, 360), in_radial=True),  # her back -> her face, first line
     "S13": dict(out="white", out_dur=0.25, out_anchor=(940, 540)),  # the light at the street's end grows,
     "S14": dict(in_="white", in_dur=0.3, in_anchor=(1280, 340)),  # and the lighter comes out of its spark
-    "S15b": dict(in_="zoom", in_dur=0.3, in_anchor=(935, 800), in_radial=True),   # into her chest: the diagram
+    "S15b": dict(in_="zoom", in_dur=0.3, in_anchor=(933, 830), in_radial=True),   # into her chest: the diagram
     "S16": dict(in_="dissolve", in_dur=0.3, out="white", out_dur=0.35),   # and up into the white room
     "S18": dict(in_="zoom", in_dur=0.3, in_anchor=(955, 470), in_radial=True),    # into her eye, where it is
     "S24": dict(in_="flash"),                                     # out of the burnt-white page
@@ -702,7 +702,12 @@ FLOW = {
     "S35": dict(in_="dissolve", in_dur=0.6, in_bloom=0.3),       # dusk -> blue hour
     "S36": dict(out="black", out_dur=0.35),                       # the room goes dark as the band stops
     "S37": dict(out=None),                                        # the ring drawn in the silence ...
-    "S38": dict(in_="iris", in_dur=0.45, in_r0=170),              # ... opens out from its own radius on the chorus
+    "S38": dict(in_="iris", in_dur=0.45, in_r0=170,               # ... opens out from its own radius on the chorus
+                type_mode="plate", plate=1.5),
+    # lines over the reactor's brightest structure and the white glow: light type on a wide dark cloud
+    "S25": dict(type_mode="plate", plate=1.5),
+    "S42b": dict(type_mode="plate", plate=1.5),
+    "S58": dict(type_mode="plate", plate=1.5),
     "S39": dict(in_="flash"),
     "S43": dict(in_="white", in_dur=1.0),                         # the white chorus settles into the gears
     "S43b": dict(in_="dissolve", in_dur=0.6),
@@ -736,7 +741,7 @@ for _s in SHOTS:
     if _s["id"] in TAILS:
         _s["tail"] = TAILS[_s["id"]]
 for _sid in ("S45e", "S45f", "S45g", "S45b"):
-    next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.4
+    next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.8
 # and a steady, feathered shade where those lines sit: the echo block top left in the bridge inserts, the
 # vertical column on the right over the window and the clock
 READING_SHADE = {"S45e": (0, 0, 1000, 400), "S45f": (0, 0, 1000, 400), "S45g": (0, 0, 1000, 400),
@@ -747,7 +752,8 @@ for _sid, _rect in READING_SHADE.items():
     _s = next(_s for _s in SHOTS if _s["id"] == _sid)
     _s["fx"] = list(_s.get("fx", [])) + [{"type": "darken", "rect": _rect, "feather": 90, "amount": 0.5}]
 # light type over lit windows, the reactor's rings and the gears' highlights: a wider, firmer backing
-for _sid in ("S11", "S12", "S13", "S22", "S25", "S53", "S58", "S62", "S63"):
+# (S25 and S58, where even that lost the type in the reactor's rings, get 1.5 in FLOW)
+for _sid in ("S11", "S12", "S13", "S22", "S53", "S62", "S63"):
     next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.25
 # the TV caption sits low on the left, where a broadcast puts it: clear of her hands (S44c), the host's
 # face and waving hand (S45) and most of the clock (S44d)
@@ -787,7 +793,7 @@ THERMAL = {
     "S49": dict(lyric_glitch=[(0, 0.2), (1, 0.6)]),
     "S56": dict(fx=[{"type": "rgbsplit", "px": [(0, 0.0), (0.7, 2.0), (1, 8.0)]}],
                 lyric_glitch=[(0, 0.0), (0.75, 0.0), (1, 0.8)]),
-    "S57": dict(lyric_glitch=[(0, 0.15), (1, 0.4)]),
+    "S57": dict(lyric_glitch=[(0, 0.0), (1, 0.15)]),
 }
 for _s in SHOTS:
     for _k, _v in THERMAL.get(_s["id"], {}).items():
