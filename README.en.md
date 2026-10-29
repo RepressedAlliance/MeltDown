@@ -2,7 +2,7 @@
   <img src="docs/images/hero.jpg" alt="Frames from the 《炉心融解》 MV: the room at night, the reactor core, dusk, Rin on TV, morning" width="100%">
 </p>
 
-<h1 align="center">Paper Reactor · 纸上炉心</h1>
+<h1 align="center">MeltDown</h1>
 
 <p align="center">
   <b>The complete production of a fan music video for 《炉心融解》 (Roshin Yuukai, "Meltdown")</b><br>
@@ -130,8 +130,8 @@ Every step's commands are in [docs/制作流程.md](docs/制作流程.md) (Chine
 You need Windows 10/11, Python 3.12, [Blender 5.2](https://www.blender.org/download/), [ffmpeg](https://ffmpeg.org/) and about 20 GB of disk.
 
 ```powershell
-git clone https://github.com/RepressedAlliance/paper-reactor.git
-cd paper-reactor
+git clone https://github.com/RepressedAlliance/MeltDown.git
+cd MeltDown
 py -3.12 -m venv .venv
 .venv\Scripts\pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 .venv\Scripts\python src\tools\fetch_fonts.py
@@ -161,7 +161,7 @@ Reference times on an RTX 4060 Laptop with 16 GB of RAM: about 1–2 s per 3D fr
 ## Repository layout
 
 ```
-paper-reactor/
+MeltDown/
 ├── src/
 │   ├── analysis/      beats, stems, note-level lyric alignment
 │   ├── blender/       sets, bedding, the character card shader, shot rendering

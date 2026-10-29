@@ -2,7 +2,7 @@
   <img src="docs/images/hero.jpg" alt="《炉心融解》MV 的画面：深夜的房间、炉心、黄昏、电视里的铃、清晨" width="100%">
 </p>
 
-<h1 align="center">纸上炉心 · Paper Reactor</h1>
+<h1 align="center">MeltDown</h1>
 
 <p align="center">
   <b>《炉心融解》同人 MV 的完整制作工程</b><br>
@@ -129,8 +129,8 @@ Blender 渲染帧 / 二维镜头 ─► 镜头特效 ─► 印刷：网点 · �
 需要 Windows 10/11、Python 3.12、[Blender 5.2](https://www.blender.org/download/)、[ffmpeg](https://ffmpeg.org/)，以及约 20 GB 磁盘空间。
 
 ```powershell
-git clone https://github.com/RepressedAlliance/paper-reactor.git
-cd paper-reactor
+git clone https://github.com/RepressedAlliance/MeltDown.git
+cd MeltDown
 py -3.12 -m venv .venv
 .venv\Scripts\pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 .venv\Scripts\python src\tools\fetch_fonts.py
@@ -160,7 +160,7 @@ py -3.12 -m venv .venv
 ## 目录
 
 ```
-paper-reactor/
+MeltDown/
 ├── src/
 │   ├── analysis/      节拍、人声分离、逐字歌词对齐
 │   ├── blender/       场景模块、角色卡片着色器、镜头渲染
