@@ -653,7 +653,7 @@ def crt_tv(coll, loc=(2.3, 0.3, 0.0)):
 
 
 def build(sc, time_of_day="night", lamp_on=None, city_plate=None, wind=0.0, seed=3, void=False, pillow_dent=None,
-          quilt=None, sun=None, sit=None, rake=None):
+          quilt=None, sun=None, sit=None, rake=None, window_light=1.0):
     sun_opts = sun
     col = collection("Room")
     if void:
@@ -757,13 +757,15 @@ def build(sc, time_of_day="night", lamp_on=None, city_plate=None, wind=0.0, seed
     wl = bpy.data.lights.new("WindowLight", "AREA")
     wl.shape = "RECTANGLE"
     wl.size, wl.size_y = WIN_X1 - WIN_X0, WIN_Z1 - WIN_Z0
-    wl.color, wl.energy = sky[0], sky[1]
+    # window_light < 1 darkens the room around her for a shot: her card is lit by its own props, so the
+    # walls drop away and she stays the brightest thing in a grey print
+    wl.color, wl.energy = sky[0], sky[1] * window_light
     wlo = link(bpy.data.objects.new("WindowLight", wl), col)
     wlo.location = ((WIN_X0 + WIN_X1) / 2, D - 0.1, (WIN_Z0 + WIN_Z1) / 2)
     wlo.rotation_euler = (math.radians(-90), 0, 0)  # area lights emit along local -Z: point into the room
     bl = bpy.data.lights.new("CityBounce", "AREA")
     bl.size = 2.5
-    bl.color, bl.energy = sky[2], sky[3]
+    bl.color, bl.energy = sky[2], sky[3] * window_light
     blo = link(bpy.data.objects.new("CityBounce", bl), col)
     blo.location = (W / 2, D + 1.0, 0.0)
     blo.rotation_euler = (math.radians(-60), 0, 0)
@@ -909,7 +911,7 @@ def build_shot(sc, shot):
     objs = build(sc, time_of_day=tod, lamp_on=st.get("lamp"),
                  city_plate=st.get("plate", default_plate), wind=st.get("wind", 0.0), void=st.get("void", False),
                  pillow_dent=st.get("pillow_dent"), quilt=_quilt(st.get("quilt")), sun=st.get("sun"),
-                 sit=_sit(shot), rake=st.get("rake"))
+                 sit=_sit(shot), rake=st.get("rake"), window_light=st.get("window_light", 1.0))
     for nm in st.get("hide", []):
         ob = bpy.data.objects.get(nm)
         if ob:

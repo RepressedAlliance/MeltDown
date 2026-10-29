@@ -428,13 +428,16 @@ S("S43b", 172.91, scene="room", setup=dict(tod="night", lamp=False), finish=MONO
   cam=dict(keys=[(0, (3.0, 1.05, 1.88), (3.6, 1.0, 1.85), 70), (1, (3.05, 1.02, 1.86), (3.6, 1.0, 1.85), 85)],
            fstop=2.2),
   anim=dict(clock_tick=True))
-S("S43c", 179.46, scene="room", setup=dict(tod="night", lamp=False, rake=True), finish=MONO,
+# the room is dimmed to the TV's glow (window_light): in the grey print her light hair went the same grey as
+# the lit wall behind her
+S("S43c", 179.46, scene="room", setup=dict(tod="night", lamp=False, rake=True, window_light=0.45), finish=MONO,
   cam=dict(keys=[(0, (3.2, 2.4, 1.5), (1.2, 0.8, 0.6), 24), (1, (3.1, 2.2, 1.45), (1.2, 0.8, 0.6), 26)], fstop=4.0),
   # cross-legged and slumped, hands limp in her lap, staring at the snow on the screen
   cards=[dict(pose="rin_sit_cross", h=1.0, loc=(0.6, 1.4, 0.38), rot=(90, 0, -90), face_cam=True,
               contact=SIT,
+              # brighter than the room: in the grey print she went the same grey as the wall and the bed
               props=dict(key_dir=(0.8, 0.1, 0.5), key_col=(0.35, 0.4, 0.5), amb_col=(0.03, 0.035, 0.05),
-                         rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.0))],
+                         rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.3))],
   anim=dict(crt_static=[(0, 1.0), (1, 1.0)]), fx=[{"type": "tvflicker"}])
 # the line about the TV host: the set tunes in out of the snow while it is sung, and the host is Rin herself,
 # smiling and waving on air. The render runs on to 196.72 so the inserts below can re-use it.
