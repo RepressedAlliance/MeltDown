@@ -421,7 +421,8 @@ def chest_core(t, u, pose="rin_float", chest=(0.5, 0.36), scale=0.86, cx=W * 0.4
             rr = r * (2.6 - 0.5 * k) - 60 * u
             c.drawCircle(px, py, max(r * 1.15, rr), paint(col, 0.25 + 0.2 * k, stroke=1.4))
     else:
-        r = 46 + 10 * beat + 20 * u
+        # sized with the figure (0.86 is the whole outline in frame)
+        r = (46 + 10 * beat + 20 * u) * scale / 0.86
         c.drawCircle(px, py, r, paint((1.0, 0.75, 0.3), 1.0, stroke=6))
         c.drawCircle(px, py, r * 0.55, paint((1.0, 0.9, 0.6), 0.9, stroke=2))
         c.drawCircle(px, py, r * 1.6, paint((1.0, 0.6, 0.25), 0.35 + 0.5 * beat, stroke=1.2))

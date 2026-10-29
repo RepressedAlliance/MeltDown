@@ -588,7 +588,9 @@ def iris_blend(img, t, shot, prev_shot, preview):
     old = _iris_cache[key]
     k = dt / d
     k = 1 - (1 - k) ** 3
-    r = k * math.hypot(W, H) / 2
+    # in_r0: the radius it opens from, e.g. a ring the shot before has drawn, so the ring itself opens
+    r0 = shot.get("in_r0", 0.0)
+    r = r0 + k * (math.hypot(W, H) / 2 - r0)
     yy, xx = np.ogrid[0:H, 0:W]
     dist = np.sqrt((xx - W / 2) ** 2 + (yy - H / 2) ** 2)
     m = np.clip((r - dist) / 3.0 + 0.5, 0, 1).astype(np.float32)[..., None]
@@ -596,21 +598,21 @@ def iris_blend(img, t, shot, prev_shot, preview):
     return old * (1 - m) + img * m + ring * np.array([0.6, 0.9, 1.0], np.float32)
 
 
-def _zoom_blur(img, spread, steps=6):
-    """Copies scaled about the centre from 1 to 1+spread, averaged: a dolly blur through the frame."""
+def _zoom_blur(img, spread, steps=6, c=(W / 2, H / 2)):
+    """Copies scaled about c from 1 to 1+spread, averaged: a dolly blur through the frame."""
     if spread < 0.004:
         return img
     acc = np.zeros_like(img)
     for k in range(steps):
-        m = cv2.getRotationMatrix2D((W / 2, H / 2), 0, 1 + spread * (k + 1) / steps)
+        m = cv2.getRotationMatrix2D(c, 0, 1 + spread * (k + 1) / steps)
         acc += cv2.warpAffine(img, m, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
     return acc / steps
 
 
-def _scaled(img, s):
+def _scaled(img, s, c=(W / 2, H / 2)):
     if abs(s - 1) < 1e-3:
         return img
-    m = cv2.getRotationMatrix2D((W / 2, H / 2), 0, s)
+    m = cv2.getRotationMatrix2D(c, 0, s)
     return cv2.warpAffine(img, m, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
 
 
@@ -620,7 +622,11 @@ def cross_blend(img, f, t, shot, prev_shot, preview):
       dissolve  a plain cross-dissolve (in_bloom > 0 lifts the light at its middle, a light leak)
       zoom      a dolly through the cut: the old shot pushes in and blurs away while the new one comes
                 in moving forward (its own camera; no reverse scaling, which read as a stop), both
-                radially blurred around the midpoint"""
+                radially blurred around the midpoint
+    in_anchor (x, y) is the point the cut pushes into (the frame centre by default): a light the old shot
+    flies towards, where the new one carries on; in_push is how far the old shot pushes in (0.3); with
+    in_radial the new shot opens out of the anchor in a soft disc instead of over the whole frame, so the
+    two pictures never lie on top of each other"""
     d = shot.get("in_dur", 0.5)
     dt = t - shot["t0"]
     if prev_shot is None or dt >= d:
@@ -628,10 +634,19 @@ def cross_blend(img, f, t, shot, prev_shot, preview):
     old = render_frame([prev_shot], f, preview, raw=True)
     k = dt / d
     w = k * k * (3 - 2 * k)
+    c = tuple(float(v) for v in shot.get("in_anchor", (W / 2, H / 2)))
     if shot["in"] == "zoom":
-        old = _zoom_blur(_scaled(old, 1 + 0.3 * k), 0.09 * w)
-        img = _zoom_blur(img, 0.09 * (1 - w))
-    out = old * (1 - w) + img * w
+        old = _zoom_blur(_scaled(old, 1 + shot.get("in_push", 0.3) * k, c), 0.09 * w, c=c)
+        img = _zoom_blur(img, 0.09 * (1 - w), c=c)
+    if shot.get("in_radial"):
+        far = max(math.hypot(x - c[0], y - c[1]) for x in (0, W) for y in (0, H))
+        soft = 0.35 * far
+        yy, xx = np.ogrid[0:H, 0:W]
+        dist = np.sqrt((xx - c[0]) ** 2 + (yy - c[1]) ** 2)
+        m = np.clip((w * (far + soft) - dist) / soft, 0, 1).astype(np.float32)[..., None]
+        out = old * (1 - m) + img * m
+    else:
+        out = old * (1 - w) + img * w
     b = shot.get("in_bloom", 0.0)
     if b:
         out = out + b * math.sin(math.pi * k) * cv2.GaussianBlur(out, (0, 0), 25)

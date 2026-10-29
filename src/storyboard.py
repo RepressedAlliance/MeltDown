@@ -181,7 +181,8 @@ S("S15", lambda: L(5) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
   cards=[dict(pose="rin_wince", h=0.6846, loc=(1.0066, 2.2058, 0.5833), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(0.8, -0.3, 0.5), key_col=(0.9, 0.45, 0.2), amb_col=(0.1, 0.08, 0.1),
                          rim_dir=(-0.9, 0.3, 0), rim_col=(0.4, 0.55, 1.0), exposure=1.05))])
-S("S15b", lambda: L(5) + 1.25, bg="chest_core", bg_args=dict(pose="rin_float"), finish=NIGHT,
+# the diagram at her own half-figure scale, its ring where her hand presses in S15, so the push goes into her
+S("S15b", lambda: L(5) + 1.25, bg="chest_core", bg_args=dict(pose="rin_float", scale=2.0, cx=930, cy=1082), finish=NIGHT,
   fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.12)]}, {"type": "heat", "amount": 2.0}])
 S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   cam=dict(keys=[(0, (2.75, 1.85, 1.25), (2.0, 2.75, 1.25), 40), (1, (2.65, 1.95, 1.25), (1.9, 2.75, 1.25), 42)],
@@ -454,7 +455,7 @@ S("S50", 230.88, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube
 # window while the camera creeps toward her, until she is the only thing left on the bed in the dark
 S("S51", 240.2, frames_from=dict(id="S50", at=9.75, speed=0.0), finish=VOID,
   fx=[{"type": "lights_out", "progress": [(0, 0.0), (0.72, 1.0), (1, 1.0)], "keep": (940, 540, 115)},
-      {"type": "zoom", "z": [(0, 1.0), (0.3, 1.06), (1, 1.5)], "cx": -20, "cy": -20}])
+      {"type": "zoom", "z": [(0, 1.0), (0.3, 1.08), (1, 1.8)], "cx": -20, "cy": -20}])
 S("S52", 250.0, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube", "LampShade"]), finish=VOID,
   hud=dict(level=1, alpha=0.6), render=dict(samples=64),
   fx=[{"type": "breath"}],
@@ -668,35 +669,52 @@ for _s in SHOTS:
 # the light itself changes. Beat cuts stay in the choruses and the bridge montage. The shot before a
 # dissolve or a dolly-through renders a `tail` past the cut, so it keeps moving underneath (TAILS).
 FLOW = {
+    # the way in, one forward flight: every cut pushes on into the next picture, and where the old shot flies
+    # towards a light, the new one opens out of that light (in_anchor, in_radial) instead of lying over it
+    "S05": dict(in_="zoom", in_dur=0.4, in_anchor=(968, 722), in_radial=True),       # out of the canyon's end
+    "S06": dict(in_="zoom", in_dur=0.6, in_anchor=(1807, 285), in_push=0.15, in_radial=True),  # the reactor in her window
+    "S07": dict(in_="zoom", in_dur=0.5, in_anchor=(1009, 497), in_radial=True, in_bloom=0.35),  # the city out of its mouth
+    "S08": dict(in_="zoom", in_dur=0.45, in_radial=True),                           # down onto the core
+    "S09": dict(in_="zoom", in_dur=0.45, in_radial=True, in_bloom=0.4),            # its light opens on her in bed
+    "S10": dict(in_="zoom", in_dur=0.45, in_radial=True),
     "S11": dict(in_="dissolve", in_dur=0.35),                     # the window -> her face, first line
-    "S15b": dict(in_="zoom", in_dur=0.3),                         # into her chest: the reactor diagram
+    "S14": dict(in_="zoom", in_dur=0.3, in_anchor=(1280, 340), in_radial=True),    # the street's end -> the lighter
+    "S15b": dict(in_="zoom", in_dur=0.3, in_anchor=(935, 800), in_radial=True),   # into her chest: the diagram
     "S16": dict(in_="dissolve", in_dur=0.3, out="white", out_dur=0.35),   # and up into the white room
-    "S18": dict(in_="zoom", in_dur=0.3),                          # into her eye
+    "S18": dict(in_="zoom", in_dur=0.3, in_anchor=(955, 470), in_radial=True),    # into her eye, where it is
     "S24": dict(in_="flash"),                                     # out of the burnt-white page
     "S28": dict(in_="dissolve", in_dur=0.5),                      # chorus -> the map interlude
+    "S29": dict(in_="zoom", in_dur=0.4, in_radial=True),          # the map's ring opens on the reactor's ring at dusk
     "S30": dict(in_="dissolve", in_dur=0.4),
     "S31": dict(in_="dissolve", in_dur=0.4),
-    "S32": dict(in_="dissolve", in_dur=0.5),                      # the dark stairs -> her lit room
-    "S34": dict(in_="zoom", in_dur=0.4),                          # through the sun in her eye
+    "S32": dict(in_="dissolve", in_dur=0.5, in_bloom=0.4),        # the dark stairs -> her lit room, on a flare
+    "S34": dict(in_="zoom", in_dur=0.4, in_anchor=(945, 570), in_radial=True),    # through the sun in her eye
     "S35": dict(in_="dissolve", in_dur=0.6, in_bloom=0.3),       # dusk -> blue hour
     "S36": dict(out="black", out_dur=0.35),                       # the room goes dark as the band stops
+    "S37": dict(out=None),                                        # the ring drawn in the silence ...
+    "S38": dict(in_="iris", in_dur=0.45, in_r0=170),              # ... opens out from its own radius on the chorus
+    "S39": dict(in_="flash"),
     "S43": dict(in_="white", in_dur=1.0),                         # the white chorus settles into the gears
     "S43b": dict(in_="dissolve", in_dur=0.6),
     "S43c": dict(in_="dissolve", in_dur=0.6),
     "S44": dict(in_="dissolve", in_dur=0.5),
     "S46": dict(in_="glitch"),
-    "S52": dict(in_="dissolve", in_dur=1.0),                      # the empty dark -> her sleepless face
-    "S54": dict(in_="dissolve", in_dur=0.6),
-    "S55": dict(in_="dissolve", in_dur=0.4),
+    "S49": dict(out="black", out_dur=0.25),                       # the red figure and its trace dim together,
+    "S50": dict(in_="black", in_dur=0.9),                         # and her dark room comes up sooner
+    # the push onto her bed lands on her sleepless face; it whitens out into the city
+    "S52": dict(in_="zoom", in_dur=0.8, in_anchor=(940, 520), in_push=0.6, in_radial=True, out="white", out_dur=0.45),
+    "S53": dict(in_="white", in_dur=0.45),
+    "S54": dict(in_="dissolve", in_dur=0.6, in_anchor=(600, 540), in_radial=True),  # the reactor -> her, in its place
+    "S55": dict(in_="zoom", in_dur=0.4, in_anchor=(1030, 430), in_push=0.5, in_radial=True),  # her chest -> the diagram
     "S56": dict(in_="zoom", in_dur=0.3),
     "S60": dict(in_="dissolve", in_dur=0.5, in_bloom=0.4),       # she dissolves into the light
     "S61": dict(in_="dissolve", in_dur=0.5),
     "S64": dict(in_="dissolve", in_dur=0.5),
-    "S65": dict(in_="dissolve", in_dur=0.8),                      # the dawn city -> her morning room
-    "S65b": dict(in_="dissolve", in_dur=0.6),
-    "S65c": dict(in_="dissolve", in_dur=0.6),
+    "S65": dict(in_="dissolve", in_dur=0.5, in_bloom=0.3, in_anchor=(555, 465), in_radial=True),  # the dawn sun -> her room
+    "S65b": dict(in_="zoom", in_dur=0.5),                         # closer on one push ...
+    "S65c": dict(in_="zoom", in_dur=0.7, in_anchor=(1335, 510), in_push=0.5, in_radial=True),  # ... into her face
 }
-TAILS = {"S15": 0.35, "S17": 0.35, "S27": 0.55, "S29": 0.45, "S30": 0.45, "S31": 0.55, "S34": 0.65, "S43": 0.65,
+TAILS = {"S13": 0.35, "S15": 0.35, "S17": 0.35, "S27": 0.55, "S29": 0.45, "S30": 0.45, "S31": 0.55, "S34": 0.65, "S43": 0.65,
          "S43b": 0.65, "S43c": 0.55, "S53": 0.65, "S54": 0.45, "S59": 0.55, "S60": 0.55, "S63": 0.55, "S64": 0.85,
          "S65": 0.65, "S65b": 0.65}
 for _s in SHOTS:
