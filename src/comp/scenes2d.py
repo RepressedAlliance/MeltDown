@@ -71,10 +71,11 @@ def ring(t, u, radius=210.0, draw=1.0, color=(0.45, 0.85, 1.0), breathe=True, gr
 
 def eye(t, u, city_plate=None, zoom=(1.0, 1.18), drift=(0, -12), reflect=0.55, tear=0.0, light=1.0,
         pose="rin_eye_macro", **kw):
-    """Rin's eye with the city reflected in the iris (`pose`: an alternate drawing of the same eye,
-    e.g. swollen from crying, aligned to the original so the iris ellipse still applies)."""
+    """Rin's eye with the city reflected in the iris (`pose`: another drawing of her eye, with its own
+    iris.json, or one aligned to the original so the original's iris ellipse still applies)."""
     rgb, _ = _img(CHAR / pose / "color.png")
-    info = json.loads((CHAR / "rin_eye_macro" / "iris.json").read_text())
+    iris = CHAR / pose / "iris.json"
+    info = json.loads((iris if iris.exists() else CHAR / "rin_eye_macro" / "iris.json").read_text())
     (icx, icy), (ew, eh), ang = info["ellipse"]
     h, w = rgb.shape[:2]
     if light != 1.0:
@@ -339,9 +340,10 @@ def score(t, u, mode="calm", **kw):
 
 # ---------------------------------------------------------------- tinnitus
 
-def tinnitus(t, u, pose="rin_ears_covered", close=False, **kw):
-    # sized so her bow and elbows stay inside the frame
-    scale, cx, cy = (1.15, W * 0.68, H * 0.64) if not close else (1.45, W * 0.6, H * 0.8)
+def tinnitus(t, u, pose="rin_ears_covered", close=False, scale=None, cx=None, cy=None, **kw):
+    # sized so her bow and elbows stay inside the frame (a drawing of its own gives its own placement)
+    s0, x0, y0 = (1.15, W * 0.68, H * 0.64) if not close else (1.45, W * 0.6, H * 0.8)
+    scale, cx, cy = scale or s0, cx or x0, cy or y0
     base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=scale, cx=cx, cy=cy,
                 duotone=((0.03, 0.0, 0.01), (1.0, 0.16, 0.12)))
     s = surface()
@@ -390,23 +392,45 @@ def endcard(t, u, **kw):
 
 # ---------------------------------------------------------------- the reactor in her chest
 
-def chest_core(t, u, pose="rin_float", chest=(0.5, 0.36), scale=0.86, cx=W * 0.42, cy=H * 0.52, mode="calm", **kw):
-    """Rin as a technical silhouette with a pulsing reactor ring where her heart is. Sized so the whole
-    outline, bow to feet, stays inside the frame through the shot's push-in."""
+def chest_core(t, u, pose="rin_float", chest=(0.5, 0.36), scale=0.86, cx=W * 0.42, cy=H * 0.52, mode="calm",
+               angle=0.0, push=None, quad=None, **kw):
+    """Rin as a technical silhouette with a pulsing reactor ring at `chest` (a point of the drawing, as
+    fractions of its width and height). `scale`, `cx`, `cy` and `angle` (degrees, counter-clockwise) place the
+    drawing; or `quad`, its four corners in the frame (top-left, top-right, bottom-right, bottom-left), where a
+    3D shot shows her card in perspective (src/tools/card_quad.py). Laid exactly over the shot next to it, the
+    diagram becomes her and she becomes the diagram.
+    `push`: dict(z, about) pushes in by z over the shot, evenly, about a fixed point of the frame. The drawing is
+    placed larger each frame rather than the finished picture being enlarged, so a push about a point outside
+    the frame never has to invent picture beyond its edge."""
     import timeline as TL
     rgb, a = _img(CHAR / pose / "color.png")
     edge = cv2.imread(str(CHAR / pose / "edge.png"), cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255
     h, w = a.shape
-    s = scale * H / h
-    al = _place(a, s, cx, cy)
-    ed = _place(edge, s, cx, cy)
+    corners = np.float32([(0, 0), (w, 0), (w, h), (0, h)])
+    if quad is not None:
+        M = cv2.getPerspectiveTransform(corners, np.float32(quad))
+    else:
+        M = np.vstack([cv2.getRotationMatrix2D((w / 2, h / 2), angle, scale * H / h), (0, 0, 1)])
+        M[0, 2] += cx - w / 2
+        M[1, 2] += cy - h / 2
+    if push:
+        z = push["z"] ** u
+        ax, ay = push["about"]
+        M = np.array([[z, 0, ax * (1 - z)], [0, z, ay * (1 - z)], [0, 0, 1]]) @ M
+    al = cv2.warpPerspective(a, M, (W, H), flags=cv2.INTER_LINEAR)
+    ed = cv2.warpPerspective(edge, M, (W, H), flags=cv2.INTER_LINEAR)
+
+    def at(x, y):
+        q = M @ (x, y, 1.0)
+        return q[0] / q[2], q[1] / q[2]
+    px, py = at(chest[0] * w, chest[1] * h)
+    # how large the drawing stands at her chest, in the units of `scale` (the drawing's height over the frame's)
+    scale = math.dist(at(chest[0] * w, chest[1] * h - h * 0.05), at(chest[0] * w, chest[1] * h + h * 0.05)) / (0.1 * H)
     out = np.ones((H, W, 3), np.float32) * np.array([0.05, 0.06, 0.14], np.float32)
     body = np.array([0.02, 0.025, 0.06], np.float32)
     out = out * (1 - al[..., None]) + body * al[..., None]
     out = out + (ed > 0.55).astype(np.float32)[..., None] * np.array([0.75, 0.8, 0.85], np.float32) * 0.8
     # the ring at the chest, beating with the kick drum
-    px = cx + (chest[0] - 0.5) * w * s
-    py = cy + (chest[1] - 0.5) * h * s
     kicks = [k for k in TL._audio.get("kicks", []) if 0 <= t - k < 0.4]
     beat = math.exp(-(t - max(kicks)) * 9) if kicks else 0.0
     srf = surface()

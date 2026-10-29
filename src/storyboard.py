@@ -181,16 +181,23 @@ S("S15", lambda: L(5) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
   cards=[dict(pose="rin_wince", h=0.6846, loc=(1.0066, 2.2058, 0.5833), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(0.8, -0.3, 0.5), key_col=(0.9, 0.45, 0.2), amb_col=(0.1, 0.08, 0.1),
                          rim_dir=(-0.9, 0.3, 0), rim_col=(0.4, 0.55, 1.0), exposure=1.05))])
-# the diagram at her own half-figure scale, its ring where her hand presses in S15, so the push goes into her
-S("S15b", lambda: L(5) + 1.25, bg="chest_core", bg_args=dict(pose="rin_float", scale=2.0, cx=930, cy=1130), finish=NIGHT,
-  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.12)]}, {"type": "heat", "amount": 2.0}])
+# S15's own drawing as the diagram, laid exactly over that shot as the dissolve passes (`quad`: where its card
+# lands in S15's frame 1128, src/tools/card_quad.py, taken back through this shot's push at that moment): the
+# blueprint spreads out from the hand pressed to her stomach, its ring there, and the push goes in to it
+S("S15b", lambda: L(5) + 1.25, bg="chest_core",
+  bg_args=dict(pose="rin_wince", chest=(0.566, 0.833),
+               quad=[(596.2, 64.0), (1366.2, 60.4), (1398.4, 1272.1), (566.7, 1268.9)],
+               push=dict(z=1.6, about=(1080, 1600))),
+  finish=NIGHT, fx=[{"type": "heat", "amount": 2.0}])
 S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   cam=dict(keys=[(0, (2.75, 1.85, 1.25), (2.0, 2.75, 1.25), 40), (1, (2.65, 1.95, 1.25), (1.9, 2.75, 1.25), 42)],
            fstop=2.8, focus=1.3),
   fx=[{"type": "darken", "rect": (630, 600, 890, 1080), "feather": 25, "amount": 0.9},
       {"type": "darken", "rect": (900, 860, 1920, 1080), "feather": 90, "amount": 0.45},
-      {"type": "ghost", "pose": "rin_face_close", "x": 1180, "y": 640, "scale": 1.05, "opacity": 0.75,
-       "holdout": 0.8, "drift": -60},
+      # her reflection in the window glass, not another shot of her: a drawing of its own, face-on as into a
+      # mirror (S15 and S17 show her turned right), faint, and the city lights show through her
+      {"type": "ghost", "pose": "rin_reflect", "x": 1280, "y": 600, "scale": 0.6, "opacity": 0.5,
+       "holdout": 0.35, "drift": -60},
       {"type": "zoom", "z": [(0, 1.0), (1, 1.07)], "cx": 220, "cy": 60}, {"type": "kick", "amount": 0.008}])
 
 # ================================================================ B1 (white afternoon dream)
@@ -205,7 +212,8 @@ S("S17", lambda: L(8) - 0.2, scene="room", setup=dict(tod="morning", wind=0.8, p
   cards=[dict(pose="rin_hands", h=0.755, loc=(1.0, 2.2, 0.507), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(0.6, 0.3, 0.5), key_col=(0.6, 0.58, 0.55), amb_col=(0.55, 0.55, 0.6),
                          rim_dir=(0.9, 0.2, 0), rim_col=(0.45, 0.45, 0.47), exposure=1.0))])
-S("S18", lambda: L(9) - 0.2, bg="eye", bg_args=dict(city_plate=None, zoom=(1.1, 1.3), tear=0.7, light=1.0),
+S("S18", lambda: L(9) - 0.2, bg="eye", bg_args=dict(pose="rin_eye_macro_wide", city_plate=None, zoom=(1.1, 1.3),
+                                                      tear=0.7, light=1.0),
   finish=DAYW, fx=[{"type": "strobe", "amount": 0.35}])
 S("S19", lambda: L(10) - 0.2, scene="room", setup=dict(tod="morning", wind=1.0, plate=None, world=(2.2, 2.2, 2.3)), finish=DAYW,
   fx=[{"type": "exposure", "ev": -0.3}],
@@ -335,8 +343,9 @@ S("S35", lambda: L(26) - 0.2, scene="room", setup=dict(tod="night", wind=1.2, ra
     "Lighter", "Glass"]), finish=NIGHT,
   # the camera sits far enough left that the reactor ring stays inside one pane of the window
   cam=dict(keys=[(0, (2.6, 0.5, 1.32), (1.0, 2.3, 1.0), 24), (1, (2.52, 0.6, 1.29), (0.97, 2.3, 0.98), 25)], fstop=3.2),
-  cards=[dict(pose="rin_sit_knees", h=1.05, loc=(0.6, 1.45, 0.38), rot=(90, 0, 90), face_cam=True,
-              contact=SIT,
+  # not the opening's knees-up pose: she sits with her legs folded to one side, turned to the window
+  cards=[dict(pose="rin_sit_side", h=1.0, loc=(0.6, 1.45, 0.38), rot=(90, 0, 90), face_cam=True,
+              contact=SIT, blink=True,
               props=dict(key_dir=(0.8, 0.25, 0.4), key_col=(0.42, 0.52, 0.85), amb_col=(0.09, 0.1, 0.17),
                          rim_dir=(0.9, 0.2, 0), rim_col=(0.7, 0.82, 1.2), exposure=1.0))])
 # the line about words spilling from her lips: a tighter profile, lips parted as she murmurs.
@@ -378,7 +387,8 @@ S("S41", lambda: greet(33), free=True, scene="core", setup=dict(mood="white"), f
 S("S42", lambda: L(34) - 0.15, scene="core", setup=dict(mood="white"), finish=WHITE,
   cam=dict(keys=[(0, ring_pos(0.0, R + 2.6, 1.2), ring_pos(0.12, R + 2.3, -0.3), 30),
                  (1, ring_pos(0.04, R + 2.6, 0.9), ring_pos(0.12, R + 2.3, -0.3), 34)], fstop=2.2),
-  cards=[dict(pose="rin_sleep", h=0.95, loc=ring_pos(0.12, R + 2.3, -0.9), rot=(70, 0, 0), face_cam="full",
+  # asleep in the light, curled in the air (her sleeping drawing on the bed is S32's and the ending's)
+  cards=[dict(pose="rin_float_sleep", h=0.95, loc=ring_pos(0.12, R + 2.3, -0.9), rot=(70, 0, 0), face_cam="full",
               props=dict(key_dir=(0.0, 0.7, 0.6), key_col=(0.5, 0.55, 0.6), amb_col=(0.5, 0.52, 0.58),
                          rim_dir=(0, 1, 0), rim_col=(0.45, 0.45, 0.47), exposure=1.05))])
 
@@ -400,7 +410,8 @@ S("S43b", 172.91, scene="room", setup=dict(tod="night", lamp=False), finish=MONO
   anim=dict(clock_tick=True))
 S("S43c", 179.46, scene="room", setup=dict(tod="night", lamp=False, rake=True), finish=MONO,
   cam=dict(keys=[(0, (3.2, 2.4, 1.5), (1.2, 0.8, 0.6), 24), (1, (3.1, 2.2, 1.45), (1.2, 0.8, 0.6), 26)], fstop=4.0),
-  cards=[dict(pose="rin_sit_knees", h=1.05, loc=(0.6, 1.4, 0.38), rot=(90, 0, -90), face_cam=True,
+  # cross-legged and slumped, hands limp in her lap, staring at the snow on the screen
+  cards=[dict(pose="rin_sit_cross", h=1.0, loc=(0.6, 1.4, 0.38), rot=(90, 0, -90), face_cam=True,
               contact=SIT,
               props=dict(key_dir=(0.8, 0.1, 0.5), key_col=(0.35, 0.4, 0.5), amb_col=(0.03, 0.035, 0.05),
                          rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.0))],
@@ -453,7 +464,8 @@ S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered
   fx=[{"type": "strobe", "amount": 0.4}])
 S("S48", lambda: L(42) - 0.3, bg="score", bg_args=dict(mode="wild"), finish=dict(chroma=2.5),
   fx=[{"type": "glitch", "on": [(0, 0), (0.7, 0), (0.72, 1)], "amount": 0.8}])
-S("S49", lambda: L(43) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered", close=True),
+S("S49", lambda: L(43) - 0.2, bg="tinnitus",
+  bg_args=dict(pose="rin_ears_close", close=True, scale=1.2, cx=1152, cy=700),
   finish=dict(chroma=1.5), fx=[{"type": "strobe", "amount": 0.6}], out="black", out_dur=0.08)
 
 # ================================================================ INSTRUMENTAL: the room grows infinite
@@ -462,8 +474,9 @@ S("S50", 230.88, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube
   in_="black", in_dur=1.5,
   cam=dict(keys=[(0, (2.2, 0.2, 1.36), (0.6, 2.0, 0.68), 30), (1, (6.0, -14.0, 5.0), (0.6, 2.0, 0.6), 35)],
            ease="inout"),
-  cards=[dict(pose="rin_sit_knees", h=1.05, loc=(0.6, 1.45, 0.38), rot=(90, 0, 90), face_cam=True,
-              contact=SIT,
+  # sitting back on her heels, hands between her knees, looking up into what the room has become
+  cards=[dict(pose="rin_sit_wariza", h=0.95, loc=(0.6, 1.45, 0.38), rot=(90, 0, 90), face_cam=True,
+              contact=SIT, blink=True,
               props=dict(key_dir=(0.2, 0.9, 0.4), key_col=(0.25, 0.3, 0.5), amb_col=(0.05, 0.06, 0.1),
                          rim_dir=(0.9, 0.2, 0), rim_col=(0.35, 0.45, 0.8), exposure=1.0))],
   anim=dict(plate=[(0, 1.0), (1, 0.45)]))
@@ -492,16 +505,23 @@ S("S53", 259.82, scene="city", finish=NIGHT, in_="flash", setup=dict(lights=0.0)
 # seen from straight above, the window frame hanging in the void is only a few unreadable bars: hidden
 S("S54", lambda: L(45) - 0.2, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube", "LampShade", "FrameTop",
                                                                          "FrameBot", "FrameL", "FrameR", "FrameMid"],
-                                                       pillow_dent=(0.0, -0.03, 0.12, 0.035), quilt=LIE_QUILT),
+                                                       pillow_dent=(0.0, -0.03, 0.12, 0.035)),
   finish=VOID,
   cam=dict(keys=[(0, (0.56, 1.62, 3.2), (0.561, 1.62, 0.0), 30, 0), (1, (0.56, 1.62, 9.5), (0.561, 1.62, 0.0), 30, 28)],
            ease="out"),
-  cards=[dict(pose="rin_lie_up", **{**LIE_UP, "motion": "breath"},
+  # not S09's pose under the quilt: she lies sprawled on top of the covers, arms flung up beside her head
+  cards=[dict(pose="rin_lie_spread", h=1.52, loc=(0.55, 1.05, 0.44), rot=(0, 0, 0), tilt=4.0, motion="breath",
+              contact=dict(kind="lie"),
               props=dict(key_dir=(0.0, 0.3, 0.9), key_col=(0.22, 0.27, 0.42), amb_col=(0.05, 0.06, 0.1),
                          rim_col=(0.0, 0.0, 0.0), exposure=1.0))],
   anim=dict(plate=[(0, 0.0), (1, 0.0)]))
-S("S55", lambda: L(46) - 0.2, bg="chest_core", bg_args=dict(pose="rin_float", mode="tight"), finish=NIGHT,
-  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.06)], "cy": 100}, {"type": "heat", "amount": 2.5}])
+# S56's own drawing as the diagram, laid over that shot as it dissolves in (`quad`: her card in S56's frame
+# 6434, taken back through this shot's push): the ring constricting under the hand she will press to her chest
+S("S55", lambda: L(46) - 0.2, bg="chest_core",
+  bg_args=dict(pose="rin_chest_clutch", chest=(0.436, 0.306),
+               quad=[(565.6, 171.6), (1150.3, 17.7), (1528.8, 950.5), (686.8, 1163.9)],
+               push=dict(z=1.06, about=(960, 640)), mode="tight"),
+  finish=NIGHT, fx=[{"type": "heat", "amount": 2.5}])
 S("S56", lambda: L(47) - 0.2, scene="core", setup=dict(mood="blue"), finish=COREB,
   cam=dict(keys=[(0, ring_pos(0.0, R + 2.0, -2.6), ring_pos(0.08, R + 1.6, 1.1), 24, 0),
                  (1, ring_pos(0.008, R + 2.0, -2.5), ring_pos(0.08, R + 1.4, 1.3), 23, -10)], fstop=2.8,
@@ -517,10 +537,12 @@ S("S57", 271.33, bg="white", finish=WHITE, hud=dict(level=2, alarm=True, col=(0.
 S("S58", 273.07, scene="core", setup=dict(mood="blue", exterior=True), finish=COREB, in_="flash",
   cam=dict(keys=[(0, (26, -30, 4), (0, 0, 0), 24), (1, (36, -14, 18), (0, 0, -1), 28)], shake=(0.1, 0.2, 1.0)),
   anim=dict(plasma=[(0, 2.0), (1, 2.6)]))
+# the last time the line about diving in is sung she does it: headfirst into the light of the core (on the
+# left), and comes apart into the particles as she goes. The aim follows her head and hands.
 S("S59", lambda: L(49) - 0.15, scene="core", setup=dict(mood="blue"), finish=COREB,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.5), ring_pos(0.16, R + 2.2, 0.03), 25.6, -4),
-                 (1, ring_pos(0.04, R + 2.5, 0.3), ring_pos(0.16, R + 2.2, 0.34), 33.5, 3)], fstop=2.0),
-  cards=[dict(pose="rin_float", h=1.7, loc=ring_pos(0.16, R + 2.2, -0.9), rot=(90, -6, 0), face_cam=True,
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.4, 0.4), ring_pos(0.16, R + 2.2, -0.35), 25.6, -4),
+                 (1, ring_pos(0.04, R + 2.5, 0.25), ring_pos(0.163, R + 1.95, -0.42), 33.5, 3)], fstop=2.0),
+  cards=[dict(pose="rin_dive", h=1.11, loc=ring_pos(0.16, R + 2.2, -0.9), rot=(90, -6, 0), face_cam=True,
               props=dict(key_dir=(-0.7, 0.3, 0.6), key_col=(0.3, 0.55, 0.9), amb_col=(0.12, 0.18, 0.35),
                          rim_dir=(-0.9, 0.2, 0.0), rim_col=(0.6, 0.9, 1.0), exposure=1.0,
                          dissolve_col=(0.8, 0.95, 1.0)),
@@ -703,7 +725,7 @@ FLOW = {
     "S11": dict(in_="dissolve", in_dur=0.4, in_anchor=(380, 360), in_radial=True),  # her back -> her face, first line
     "S13": dict(out="white", out_dur=0.25, out_anchor=(940, 540)),  # the light at the street's end grows,
     "S14": dict(in_="white", in_dur=0.3, in_anchor=(1280, 340)),  # and the lighter comes out of its spark
-    "S15b": dict(in_="zoom", in_dur=0.3, in_anchor=(933, 830), in_radial=True),   # into her chest: the diagram
+    "S15b": dict(in_="dissolve", in_dur=0.3, in_anchor=(1030, 1000), in_radial=True),   # her figure -> its diagram
     "S16": dict(in_="dissolve", in_dur=0.3, out="white", out_dur=0.35),   # and up into the white room
     "S18": dict(in_="zoom", in_dur=0.3, in_anchor=(955, 470), in_radial=True),    # into her eye, where it is
     "S24": dict(in_="flash"),                                     # out of the burnt-white page
@@ -740,7 +762,7 @@ FLOW = {
     "S53": dict(in_="zoom", in_dur=0.6, in_anchor=(870, 290), in_push=1.2, in_radial=True, out="black", out_dur=0.3),
     "S54": dict(in_="black", in_dur=0.5),
     "S55": dict(in_="zoom", in_dur=0.4, in_anchor=(1030, 430), in_push=0.5, in_radial=True),  # her chest -> the diagram
-    "S56": dict(in_="zoom", in_dur=0.3),
+    "S56": dict(in_="dissolve", in_dur=0.3, in_anchor=(869, 313), in_radial=True),   # the diagram becomes her
     "S60": dict(in_="dissolve", in_dur=0.5, in_bloom=0.4),       # she dissolves into the light
     "S61": dict(in_="dissolve", in_dur=0.5),
     "S64": dict(in_="dissolve", in_dur=0.5, out="white", out_dur=0.4),  # the dawn sun whitens the frame,
