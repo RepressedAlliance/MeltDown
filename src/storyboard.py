@@ -112,7 +112,8 @@ S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200", rake=True), 
 # out of her window towards the reactor: it starts where her window showed it (upper right, the same
 # size), so the room dissolves away around it, then the camera flies on and turns until it is ahead
 S("S06", 16.0, scene="city", finish=NIGHT, in_="dissolve", in_dur=0.6, tail=0.5,
-  cam=dict(keys=[(0, (-133.2, -190.6, 80), (332.6, -347.6, -11.4), 35), (1, (299.1, -592.0, 70), (673.0, -921.4, 28.2), 35)],
+  # (105 m up: clear of the 90 m towers on the shore, then out over the bay)
+  cam=dict(keys=[(0, (-133.2, -190.6, 105), (331.0, -347.1, 4.9), 35), (1, (299.1, -592.0, 90), (672.1, -920.6, 36.1), 35)],
            ease="linear", shake=(0.15, 0.03, 0.5)), hud=dict(level=1, alpha=0.8))
 S("S07", 18.3, scene="city", finish=NIGHT, setup=dict(comp=dict(streaks=0.0)), in_="dissolve", in_dur=0.5,
   in_bloom=0.35, tail=0.45,
