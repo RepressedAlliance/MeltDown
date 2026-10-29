@@ -48,8 +48,10 @@ def main():
     dark = ((lum < 34) & inside & neutral).astype(np.uint8)
     shadow = cv2.morphologyEx(dark, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8)) > 0
     k = np.clip((lum - 40) / 70, 0, 1)
-    metal = 150 + 95 * k                          # 40 -> 150 (shadow side), 110+ -> 245 (highlight)
-    metal = np.where(shadow, 100 + lum, metal)    # the darkest side stays a darker steel
+    # near white: after the TV's grey and the halftone, only a light this close to paper still parts from the
+    # black collar (150-245 printed as the same mid-grey dots as everything around it)
+    metal = 205 + 50 * k                          # 40 -> 205 (shadow side), 110+ -> 255 (highlight)
+    metal = np.where(shadow, 165 + lum, metal)    # the darkest side stays a little darker steel
     out = bgr.copy()
     tint = np.array([1.0, 0.985, 0.97], np.float32)  # a cool steel
     sel = fill | shadow
