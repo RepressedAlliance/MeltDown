@@ -98,10 +98,13 @@ def telop(c, line, t, x, y, w, size=46):
         return
     vis = min(clamp01((t - t_in) / 0.2), clamp01((t_out - t) / 0.3))
     ct = char_times(line)
+    blk = layout(line["text"], "gothic_k", size, tracking=0.02)
+    # the bar fits the whole line (at most w wide), not a fixed width: a long empty bar lay across the picture
+    # under the first two or three characters, over her arms in S44c
+    w = min(w, 30 + blk.width + size * 0.9)
     band = skia.Rect.MakeXYWH(x, y, w, size * 1.55)
     c.drawRect(band, paint((0.05, 0.06, 0.12), 0.85 * vis))
     c.drawRect(skia.Rect.MakeXYWH(x, y, 10, size * 1.55), paint((1.0, 0.75, 0.1), 0.95 * vis))
-    blk = layout(line["text"], "gothic_k", size, tracking=0.02)
     ox = x + 30
     oy = y + size * 0.25
     for g in blk.glyphs:
