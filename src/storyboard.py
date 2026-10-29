@@ -630,16 +630,18 @@ S("S65c", 316.73, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent
            # the push carries on from S65b at the same rate (about 11.7 % a second) and comes to rest on her face;
            # the aim, at rest at the cut like S65b's, drifts so her face settles left of centre, clear of the title
            ease="dolly", settle=2.9, drift=(0.0, 0.0, 0.0)),
-  # her face lies exactly where the sleeping drawing's face is in S65b (eyes, mouth, microphone, clips and ear
-  # cup fitted with one similarity, the eyes weighted most), turned as her sleeping head is, so the dissolve
-  # reads as the same girl waking, not one drawing laid over another
-  cards=[dict(pose="rin_wake", h=0.32, loc=(0.552, 2.2915, 0.505), rot=(0, 0, -87.0), contact=dict(kind="lie", blur=0.006, strength=0.65, cast=0.025, cast_strength=0.35),
-              props=dict(FLAT_MORNING, amb_col=(1.08, 1.02, 0.95)),
+  # the same drawing as S65 and S65b, in the same place: rin_wake_morning is rin_sleep with a just-woken face
+  # patched into it (src/char/expression.py), and its closed-eye layer is rin_sleep itself, so she wakes in the
+  # pose she slept in. (A separate close-up drawing, fitted to her face, still swapped her body under the
+  # dissolve: the arm over her head faded out and left an empty pillow, one picture replaced by another.)
+  cards=[dict(pose="rin_wake_morning", **SLEEP_ON_BED, props=dict(FLAT_MORNING, amb_col=(1.08, 1.02, 0.95)),
               keys={"blink": [(("s", 0.0), 1.0), (("s", 2.17), 1.0), (("s", 2.19), 0.0),
                               (("s", 5.85), 0.0), (("s", 5.87), 1.0), (("s", 5.96), 1.0), (("s", 5.98), 0.0)]})],
   fx=[{"type": "exposure", "ev": [(0, -0.2), (0.175, -0.2), (0.21, 0.18), (1, 0.08)]}],
-  # the title small enough to end above her collar and clear of the credits panel
-  title=dict(mode="poster", at=0.31, col=(0.33, 0.2, 0.12), panel="right", size=110),
+  # the title small enough to end above her collar. The credits sit at the upper left, over her sleeve and hair:
+  # now that she wakes in the pose she slept in, her face fills the lower half of the frame, and a plate in
+  # either lower corner covered her smile or her eye
+  title=dict(mode="poster", at=0.31, col=(0.33, 0.2, 0.12), panel="top", size=110),
   out="black", out_dur=2.6)
 
 

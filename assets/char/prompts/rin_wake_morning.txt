@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Asset type: alternate expression for a cut-out animation layer (it replaces the original in the same shot, under a dissolve, so it must line up exactly with it)
+Primary request: edit the attached image so that she has just woken up in the morning: her eyes are open, softly, the upper lids still a little heavy with sleep; she looks up toward the viewer; brows relaxed; a faint, gentle smile, the mouth closed.
+Constraints: change only the eyes, eyelids, brows and the mouth. Keep everything else pixel-identical: same framing, size, position, pose, hair, headset, bow, clothing, hands, colors, line style and transparent background. Do not move, rescale or redraw anything else. Clean anime cel style matching the attached image: crisp uniform lines, flat two-tone shading, no soft gradients.
+Background: fully transparent PNG alpha background, exactly as in the attached image.

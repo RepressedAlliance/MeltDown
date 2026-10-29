@@ -45,7 +45,8 @@ def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ri
                at=0.0, panel="left", size=150, plate_title=True):
     """The film title. mode 'ring': inside the opening ring; 'poster': full credits over the picture,
     coming up from shot fraction `at` (the end titles start once Rin has woken). `col` colours the big
-    title; the credits always sit light on their dark plate, at the lower `panel` corner."""
+    title; the credits always sit light on their dark plate, at the `panel` corner: "left" and "right" are
+    the lower corners, "top" is the upper left (for a close-up whose face fills the lower half)."""
     if mode == "ring":
         a = max(0.0, min(1.0, (u - 0.45) / 0.25))
         blk = layout("炉心融解", "mincho_b", 74, vertical=True, tracking=0.18)
@@ -77,14 +78,16 @@ def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ri
         c.drawPath(pth, paint(light if plate_title else col, a))
     # the credits in one language (English), the song's own credit first, the video's last; the singer is
     # already in the first line. The plate is as wide as its longest line, so no line runs past its edge.
-    credits = [("iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 36, True, H - 228),
-               ("music iroha(sasaki) / lyrics kuma", "mono_l", 28, False, H - 174),
-               ("MV  RepressedAlliance  ×  Claude", "mono_l", 28, False, H - 130)]
+    # the plate's top edge: 80 px above the bottom margin, or at the top margin; the lines follow it
+    py = 80 if panel == "top" else H - 344
+    credits = [("iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 36, True, py + 116),
+               ("music iroha(sasaki) / lyrics kuma", "mono_l", 28, False, py + 170),
+               ("MV  RepressedAlliance  ×  Claude", "mono_l", 28, False, py + 214)]
     pw = max(860, int(max(layout(s, f, z, proportional=p).width for s, f, z, p, _ in credits)) + 28 + 40)
-    px = 96 if panel == "left" else W - 96 - pw
-    c.drawRect(skia.Rect.MakeXYWH(px, H - 344, pw, 264), paint(ink, a))
-    _text(c, "MELTDOWN", "shoulders", 64, px + 24, H - 310, accent, a, tracking=0.25)
-    c.drawLine(px + 24, H - 246, px + pw - 24, H - 246, paint(light, a * 0.6, stroke=1.2))
+    px = W - 96 - pw if panel == "right" else 96
+    c.drawRect(skia.Rect.MakeXYWH(px, py, pw, 264), paint(ink, a))
+    _text(c, "MELTDOWN", "shoulders", 64, px + 24, py + 34, accent, a, tracking=0.25)
+    c.drawLine(px + 24, py + 98, px + pw - 24, py + 98, paint(light, a * 0.6, stroke=1.2))
     for s, f, z, p, y in credits:
         _text(c, s, f, z, px + 28, y, light, a, proportional=p)
 
