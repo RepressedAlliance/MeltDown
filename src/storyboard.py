@@ -82,28 +82,28 @@ def _push(z0, z1, n=6, accel=0.0):
 
 
 S("S00", 0.0, free=True, bg="ring", bg_args=dict(radius=230), hud=dict(level=2, alpha=0.8), finish=NIGHT,
-  fx=[{"type": "zoom", "z": _push(1.0, 1.5)}])
+  fx=[{"type": "zoom", "rate": 0.14}])
 S("S01", 3.6, scene="room", setup=dict(tod="night_lamp"), finish=NIGHT, in_="dissolve", in_dur=0.7,
   hud=dict(level=1, alpha=0.6),
   render=dict(exposure=-1.6),
   # rising towards the ring lamp, turning slowly, until the ring fills the frame and opens into her eye
   cam=dict(keys=[(0, (0.61, 1.5, 0.55), (0.6, 1.551, 2.3), 30, 0), (1, (0.6, 1.53, 1.25), (0.6, 1.552, 2.3), 30, 35)],
-           ease="linear"),
+           ease="dolly"),
   anim=dict(lamp=[(0, 1.0), (0.97, 1.0), (1.0, 0.0)]))
 S("S02", 7.41, bg="eye", bg_args=dict(city_plate=PLATE, zoom=(1.04, 1.22), light=0.42), in_="flash", finish=NIGHT,
-  fx=[{"type": "zoom", "z": _push(1.0, 3.2, accel=0.48), "cy": 40}])
+  fx=[{"type": "zoom", "rate": 0.06, "cy": 40}])
 S("S03", 9.6, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.4,
-  cam=dict(keys=[(0, (-900, 1700, 300), (-300, 900, 120), 28), (1, (-250, 980, 210), (380, 120, 60), 32)],
-           ease="linear", shake=(0.6, 0.15, 0.4)))
+  cam=dict(keys=[(0, (-900, 1700, 300), (-300, 900, 120), 28), (1, (-835, 1628, 291), (-232, 822, 114), 32)],
+           ease="linear"))
 # down a street canyon (y = 115 runs between two rows of blocks, 10 m clear of every wall; the old line
 # cut through the buildings), tilting up to the lit high floors as it nears her block
 S("S04", 11.8, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.5,
-  cam=dict(keys=[(0, (-760, 115, 22), (-460, 115.5, 26), 22), (1, (-520, 115, 30), (-230, 117, 75), 22)],
-           ease="linear", shake=(0.12, 0.25, 1.5)))
+  cam=dict(keys=[(0, (-760, 115, 22), (-460, 115.5, 26), 22), (1, (-747.0, 115, 22.43), (-447.6, 115.58, 28.65), 22)],
+           ease="linear"))
 S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200", rake=True), finish=NIGHT, in_="zoom", in_dur=0.4,
   tail=0.65,
-  cam=dict(keys=[(0, (3.25, 0.3, 1.27), (0.8, 2.3, 0.85), 24), (1, (2.75, 0.8, 1.12), (0.75, 2.25, 0.8), 27)],
-           fstop=4.0, ease="linear"),
+  cam=dict(keys=[(0, (3.1875, 0.3625, 1.2512), (0.7938, 2.2937, 0.8438), 24.36), (1, (2.75, 0.8, 1.12), (0.75, 2.25, 0.8), 27)],
+           fstop=4.0, ease="dolly"),
   # she sits in the middle of the bed facing the window, clear of the pillow; the card turns to the camera
   cards=[dict(pose="rin_sit_knees", h=1.05, loc=(0.6, 1.45, 0.38), rot=(90, 0, 90), face_cam=True,
               contact=SIT,
@@ -113,21 +113,21 @@ S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200", rake=True), 
 # size), so the room dissolves away around it, then the camera flies on and turns until it is ahead
 S("S06", 16.0, scene="city", finish=NIGHT, in_="dissolve", in_dur=0.6, tail=0.5,
   # (105 m up: clear of the 90 m towers on the shore, then out over the bay)
-  cam=dict(keys=[(0, (-133.2, -190.6, 105), (331.0, -347.1, 4.9), 35), (1, (299.1, -592.0, 90), (672.1, -920.6, 36.1), 35)],
-           ease="linear", shake=(0.15, 0.03, 0.5)), hud=dict(level=1, alpha=0.8))
+  cam=dict(keys=[(0, (-133.2, -190.6, 105), (331.0, -347.1, 4.9), 35), (1, (143.472, -447.496, 95.4), (549.304, -714.14, 24.868), 35)],
+           ease="linear"), hud=dict(level=1, alpha=0.8))
 S("S07", 18.3, scene="city", finish=NIGHT, setup=dict(comp=dict(streaks=0.0)), in_="dissolve", in_dur=0.5,
   in_bloom=0.35, tail=0.45,
-  cam=dict(keys=[(0, (-60, 450, 1000), (-60, 450.5, 0), 24, 0), (1, (-60, 430, 700), (-60, 430.5, 0), 24, 18)],
-           ease="linear"))
+  cam=dict(keys=[(0, (-60, 450, 1000), (-60, 450.5, 0), 24, 0), (1, (-60, 430, 638), (-60, 430.5, 0), 24, 18)],
+           ease="dolly"))
 S("S08", 22.7, scene="core", setup=dict(mood="blue", exterior=True), finish=COREB, in_="dissolve", in_dur=0.45,
   tail=0.6,
-  cam=dict(keys=[(0, (44, -30, 8), (0, 0, -1), 35), (1, (32, -22, 5.5), (0, 0, -1), 35)], ease="linear"),
+  cam=dict(keys=[(0, (44, -30, 8), (0, 0, -1), 35), (1, (31.28, -21.52, 5.35), (0, 0, -1), 35)], ease="dolly"),
   anim=dict(plasma=[(0, 0.35), (1, 0.6)]))
 S("S09", 26.0, scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.03, 0.12, 0.035), quilt=LIE_QUILT,
                                          hide=OVERHEAD_HIDE),
   finish=NIGHT, render=dict(exposure=-1.8), in_="dissolve", in_dur=0.45, tail=0.6,
-  cam=dict(keys=[(0, (0.55, 1.95, 2.06), (0.551, 1.95, 0.4), 32, 0), (1, (0.55, 1.95, 1.86), (0.551, 1.95, 0.4), 35, 14)],
-           ease="linear"),
+  cam=dict(keys=[(0, (0.55, 1.95, 2.06), (0.551, 1.95, 0.4), 32, 0), (1, (0.55, 1.95, 1.62), (0.551, 1.95, 0.4), 35, 14)],
+           ease="dolly"),
   cards=[dict(pose="rin_lie_up", **LIE_UP,
               props=dict(key_dir=(0.0, 0.3, 0.9), key_col=(0.5, 0.55, 0.62), amb_col=(0.25, 0.28, 0.36),
                          rim_col=(0.0, 0.0, 0.0), exposure=1.0))])
@@ -135,8 +135,8 @@ S("S09", 26.0, scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.0
 # glass, a silhouette against the city, its lights melting into bokeh behind her
 S("S10", 29.08, scene="room", setup=dict(tod="night"), finish=NIGHT, hud=dict(level=1, alpha=0.7), in_="dissolve",
   in_dur=0.45, tail=0.4,
-  cam=dict(keys=[(0, (2.12, 0.92, 1.33), (1.55, 2.7, 1.26), 38), (1, (1.94, 1.18, 1.34), (1.5, 2.7, 1.26), 41)],
-           fstop=2.0, ease="linear"),
+  cam=dict(keys=[(0, (2.12, 0.92, 1.33), (1.55, 2.7, 1.26), 38), (1, (1.7834, 1.4062, 1.3487), (1.4565, 2.7, 1.26), 41)],
+           fstop=2.0, ease="dolly"),
   cards=[dict(pose="rin_window_back", h=0.95, loc=(1.25, 2.45, 0.6), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(-0.3, 0.2, 0.6), key_col=(0.18, 0.2, 0.32), amb_col=(0.06, 0.07, 0.12),
                          rim_dir=(1, 0.3, 0), rim_col=(1.0, 0.7, 0.4), exposure=1.0))])
@@ -541,15 +541,15 @@ FLAT_MORNING = dict(key_dir=(0.3, 0.7, 0.6), key_col=(0.0, 0.0, 0.0), amb_col=(1
 S("S65", 301.45, scene="room", setup=dict(tod="morning", wind=0.35, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT, sun=BED_SUN,
                                          world=MORNING_FILL, hide=OVERHEAD_HIDE), finish=DAWN,
   hud=dict(level=1, alpha=0.75), render=dict(exposure=-0.7),
-  cam=dict(keys=[(0, (0.62, 1.7, 1.98), (0.621, 1.7, 0.45), 24, -10), (1, (0.62, 1.8, 1.82), (0.621, 1.8, 0.45), 26, 0)],
-           ease="inout"),
+  cam=dict(keys=[(0, (0.62, 1.7, 1.98), (0.621, 1.7, 0.45), 24, -10), (1, (0.581, 2.0964, 1.4082), (0.582, 2.1029, 0.4825), 37.46, -6.24)],
+           ease="dolly"),
   cards=[dict(pose="rin_sleep", **SLEEP_ON_BED, props=dict(FLAT_MORNING))])
 # closer, her face on the pillow (the framing of the dusk S32)
 S("S65b", 309.6, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT, sun=BED_SUN,
                                           world=MORNING_FILL, hide=OVERHEAD_HIDE), finish=DAWN,
   hud=dict(level=1, alpha=0.85),
-  cam=dict(keys=[(0, (0.62, 2.24, 1.6), (0.621, 2.24, 0.47), 30, 0), (1, (0.62, 2.25, 1.58), (0.621, 2.25, 0.47), 31, 3)],
-           fstop=8.0),
+  cam=dict(keys=[(0, (0.581, 2.0964, 1.4082), (0.582, 2.1029, 0.4825), 37.46, -6.24), (1, (0.56, 2.31, 1.10), (0.561, 2.32, 0.50), 55, -3)],
+           fstop=8.0, ease="dolly"),
   render=dict(exposure=-0.7, samples=64),
   cards=[dict(pose="rin_sleep", **SLEEP_ON_BED, props=dict(FLAT_MORNING))])
 # the last image: the morning she thought she would not see. Seen from above on the pillow, she sleeps,
@@ -560,9 +560,11 @@ S("S65c", 316.73, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent
                                            sun=BED_SUN, world=MORNING_FILL, hide=OVERHEAD_HIDE),
   finish=DAWN,
   render=dict(exposure=-0.5, samples=64),
-  cam=dict(keys=[(0, (0.575, 2.38, 1.11), (0.575, 2.40, 0.51), 55, -3),
-                 (1, (0.575, 2.385, 1.09), (0.575, 2.40, 0.51), 60, 1)], fstop=2.8, ease="linear"),
-  cards=[dict(pose="rin_wake", h=0.329, loc=(0.565, 2.269, 0.51), rot=(0, 0, 0), contact=dict(kind="lie", blur=0.006, strength=0.65, cast=0.025, cast_strength=0.35),
+  cam=dict(keys=[(0, (0.56, 2.31, 1.10), (0.561, 2.32, 0.50), 55, -3),
+                 (1, (0.56, 2.318, 0.93), (0.561, 2.32, 0.50), 55, 1)], fstop=2.8,
+           # the push carries on from S65b at the same rate (about 11.7 % a second) and comes to rest on her face
+           ease="dolly", settle=2.9),
+  cards=[dict(pose="rin_wake", h=0.329, loc=(0.57, 2.187, 0.51), rot=(0, 0, 0), contact=dict(kind="lie", blur=0.006, strength=0.65, cast=0.025, cast_strength=0.35),
               props=dict(FLAT_MORNING, amb_col=(1.08, 1.02, 0.95)),
               keys={"blink": [(("s", 0.0), 1.0), (("s", 2.17), 1.0), (("s", 2.19), 0.0),
                               (("s", 5.85), 0.0), (("s", 5.87), 1.0), (("s", 5.96), 1.0), (("s", 5.98), 0.0)]})],
@@ -671,16 +673,17 @@ for _s in SHOTS:
 FLOW = {
     # the way in, one forward flight: every cut pushes on into the next picture, and where the old shot flies
     # towards a light, the new one opens out of that light (in_anchor, in_radial) instead of lying over it
-    "S01": dict(in_="zoom", in_dur=0.7, in_push=0.4, in_radial=True,      # through the title ring, the lamp inside it;
+    "S01": dict(in_="dissolve", in_dur=0.7, in_radial=True,      # the lamp inside the title ring;
                 fx=[{"type": "darken", "rect": (-200, 0, 380, 1080), "feather": 140, "amount": 0.5}]),  # the lamp-lit wall
     "S02": dict(in_="iris", in_dur=0.5, in_r0=330),               # the lamp's ring (r 345 at the cut) opens on her eye
-    "S05": dict(in_="zoom", in_dur=0.4, in_anchor=(1500, 450), in_radial=True),      # the canyon's lights -> her window's
-    "S06": dict(in_="zoom", in_dur=0.6, in_anchor=(1807, 285), in_push=0.15, in_radial=True,  # the reactor in her
-                out="white", out_dur=0.3, out_anchor=(1030, 465)),  # window; its light grows to fill the frame
-    "S07": dict(in_="white", in_dur=0.4, in_anchor=(960, 540)),   # and the title city comes out of its middle
-    "S08": dict(in_="zoom", in_dur=0.45, in_radial=True, out="white", out_dur=0.35, out_anchor=(960, 540)),  # the
-    "S09": dict(in_="white", in_dur=0.45, in_anchor=(960, 540)),  # core's light floods out and leaves her in bed
-    "S10": dict(in_="zoom", in_dur=0.45, in_radial=True),
+    "S03": dict(in_="dissolve", in_dur=0.5, in_anchor=(960, 580), in_radial=True),  # the city out of her pupil
+    "S04": dict(in_="dissolve", in_dur=0.5, in_radial=True),
+    "S05": dict(in_="dissolve", in_dur=0.5, in_anchor=(1500, 450), in_radial=True),  # the canyon's lights -> her window's
+    "S06": dict(in_="dissolve", in_dur=0.6, in_anchor=(1807, 285), in_radial=True),  # the reactor in her window
+    "S07": dict(in_="dissolve", in_dur=0.6, in_anchor=(1275, 409), in_radial=True, in_bloom=0.35),  # the city out of it
+    "S08": dict(in_="dissolve", in_dur=0.5, in_radial=True),       # down onto the core, whose light
+    "S09": dict(in_="dissolve", in_dur=0.6, in_radial=True, in_bloom=0.4),  # opens on her in bed
+    "S10": dict(in_="dissolve", in_dur=0.5, in_radial=True),
     "S11": dict(in_="dissolve", in_dur=0.4, in_anchor=(380, 360), in_radial=True),  # her back -> her face, first line
     "S13": dict(out="white", out_dur=0.25, out_anchor=(940, 540)),  # the light at the street's end grows,
     "S14": dict(in_="white", in_dur=0.3, in_anchor=(1280, 340)),  # and the lighter comes out of its spark
@@ -727,14 +730,13 @@ FLOW = {
     "S64": dict(in_="dissolve", in_dur=0.5, out="white", out_dur=0.4),  # the dawn sun whitens the frame,
     "S65": dict(in_="white", in_dur=0.5),                         # and her morning room comes out of it
     # closer on one push: S65 pushed 1.55x about (-425, 500) carries her face onto S65b's ...
-    "S65b": dict(in_="zoom", in_dur=0.6, in_anchor=(-425, 500), in_push=0.55),
+    "S65b": dict(in_="dissolve", in_dur=0.5),                    # the same push, on through the cut
     # ... into her face: pushed 3.5x about (873, 396), her face lands where and as large as it is in S65c
-    "S65c": dict(in_="zoom", in_dur=0.8, in_anchor=(873, 396), in_push=2.5),
+    "S65c": dict(in_="dissolve", in_dur=1.2),                    # her sleeping face becomes her waking one
 }
 TAILS = {"S13": 0.35, "S15": 0.35, "S17": 0.35, "S27": 0.55, "S29": 0.45, "S30": 0.45, "S31": 0.55, "S34": 0.65, "S43": 0.65,
          "S43b": 0.65, "S43c": 0.55, "S53": 0.65, "S54": 0.45, "S59": 0.55, "S60": 0.55, "S63": 0.55, "S64": 0.85,
-         "S65": 0.65}
-# S65b has no tail until it is re-rendered: its folder still holds a close-up from an older version past the cut
+         "S65": 0.65, "S65b": 1.3}
 for _s in SHOTS:
     for _k, _v in FLOW.get(_s["id"], {}).items():
         _s[_k] = _v

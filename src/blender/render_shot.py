@@ -46,21 +46,45 @@ def setup_camera(sc, shot, t0, dur, f0, f1):
     shake = Shake(seed=hash(shot["id"]) % 1000, amp=sh[0], rot_amp=sh[1], freq=sh[2]) if sh else None
     fstop = cam_spec.get("fstop")
     focus = cam_spec.get("focus", "target")
+    dolly = None
+    if kind == "dolly" and len(keys) == 2:
+        # an even push: the distance to the target changes by the same factor every second and the lens by a
+        # constant ratio, so the picture grows at one rate from start to end (a linear move speeds up in the
+        # picture as the camera nears what it looks at); it carries on at that rate into a tail
+        (ta, pa, qa, la, ra), (tb, pb, qb, lb, rb) = [
+            (k[0], Vector(k[1]), Vector(k[2]), k[3] if len(k) > 3 else cam_spec.get("lens", 35),
+             k[4] if len(k) > 4 else cam_spec.get("roll", 0.0)) for k in keys]
+        rho = max(1e-6, (pb - qb).length / max(1e-6, (pa - qa).length))
+        settle = cam_spec.get("settle")
+
+        def dolly(t):
+            u = (t - ta) / max(1e-6, tb - ta)
+            if settle:
+                # coming to rest: the push starts at the rate the shot before it left off and that rate dies away
+                # with a time constant of `settle` seconds, so the picture's growth slows smoothly to a stop
+                k = (tb - ta) / settle
+                u = (1 - math.exp(-k * u)) / (1 - math.exp(-k))
+            g = u if abs(1 - rho) < 1e-4 else (1 - rho ** u) / (1 - rho)
+            return pa + (pb - pa) * g, qa + (qb - qa) * g, la * (lb / la) ** u, ra + (rb - ra) * u
 
     def fn(t, f):
-        p = sample_keys(pos_k, t)
-        q = sample_keys(tgt_k, t)
-        roll = sample_keys(roll_k, t)
-        if t > dur:
-            # a tail past the cut (the next shot dissolves in over it): keep the last velocity
-            h = 1.0 / FPS
-            p = p + (p - sample_keys(pos_k, dur - h)) * ((t - dur) / h)
-            q = q + (q - sample_keys(tgt_k, dur - h)) * ((t - dur) / h)
+        if dolly:
+            p, q, lens, roll = dolly(t)
+        else:
+            p = sample_keys(pos_k, t)
+            q = sample_keys(tgt_k, t)
+            roll = sample_keys(roll_k, t)
+            lens = sample_keys(lens_k, t)
+            if t > dur:
+                # a tail past the cut (the next shot dissolves in over it): keep the last velocity
+                h = 1.0 / FPS
+                p = p + (p - sample_keys(pos_k, dur - h)) * ((t - dur) / h)
+                q = q + (q - sample_keys(tgt_k, dur - h)) * ((t - dur) / h)
         if shake:
             dp, dr = shake(t + t0)
             p = p + dp
             roll += dr
-        s = {"pos": p, "target": q, "roll": roll, "lens": sample_keys(lens_k, t)}
+        s = {"pos": p, "target": q, "roll": roll, "lens": lens}
         if fstop:
             s["fstop"] = fstop
             s["focus"] = (q - p).length if focus in ("target", "card") else float(focus)

@@ -160,7 +160,8 @@ def apply_fx(img, shot, t, u):
     for fx in shot.get("fx", []):
         kind = fx["type"]
         if kind == "zoom":  # 2D push on a plate
-            z = _val(fx["z"], u)
+            # "rate": an even push (relative growth per second), which carries on past the cut under a dissolve
+            z = math.exp(fx["rate"] * (t - shot["t0"])) if "rate" in fx else _val(fx["z"], u)
             if abs(z - 1) > 1e-4:
                 M = cv2.getRotationMatrix2D((W / 2 + fx.get("cx", 0), H / 2 + fx.get("cy", 0)),
                                             _val(fx.get("rot", 0), u), z)
