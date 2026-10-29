@@ -132,21 +132,26 @@ S("S09", 26.0, scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.0
               props=dict(key_dir=(0.0, 0.3, 0.9), key_col=(0.5, 0.55, 0.62), amb_col=(0.25, 0.28, 0.36),
                          rim_col=(0.0, 0.0, 0.0), exposure=1.0))])
 # the bar before the first line (about the city lights at night): Rin at the window, her hand on the
-# glass, a silhouette against the city, its lights melting into bokeh behind her
+# glass, a silhouette against the city, its lights melting into bokeh behind her. The camera stands a little to
+# the right of the line it once took, still looking at the same point on the glass: she keeps her place in the
+# picture while the reactor's ring, far off, comes off her bow: it opens between her bow and the window bar,
+# 35 px clear of each, and then passes behind her head
 S("S10", 29.08, scene="room", setup=dict(tod="night"), finish=NIGHT, hud=dict(level=1, alpha=0.7), in_="dissolve",
   in_dur=0.45, tail=0.4,
-  cam=dict(keys=[(0, (2.12, 0.92, 1.33), (1.55, 2.7, 1.26), 38), (1, (1.7834, 1.4062, 1.3487), (1.4565, 2.7, 1.26), 41)],
+  cam=dict(keys=[(0, (2.3117, 0.9864, 1.33), (1.55, 2.7, 1.26), 38), (1, (1.9421, 1.4514, 1.3487), (1.4565, 2.7, 1.26), 41)],
            fstop=2.0, ease="dolly"),
   cards=[dict(pose="rin_window_back", h=0.95, loc=(1.25, 2.45, 0.6), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(-0.3, 0.2, 0.6), key_col=(0.18, 0.2, 0.32), amb_col=(0.06, 0.07, 0.12),
                          rim_dir=(1, 0.3, 0), rim_col=(1.0, 0.7, 0.4), exposure=1.0))])
 
 # ================================================================ A1
+# camera and card stand 0.25 m to the camera's right of where they first were: the same picture of her, but the
+# lit edge of the curtain behind her, which rose straight out of her bow like a stick, now falls clear of her hair
 S("S11", lambda: L(0) - 0.25, scene="room", setup=dict(tod="night"), finish=NIGHT,
-  cam=dict(keys=[(0, (1.75, 1.15, 1.03), (1.0, 2.15, 1.0), 48), (1, (1.68, 1.25, 1.02), (1.0, 2.15, 1.02), 50)],
+  cam=dict(keys=[(0, (1.95, 1.3, 1.03), (1.2, 2.3, 1.0), 48), (1, (1.88, 1.4, 1.02), (1.2, 2.3, 1.02), 50)],
            fstop=2.2),
   render=dict(samples=64),
-  cards=[dict(pose="rin_face_close", h=0.62, loc=(1.0, 2.2, 0.62), rot=(90, 0, 0), face_cam=True,
+  cards=[dict(pose="rin_face_close", h=0.62, loc=(1.2, 2.35, 0.62), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(0.7, 0.2, 0.5), key_col=(0.32, 0.38, 0.55), amb_col=(0.12, 0.13, 0.2),
                          rim_dir=(-0.9, 0.3, 0), rim_col=(1.0, 0.62, 0.35), exposure=1.0))])
 S("S12", lambda: L(2) - 0.2, scene="room", setup=dict(tod="night", clock="0200"), finish=NIGHT,
@@ -173,12 +178,13 @@ S("S15", lambda: L(5) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
   fx=[{"type": "heat", "amount": 3.0}],
   # wide enough for her bow and the hand on her stomach together; the camera creeps in while the lens
   # widens a touch, so the frame holds both and only the room behind her tightens
-  cam=dict(keys=[(0, (1.62, 1.5, 0.88), (1.0, 2.2, 0.96), 30), (1, (1.56, 1.57, 0.88), (1.0, 2.2, 0.96), 29)],
+  # (and like S11, moved 0.37 m to the camera's right so the curtain's edge stays out of her bow)
+  cam=dict(keys=[(0, (1.897, 1.745, 0.88), (1.277, 2.445, 0.96), 30), (1, (1.837, 1.815, 0.88), (1.277, 2.445, 0.96), 29)],
            fstop=2.0),
   render=dict(samples=64),
   # the line about a burning stomach: she presses a hand to it, wincing. Drawn with both arms inside the canvas and
   # staged at its own resolution, sized so her eyes fall where rin_face_close's do (src/char/fit_card.py)
-  cards=[dict(pose="rin_wince", h=0.6846, loc=(1.0066, 2.2058, 0.5833), rot=(90, 0, 0), face_cam=True,
+  cards=[dict(pose="rin_wince", h=0.6846, loc=(1.2836, 2.4508, 0.5833), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(0.8, -0.3, 0.5), key_col=(0.9, 0.45, 0.2), amb_col=(0.1, 0.08, 0.1),
                          rim_dir=(-0.9, 0.3, 0), rim_col=(0.4, 0.55, 1.0), exposure=1.05))])
 # S15's own drawing as the diagram, laid exactly over that shot as the dissolve passes (`quad`: where its card
@@ -385,10 +391,14 @@ S("S41", lambda: greet(33), free=True, scene="core", setup=dict(mood="white"), f
   cam=dict(keys=[(0, ring_pos(0.0, R - 1.4, -0.6), ring_pos(0.4, R, 0.0), 18, 10),
                  (1, ring_pos(0.7, R - 1.4, -0.4), ring_pos(1.1, R, 0.0), 18, -10)], ease="linear"))
 S("S42", lambda: L(34) - 0.15, scene="core", setup=dict(mood="white"), finish=WHITE,
-  cam=dict(keys=[(0, ring_pos(0.0, R + 2.6, 1.2), ring_pos(0.12, R + 2.3, -0.3), 30),
-                 (1, ring_pos(0.04, R + 2.6, 0.9), ring_pos(0.12, R + 2.3, -0.3), 34)], fstop=2.2),
-  # asleep in the light, curled in the air (her sleeping drawing on the bed is S32's and the ending's)
-  cards=[dict(pose="rin_float_sleep", h=0.95, loc=ring_pos(0.12, R + 2.3, -0.9), rot=(70, 0, 0), face_cam="full",
+  cam=dict(keys=[(0, ring_pos(0.0, R + 2.6, 1.2), ring_pos(0.12, R + 2.3, -0.3), 27),
+                 (1, ring_pos(0.04, R + 2.6, 0.9), ring_pos(0.12, R + 2.3, -0.3), 30.6)], fstop=2.2),
+  # asleep in the light, curled in the air (her sleeping drawing on the bed is S32's and the ending's). A
+  # little smaller and higher in the frame than she first was (lens x0.9, card 9.65 cm up the picture), so her
+  # lower foot stays clear of the big line set along the bottom
+  cards=[dict(pose="rin_float_sleep", h=0.95,
+              loc=tuple(a + b for a, b in zip(ring_pos(0.12, R + 2.3, -0.9), (-0.0225, 0.0647, 0.068))),
+              rot=(70, 0, 0), face_cam="full",
               props=dict(key_dir=(0.0, 0.7, 0.6), key_col=(0.5, 0.55, 0.6), amb_col=(0.5, 0.52, 0.58),
                          rim_dir=(0, 1, 0), rim_col=(0.45, 0.45, 0.47), exposure=1.05))])
 
