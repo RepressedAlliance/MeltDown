@@ -7,7 +7,9 @@ set per shot to match the set (sodium orange, plasma blue, dawn gold) with
 hard anime-style terminators. Every control is an object custom property read by
 Attribute nodes, so shots can keyframe them:
   key_dir (vec, card space: +x right, +y up, +z toward camera), key_col, amb_col,
-  rim_dir, rim_col, outline_col, key_soft, exposure, dissolve (0..1), dissolve_col, sway, alpha
+  rim_dir, rim_col, outline_col, ink (0..1, a dark band on her outer contour), ink_col, floor_shade (0..1,
+  shadow on the lowest fifth of the drawing, where she meets the bed), key_soft, exposure,
+  dissolve (0..1), dissolve_col, sway, alpha
 """
 import json
 import math
@@ -185,12 +187,28 @@ def card_material(pose):
     L.new(key, light.inputs["Factor"])
     L.new(amb_col, light.inputs["A"])
     L.new(key_col, light.inputs["B"])
+    # floor_shade: the lowest part of the drawing, where she meets the bed, a little in shadow (feet tucked
+    # under her knees, shins on the quilt). Bare feet were as light as the white sheet and the halftone printed
+    # both as paper: in shade they print as dots, a shape against the sheet.
+    fl = N.new("ShaderNodeMapRange")
+    fl.interpolation_type = "SMOOTHSTEP"
+    fl.inputs["From Min"].default_value = 0.0
+    fl.inputs["From Max"].default_value = 0.22
+    fl.inputs["To Min"].default_value = 1.0
+    fl.inputs["To Max"].default_value = 0.0
+    L.new(sepuv.outputs["Y"], fl.inputs["Value"])
+    floor = N.new("ShaderNodeMix")
+    floor.data_type = "RGBA"
+    floor.blend_type = "MULTIPLY"
+    L.new(m("MULTIPLY", fl.outputs["Result"], _attr(N, "floor_shade")), floor.inputs["Factor"])
+    L.new(light.outputs["Result"], floor.inputs["A"])
+    floor.inputs["B"].default_value = (0.0, 0.0, 0.0, 1.0)
     lit = N.new("ShaderNodeMix")
     lit.data_type = "RGBA"
     lit.blend_type = "MULTIPLY"
     lit.inputs["Factor"].default_value = 1.0
     L.new(color_out, lit.inputs["A"])
-    L.new(light.outputs["Result"], lit.inputs["B"])
+    L.new(floor.outputs["Result"], lit.inputs["B"])
 
     # rim: only inside the narrow edge band, on the side facing rim_dir, stepped
     sep = N.new("ShaderNodeSeparateXYZ")
@@ -228,6 +246,20 @@ def card_material(pose):
     L.new(ostep.outputs["Result"], outline.inputs["Factor"])
     L.new(rim.outputs["Result"], outline.inputs["A"])
     L.new(_attr(N, "outline_col", "Color"), outline.inputs["B"])
+    # ink: a dark band a little wider than that line, laid over her own outer contour, so light skin against
+    # a light quilt keeps its edge through the halftone print (her bare feet on the bed read as cut off
+    # without it). Graded, so it thickens the drawing's line rather than framing her like a sticker.
+    istep = N.new("ShaderNodeMapRange")
+    istep.interpolation_type = "SMOOTHSTEP"
+    istep.inputs["From Min"].default_value = 0.28
+    istep.inputs["From Max"].default_value = 0.5
+    L.new(edge.outputs["Color"], istep.inputs["Value"])
+    inked = N.new("ShaderNodeMix")
+    inked.data_type = "RGBA"
+    inked.blend_type = "MIX"
+    L.new(m("MULTIPLY", istep.outputs["Result"], _attr(N, "ink")), inked.inputs["Factor"])
+    L.new(outline.outputs["Result"], inked.inputs["A"])
+    L.new(_attr(N, "ink_col", "Color"), inked.inputs["B"])
 
     # dissolve: noise threshold with a glowing edge
     nz = N.new("ShaderNodeTexNoise")
@@ -244,7 +276,7 @@ def card_material(pose):
     glow.data_type = "RGBA"
     glow.blend_type = "ADD"
     L.new(m("MULTIPLY", edge_band, m("GREATER_THAN", diss, bv=0.001)), glow.inputs["Factor"])
-    L.new(outline.outputs["Result"], glow.inputs["A"])
+    L.new(inked.outputs["Result"], glow.inputs["A"])
     L.new(dcol, glow.inputs["B"])
 
     expo = _attr(N, "exposure")
@@ -276,7 +308,7 @@ DEFAULTS = {
     "rim_dir": (-0.8, 0.3, 0.0), "rim_col": (0.0, 0.0, 0.0), "key_soft": 0.06, "exposure": 1.0,
     "dissolve": 0.0, "dissolve_col": (1.0, 0.8, 0.4), "sway": 0.0, "sway_rate": 1.0, "alpha": 1.0, "blink": 0.0,
     "key_wash": 1.0,
-    "outline_col": (0.0, 0.0, 0.0),
+    "outline_col": (0.0, 0.0, 0.0), "ink": 0.0, "ink_col": (0.03, 0.025, 0.035), "floor_shade": 0.0,
 }
 
 

@@ -849,6 +849,19 @@ for _s in SHOTS:
     for _c in _s.get("cards", []):
         if _s["id"] in OUTLINE:
             _c.setdefault("props", {})["outline_col"] = OUTLINE[_s["id"]]
+# on the bed her bare feet and legs are light skin on a light quilt, and the halftone print lost their edge:
+# the feet read as cut off. A dark band along her outer contour (character.py, ink) keeps the whole figure
+# drawn where she meets the bed (lying in S32, her white shirt and bare waist went into the white sheet)
+INK = {"S05": 0.75, "S32": 0.75, "S35": 0.75, "S43c": 0.75, "S50": 0.75, "S54": 0.75}
+# and where she sits on it, the part of her that meets the quilt is a little in shadow, so bare feet print as
+# dots against the white sheet instead of as more paper (character.py, floor_shade)
+FLOOR_SHADE = {"S05": 0.45, "S35": 0.45, "S43c": 0.45, "S50": 0.45}
+for _s in SHOTS:
+    for _c in _s.get("cards", []):
+        if _s["id"] in INK:
+            _c.setdefault("props", {})["ink"] = INK[_s["id"]]
+        if _s["id"] in FLOOR_SHADE:
+            _c["props"]["floor_shade"] = FLOOR_SHADE[_s["id"]]
 
 
 # ================================================================ thermal stress before each meltdown: red slips first, then the type
