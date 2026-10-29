@@ -1,8 +1,10 @@
 """Review sheets of the finished film for a second reviewer: every shot as one row of three frames
 (start, middle, end), a few shots per sheet, written to work/qc/film_review/sheet_##.jpg.
 
-python src/tools/film_review.py [--video out/roshin_yuukai_mv.mp4] [--per 6] [--shots S05,S14]
+python src/tools/film_review.py [--video out/roshin_yuukai_mv.mp4] [--per 6] [--shots S05,S14] [--comp]
 Then: src/tools/codex_review.ps1 -Images <sheets> -PromptFile work/qc/codex/prompt_film.md -OutFile ...
+--comp composites the frames directly (render_comp.py --stills), so the review can run while the film itself
+is still being composited.
 """
 import argparse
 import subprocess
@@ -31,11 +33,22 @@ def main():
     ap.add_argument("--video", default=str(ROOT / "out" / "roshin_yuukai_mv.mp4"))
     ap.add_argument("--per", type=int, default=6)
     ap.add_argument("--shots", default=None)
+    ap.add_argument("--comp", action="store_true", help="composite the frames instead of reading the video")
     args = ap.parse_args()
     shots = storyboard.resolved()
     if args.shots:
         want = set(args.shots.split(","))
         shots = [s for s in shots if s["id"] in want]
+    if args.comp:
+        times = sorted({round(s["t0"] + u * (s["t1"] - s["t0"]), 2) for s in shots for u in (0.12, 0.5, 0.88)})
+        for i in range(0, len(times), 60):
+            subprocess.run([sys.executable, str(ROOT / "src" / "comp" / "render_comp.py"), "--stills",
+                            ",".join(f"{t:.2f}" for t in times[i:i + 60])], check=True, stdout=subprocess.DEVNULL)
+
+    def grab(t):
+        if args.comp:
+            return Image.open(ROOT / "work" / "comp_stills" / f"t{round(t, 2):07.2f}.png").convert("RGB").resize((CW, CH))
+        return frame_at(args.video, t)
     out = ROOT / "work" / "qc" / "film_review"
     out.mkdir(parents=True, exist_ok=True)
     try:
@@ -52,7 +65,7 @@ def main():
             d.text((6, y + 3), f"{s['id']}  {s['t0']:.2f}-{s['t1']:.2f}s", fill=(255, 220, 0), font=font)
             dur = s["t1"] - s["t0"]
             for c, u in enumerate((0.12, 0.5, 0.88)):
-                sheet.paste(frame_at(args.video, s["t0"] + u * dur), (c * (CW + 2), y + 26))
+                sheet.paste(grab(s["t0"] + u * dur), (c * (CW + 2), y + 26))
         p = out / f"sheet_{k // args.per:02d}.jpg"
         sheet.save(p, quality=88)
         paths.append(p)
