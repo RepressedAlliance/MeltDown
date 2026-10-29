@@ -671,13 +671,15 @@ for _s in SHOTS:
 FLOW = {
     # the way in, one forward flight: every cut pushes on into the next picture, and where the old shot flies
     # towards a light, the new one opens out of that light (in_anchor, in_radial) instead of lying over it
+    "S01": dict(in_="zoom", in_dur=0.7, in_push=0.4, in_radial=True),   # through the title ring, the lamp inside it
+    "S02": dict(in_="iris", in_dur=0.5, in_r0=330),               # the lamp's ring (r 345 at the cut) opens on her eye
     "S05": dict(in_="zoom", in_dur=0.4, in_anchor=(968, 722), in_radial=True),       # out of the canyon's end
     "S06": dict(in_="zoom", in_dur=0.6, in_anchor=(1807, 285), in_push=0.15, in_radial=True),  # the reactor in her window
-    "S07": dict(in_="zoom", in_dur=0.5, in_anchor=(1009, 497), in_radial=True, in_bloom=0.35),  # the city out of its mouth
+    "S07": dict(in_="zoom", in_dur=0.5, in_anchor=(1030, 465), in_radial=True, in_bloom=0.35),  # the city out of its mouth
     "S08": dict(in_="zoom", in_dur=0.45, in_radial=True),                           # down onto the core
     "S09": dict(in_="zoom", in_dur=0.45, in_radial=True, in_bloom=0.4),            # its light opens on her in bed
     "S10": dict(in_="zoom", in_dur=0.45, in_radial=True),
-    "S11": dict(in_="dissolve", in_dur=0.35),                     # the window -> her face, first line
+    "S11": dict(in_="dissolve", in_dur=0.4, in_anchor=(380, 360), in_radial=True),  # her back -> her face, first line
     "S14": dict(in_="zoom", in_dur=0.3, in_anchor=(1280, 340), in_radial=True),    # the street's end -> the lighter
     "S15b": dict(in_="zoom", in_dur=0.3, in_anchor=(935, 800), in_radial=True),   # into her chest: the diagram
     "S16": dict(in_="dissolve", in_dur=0.3, out="white", out_dur=0.35),   # and up into the white room
