@@ -50,13 +50,9 @@ def main():
     shots = storyboard.resolved()
     total = int(round(TL.DURATION * FPS))
     starts = [int(round(s["t0"] * FPS)) for s in shots] + [total]
-    asked = {s.strip() for s in args.redo.split(",") if s.strip()}
-    redo = set(asked)
-    # a segment starts on the frame nearest its cut, which can still belong to the shot before:
-    # re-rendering a shot then also re-renders the next segment if it opens on one of its frames
-    for k in range(len(shots) - 1):
-        if shots[k]["id"] in asked and starts[k + 1] / FPS < shots[k + 1]["t0"]:
-            redo.add(shots[k + 1]["id"])
+    # a segment's frames all belong to its own shot (render_comp gives each frame to the shot that owns it by
+    # the same rounding), so re-rendering a shot never touches the segment after it
+    redo = {s.strip() for s in args.redo.split(",") if s.strip()}
     segdir = ROOT / "work" / ("segments_preview" if args.preview else "segments")
     segdir.mkdir(parents=True, exist_ok=True)
     segs, jobs = [], []
