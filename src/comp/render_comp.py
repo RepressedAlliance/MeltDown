@@ -228,6 +228,11 @@ def apply_fx(img, shot, t, u):
                 img = cv2.warpAffine(img, M, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
         elif kind == "ghost":  # a reflection in glass: screen-blend a character layer
             rgb, al = scenes2d._img(scenes2d.CHAR / fx["pose"] / "color.png")
+            if fx.get("fade_bottom"):
+                # a bust drawing stops at the bottom of its canvas: the reflection thins out before that line
+                n = al.shape[0]
+                v = np.clip((n - 1 - np.arange(n)) / (fx["fade_bottom"] * n), 0.0, 1.0).astype(np.float32)
+                al = al * (v * v * (3 - 2 * v))[:, None]
             sc = fx.get("scale", 1.0) * H / rgb.shape[0]
             cx = fx.get("x", W / 2) + fx.get("drift", 0) * (u - 0.5)
             fg = scenes2d._place(rgb, sc, cx, fx.get("y", H / 2))

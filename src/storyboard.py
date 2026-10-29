@@ -187,7 +187,7 @@ S("S15", lambda: L(5) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
 S("S15b", lambda: L(5) + 1.25, bg="chest_core",
   bg_args=dict(pose="rin_wince", chest=(0.566, 0.833),
                quad=[(596.2, 64.0), (1366.2, 60.4), (1398.4, 1272.1), (566.7, 1268.9)],
-               push=dict(z=1.6, about=(1080, 1600))),
+               push=dict(z=1.5, about=(1080, 1600))),   # 1.5: the drawing's cut-off bottom stays below the frame
   finish=NIGHT, fx=[{"type": "heat", "amount": 2.0}])
 S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   cam=dict(keys=[(0, (2.75, 1.85, 1.25), (2.0, 2.75, 1.25), 40), (1, (2.65, 1.95, 1.25), (1.9, 2.75, 1.25), 42)],
@@ -197,7 +197,7 @@ S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
       # her reflection in the window glass, not another shot of her: a drawing of its own, face-on as into a
       # mirror (S15 and S17 show her turned right), faint, and the city lights show through her
       {"type": "ghost", "pose": "rin_reflect", "x": 1280, "y": 600, "scale": 0.6, "opacity": 0.5,
-       "holdout": 0.35, "drift": -60},
+       "holdout": 0.5, "drift": -60, "fade_bottom": 0.3},
       {"type": "zoom", "z": [(0, 1.0), (1, 1.07)], "cx": 220, "cy": 60}, {"type": "kick", "amount": 0.008}])
 
 # ================================================================ B1 (white afternoon dream)
@@ -467,7 +467,7 @@ S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered
 S("S48", lambda: L(42) - 0.3, bg="score", bg_args=dict(mode="wild"), finish=dict(chroma=2.5),
   fx=[{"type": "glitch", "on": [(0, 0), (0.7, 0), (0.72, 1)], "amount": 0.8}])
 S("S49", lambda: L(43) - 0.2, bg="tinnitus",
-  bg_args=dict(pose="rin_ears_close", close=True, scale=1.2, cx=1152, cy=700),
+  bg_args=dict(pose="rin_ears_close", close=True, scale=1.1, cx=1152, cy=640),   # both elbows inside the frame
   finish=dict(chroma=1.5), fx=[{"type": "strobe", "amount": 0.6}], out="black", out_dur=0.08)
 
 # ================================================================ INSTRUMENTAL: the room grows infinite
@@ -642,7 +642,7 @@ for i, note in zip((12, 15, 30, 33, 48),
 for i in (13, 16, 31, 34, 49):
     LYRIC_STYLES[i] = dict(style="impact", x=960, y=640, size=118, face="gothic_k")
 LYRIC_STYLES[34]["y"] = 900  # under Rin, who floats across the middle of S42
-LYRIC_STYLES[49].update(x=1260, y=975, size=100)  # in the empty lower right: she dives across the middle of S59
+LYRIC_STYLES[49].update(x=1270, y=945, size=88)  # in the empty lower right: she dives across the middle of S59
 LYRIC_STYLES[14] = dict(style="tate", x=1660, y=120, size=84, face="mincho_b", attack=0.3, color=(0.85, 0.95, 1.0))
 LYRIC_STYLES[17] = dict(style="impact", x=960, y=905, size=64, face="mincho_b", overshoot=0.1, slam=0.5)
 LYRIC_STYLES[16]["at_shot"] = {"S27": dict(y=965, size=96)}   # carried into the close-up: below her chin
@@ -743,7 +743,8 @@ FLOW = {
     "S32": dict(in_="white", in_dur=0.4, in_anchor=(990, 640)),   # into the light her room comes out of
     # through the sun in her eye: the eye pushed 1.6x about (2295, 920) carries its sun to where S34's is
     "S34": dict(in_="zoom", in_dur=0.5, in_anchor=(2295, 920), in_push=0.6),
-    "S35": dict(in_="dissolve", in_dur=0.6, in_bloom=0.3),       # dusk -> blue hour
+    "S35": dict(in_="dissolve", in_dur=0.6, in_bloom=0.3,        # dusk -> blue hour
+                type_mode="plate", plate=1.5),                    # the column runs down over the lit windows
     "S36": dict(out="black", out_dur=0.35),                       # the room goes dark as the band stops
     "S37": dict(out=None),                                        # the ring drawn in the silence ...
     "S38": dict(in_="iris", in_dur=0.45, in_r0=170,               # ... opens out from its own radius on the chorus
