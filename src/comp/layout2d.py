@@ -75,16 +75,18 @@ def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ri
         pth = skia.Path(g.path)
         pth.transform(m)
         c.drawPath(pth, paint(light if plate_title else col, a))
-    pw = 860
+    # the credits in one language (English), the song's own credit first, the video's last; the singer is
+    # already in the first line. The plate is as wide as its longest line, so no line runs past its edge.
+    credits = [("iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 36, True, H - 228),
+               ("music iroha(sasaki) / lyrics kuma", "mono_l", 28, False, H - 174),
+               ("MV  RepressedAlliance  ×  Claude", "mono_l", 28, False, H - 130)]
+    pw = max(860, int(max(layout(s, f, z, proportional=p).width for s, f, z, p, _ in credits)) + 28 + 40)
     px = 96 if panel == "left" else W - 96 - pw
     c.drawRect(skia.Rect.MakeXYWH(px, H - 344, pw, 264), paint(ink, a))
     _text(c, "MELTDOWN", "shoulders", 64, px + 24, H - 310, accent, a, tracking=0.25)
-    # the credits in one language (English), the song's own credit first, the video's last
-    _text(c, "iroha(sasaki)  feat.  Kagamine Rin", "code_jp", 36, px + 28, H - 228, light, a)
     c.drawLine(px + 24, H - 246, px + pw - 24, H - 246, paint(light, a * 0.6, stroke=1.2))
-    _text(c, "music iroha(sasaki) / lyrics kuma / vocal Kagamine Rin", "mono_l", 28, px + 28, H - 174,
-          light, a, proportional=False)
-    _text(c, "MV  RepressedAlliance  ×  Claude", "mono_l", 28, px + 28, H - 130, light, a, proportional=False)
+    for s, f, z, p, y in credits:
+        _text(c, s, f, z, px + 28, y, light, a, proportional=p)
 
 
 def telop(c, line, t, x, y, w, size=46):
