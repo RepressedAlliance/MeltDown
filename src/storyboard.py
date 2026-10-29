@@ -671,7 +671,8 @@ for _s in SHOTS:
 FLOW = {
     # the way in, one forward flight: every cut pushes on into the next picture, and where the old shot flies
     # towards a light, the new one opens out of that light (in_anchor, in_radial) instead of lying over it
-    "S01": dict(in_="zoom", in_dur=0.7, in_push=0.4, in_radial=True),   # through the title ring, the lamp inside it
+    "S01": dict(in_="zoom", in_dur=0.7, in_push=0.4, in_radial=True,      # through the title ring, the lamp inside it;
+                fx=[{"type": "darken", "rect": (-200, 0, 380, 1080), "feather": 140, "amount": 0.5}]),  # the lamp-lit wall
     "S02": dict(in_="iris", in_dur=0.5, in_r0=330),               # the lamp's ring (r 345 at the cut) opens on her eye
     "S05": dict(in_="zoom", in_dur=0.4, in_anchor=(968, 722), in_radial=True),       # out of the canyon's end
     "S06": dict(in_="zoom", in_dur=0.6, in_anchor=(1807, 285), in_push=0.15, in_radial=True),  # the reactor in her window
@@ -714,7 +715,8 @@ FLOW = {
     "S64": dict(in_="dissolve", in_dur=0.5),
     "S65": dict(in_="dissolve", in_dur=0.5, in_bloom=0.3, in_anchor=(555, 465), in_radial=True),  # the dawn sun -> her room
     "S65b": dict(in_="zoom", in_dur=0.5),                         # closer on one push ...
-    "S65c": dict(in_="zoom", in_dur=0.7, in_anchor=(1335, 510), in_push=0.5, in_radial=True),  # ... into her face
+    # ... into her face: pushed 3.5x about (873, 396), her face lands where and as large as it is in S65c
+    "S65c": dict(in_="zoom", in_dur=0.8, in_anchor=(873, 396), in_push=2.5),
 }
 TAILS = {"S13": 0.35, "S15": 0.35, "S17": 0.35, "S27": 0.55, "S29": 0.45, "S30": 0.45, "S31": 0.55, "S34": 0.65, "S43": 0.65,
          "S43b": 0.65, "S43c": 0.55, "S53": 0.65, "S54": 0.45, "S59": 0.55, "S60": 0.55, "S63": 0.55, "S64": 0.85,
