@@ -718,7 +718,8 @@ FLOW = {
 }
 TAILS = {"S13": 0.35, "S15": 0.35, "S17": 0.35, "S27": 0.55, "S29": 0.45, "S30": 0.45, "S31": 0.55, "S34": 0.65, "S43": 0.65,
          "S43b": 0.65, "S43c": 0.55, "S53": 0.65, "S54": 0.45, "S59": 0.55, "S60": 0.55, "S63": 0.55, "S64": 0.85,
-         "S65": 0.65, "S65b": 0.65}
+         "S65": 0.65}
+# S65b has no tail until it is re-rendered: its folder still holds a close-up from an older version past the cut
 for _s in SHOTS:
     for _k, _v in FLOW.get(_s["id"], {}).items():
         _s[_k] = _v

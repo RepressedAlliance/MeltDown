@@ -52,6 +52,19 @@ def _frames(d, ext):
     return _frame_lists[d]
 
 
+_ranges = {}
+
+
+def render_range(sid):
+    """The frames this version of a shot renders (as render_shot.prepare): from its cut to its end, or to
+    render_to for shots re-cut later, plus its tail."""
+    if sid not in _ranges:
+        s = next(x for x in storyboard.resolved() if x["id"] == sid)
+        _ranges[sid] = (int(round(s["t0"] * FPS)),
+                        int(round((max(s["t1"], s.get("render_to", 0.0)) + s.get("tail", 0.0)) * FPS)) - 1)
+    return _ranges[sid]
+
+
 def blender_frame(shot, f, preview):
     sub = "preview" if preview else "render"
     ext = ".png" if preview else ".jpg"
@@ -59,17 +72,19 @@ def blender_frame(shot, f, preview):
     if src:
         # a new cut made from another shot's render: its frames from `at` seconds in, at `speed`
         d = ROOT / "work" / sub / src["id"]
-        frames = _frames(d, ext)
-        if not frames:
-            return None
-        f = frames[0] + int(round(src.get("at", 0.0) * FPS + (f - round(shot["t0"] * FPS)) * src.get("speed", 1.0)))
+        lo, hi = render_range(src["id"])
+        f = lo + int(round(src.get("at", 0.0) * FPS + (f - round(shot["t0"] * FPS)) * src.get("speed", 1.0)))
     else:
         d = ROOT / "work" / sub / shot["id"]
+        lo, hi = render_range(shot["id"])
+    # never a frame outside this version's range: an older version of the shot (another camera, another
+    # length) leaves frames in the folder that would flash in at a cut or under a dissolve
+    f = min(max(f, lo), hi)
     p = d / f"{f:05d}{ext}"
     if not p.exists():
         # previews may be rendered every Nth frame, and a re-timed cut may run a few frames past
         # its render: use the nearest earlier frame, else the first
-        frames = _frames(d, ext)
+        frames = [x for x in _frames(d, ext) if lo <= x <= hi]
         if not frames:
             return None
         prev = [x for x in frames if x <= f]
