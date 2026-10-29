@@ -581,15 +581,19 @@ FLAT_MORNING = dict(key_dir=(0.3, 0.7, 0.6), key_col=(0.0, 0.0, 0.0), amb_col=(1
 S("S65", 301.45, scene="room", setup=dict(tod="morning", wind=0.35, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT, sun=BED_SUN,
                                          world=MORNING_FILL, hide=OVERHEAD_HIDE), finish=DAWN,
   hud=dict(level=1, alpha=0.75), render=dict(exposure=-0.7),
-  cam=dict(keys=[(0, (0.62, 1.7, 1.98), (0.621, 1.7, 0.45), 24, -10), (1, (0.581, 2.0964, 1.4082), (0.582, 2.1029, 0.4825), 37.46, -6.24)],
-           ease="dolly"),
+  # the aim leaves the middle of the bed for her head straight after the white (quickly, then slower) and is
+  # at rest at the cut: aimed at her chest, the push used to cut her bow and raised arm off at the top
+  cam=dict(keys=[(0, (0.62, 1.7, 1.98), (0.621, 1.7, 0.45), 24, -10), (1, (0.599, 2.2635, 1.4082), (0.600, 2.27, 0.4825), 37.46, -6.24)],
+           ease="dolly", drift=(-0.0052, 0.1399, 0.0080)),
   cards=[dict(pose="rin_sleep", **SLEEP_ON_BED, props=dict(FLAT_MORNING))])
 # closer, her face on the pillow (the framing of the dusk S32)
 S("S65b", 309.6, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent=SLEEP_DENT, quilt=SLEEP_QUILT, sun=BED_SUN,
                                           world=MORNING_FILL, hide=OVERHEAD_HIDE), finish=DAWN,
   hud=dict(level=1, alpha=0.85),
-  cam=dict(keys=[(0, (0.581, 2.0964, 1.4082), (0.582, 2.1029, 0.4825), 37.46, -6.24), (1, (0.56, 2.31, 1.10), (0.561, 2.32, 0.50), 55, -3)],
-           fstop=8.0, ease="dolly"),
+  cam=dict(keys=[(0, (0.599, 2.2635, 1.4082), (0.600, 2.27, 0.4825), 37.46, -6.24), (1, (0.56, 2.31, 1.10), (0.561, 2.32, 0.50), 55, -3)],
+           # the aim starts from rest, as S65 left it, and comes to rest at the cut, where S65c starts from rest:
+           # both dissolves see the two pictures move together
+           fstop=8.0, ease="dolly", drift=(0.0, 0.0, 0.0)),
   render=dict(exposure=-0.7, samples=64),
   cards=[dict(pose="rin_sleep", **SLEEP_ON_BED, props=dict(FLAT_MORNING))])
 # the last image: the morning she thought she would not see. Seen from above on the pillow, she sleeps,
@@ -601,10 +605,14 @@ S("S65c", 316.73, scene="room", setup=dict(tod="morning", wind=0.25, pillow_dent
   finish=DAWN,
   render=dict(exposure=-0.5, samples=64),
   cam=dict(keys=[(0, (0.56, 2.31, 1.10), (0.561, 2.32, 0.50), 55, -3),
-                 (1, (0.56, 2.318, 0.93), (0.561, 2.32, 0.50), 55, 1)], fstop=2.8,
-           # the push carries on from S65b at the same rate (about 11.7 % a second) and comes to rest on her face
-           ease="dolly", settle=2.9),
-  cards=[dict(pose="rin_wake", h=0.329, loc=(0.57, 2.187, 0.51), rot=(0, 0, 0), contact=dict(kind="lie", blur=0.006, strength=0.65, cast=0.025, cast_strength=0.35),
+                 (1, (0.688, 2.315, 0.93), (0.689, 2.317, 0.50), 55, 1)], fstop=2.8,
+           # the push carries on from S65b at the same rate (about 11.7 % a second) and comes to rest on her face;
+           # the aim, at rest at the cut like S65b's, drifts so her face settles left of centre, clear of the title
+           ease="dolly", settle=2.9, drift=(0.0, 0.0, 0.0)),
+  # her face lies exactly where the sleeping drawing's face is in S65b (eyes, mouth, microphone, clips and ear
+  # cup fitted with one similarity, the eyes weighted most), turned as her sleeping head is, so the dissolve
+  # reads as the same girl waking, not one drawing laid over another
+  cards=[dict(pose="rin_wake", h=0.32, loc=(0.552, 2.2915, 0.505), rot=(0, 0, -87.0), contact=dict(kind="lie", blur=0.006, strength=0.65, cast=0.025, cast_strength=0.35),
               props=dict(FLAT_MORNING, amb_col=(1.08, 1.02, 0.95)),
               keys={"blink": [(("s", 0.0), 1.0), (("s", 2.17), 1.0), (("s", 2.19), 0.0),
                               (("s", 5.85), 0.0), (("s", 5.87), 1.0), (("s", 5.96), 1.0), (("s", 5.98), 0.0)]})],

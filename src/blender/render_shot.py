@@ -56,6 +56,7 @@ def setup_camera(sc, shot, t0, dur, f0, f1):
              k[4] if len(k) > 4 else cam_spec.get("roll", 0.0)) for k in keys]
         rho = max(1e-6, (pb - qb).length / max(1e-6, (pa - qa).length))
         settle = cam_spec.get("settle")
+        drift = cam_spec.get("drift")
 
         def dolly(t):
             u = (t - ta) / max(1e-6, tb - ta)
@@ -65,7 +66,18 @@ def setup_camera(sc, shot, t0, dur, f0, f1):
                 k = (tb - ta) / settle
                 u = (1 - math.exp(-k * u)) / (1 - math.exp(-k))
             g = u if abs(1 - rho) < 1e-4 else (1 - rho ** u) / (1 - rho)
-            return pa + (pb - pa) * g, qa + (qb - qa) * g, la * (lb / la) ** u, ra + (rb - ra) * u
+            # the camera rides at a "boom" from what it looks at; the push shortens the boom
+            boom = (pa - qa) + ((pb - qb) - (pa - qa)) * g
+            if drift is None:
+                q = qa + (qb - qa) * g
+            else:
+                # the aim point moves off at the velocity it had at the end of the shot before (`drift`, metres
+                # per second) and eases to rest on its end point: under a dissolve both pictures then move
+                # together, and the drift turns smoothly toward where the shot settles
+                w = min(max((t - ta) / max(1e-6, tb - ta), 0.0), 1.0)
+                h00, h10, h01 = 2 * w ** 3 - 3 * w ** 2 + 1, w ** 3 - 2 * w ** 2 + w, -2 * w ** 3 + 3 * w ** 2
+                q = qa * h00 + Vector(drift) * (tb - ta) * h10 + qb * h01
+            return q + boom, q, la * (lb / la) ** u, ra + (rb - ra) * u
 
     def fn(t, f):
         if dolly:
