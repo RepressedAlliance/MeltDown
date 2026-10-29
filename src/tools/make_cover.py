@@ -37,6 +37,7 @@ def clean_frame(t):
     import render_comp
     import storyboard
     storyboard.LYRIC_STYLES.clear()
+    storyboard.EXTRA_LINES.clear()       # sung words off the lyric sheet are lyrics too
     shots = storyboard.resolved()
     for s in shots:
         for k in ("hud", "title", "stamps", "marks"):

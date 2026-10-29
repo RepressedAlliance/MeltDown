@@ -37,6 +37,7 @@ def frame(t, w=1920, h=1080):
     import storyboard
     if _shots is None:
         storyboard.LYRIC_STYLES.clear()
+        storyboard.EXTRA_LINES.clear()       # sung words off the lyric sheet are lyrics too
         _shots = storyboard.resolved()
     img = np.clip(render_comp.render_frame(_shots, int(round(t * FPS)), False), 0, 1)
     im = Image.fromarray((img * 255 + 0.5).astype(np.uint8))
