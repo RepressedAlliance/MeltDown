@@ -98,7 +98,7 @@ S("S03", 9.6, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.4,
 # down a street canyon (y = 115 runs between two rows of blocks, 10 m clear of every wall; the old line
 # cut through the buildings), tilting up to the lit high floors as it nears her block
 S("S04", 11.8, scene="city", finish=NIGHT, in_="zoom", in_dur=0.4, tail=0.5,
-  cam=dict(keys=[(0, (-760, 115, 22), (-460, 115.5, 26), 22), (1, (-747.0, 115, 22.43), (-447.6, 115.58, 28.65), 22)],
+  cam=dict(keys=[(0, (-760, 115, 22), (-460, 115.5, 26), 22), (1, (-749.3, 115, 22.35), (-449.8, 115.57, 28.17), 22)],
            ease="linear"))
 S("S05", 13.82, scene="room", setup=dict(tod="night", clock="0200", rake=True), finish=NIGHT, in_="zoom", in_dur=0.4,
   tail=0.65,
