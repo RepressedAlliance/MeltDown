@@ -417,15 +417,18 @@ def _yield_to_next(ln):
         nst = storyboard.LYRIC_STYLES.get(j)
         if j >= len(TL.LINES) or not nst:
             continue
-        clash = j == i + 1 and (_same_slot(st, nst) or st.get("style") == "impact")
+        # a line marked `apart` is set well away from the one before it (the other end of the frame), so both
+        # stay readable while one is sung straight into the other
+        clash = j == i + 1 and not nst.get("apart") and (_same_slot(st, nst) or st.get("style") == "impact")
         clash |= st.get("style") == "tate" and nst.get("style") == "tate" and nst.get("x", 0) > st.get("x", 0) + 10
         if clash:
             starts.append(TL.LINES[j]["start"])
     last = max(ln["ct"])
     for cut in _section_breaks():
         if ln["start"] < cut < ln["end"] + st.get("hold", 0.7) + 0.5:
-            # gone by the cut; if its last word is only sung after it, just long enough to read
-            starts.append(cut - 0.02 if last <= cut - 0.15 else last + 0.44)
+            # gone by the cut; if its last word is sung less than half a second before it (or after it), that
+            # word still gets half a second on screen, a moment into the next section (as long as it is sung)
+            starts.append(cut - 0.02 if last <= cut - 0.45 else last + 0.62)
     if starts:
         return dict(ln, hold_until=min(ln["end"] + 0.6, min(starts) - 0.14)), 0.12
     return ln, None
@@ -441,6 +444,42 @@ def _adaptive(st):
     return col is not None and 0.299 * col[0] + 0.587 * col[1] + 0.114 * col[2] > 0.5
 
 
+_EXTRAS = None
+
+
+def _extras():
+    """Words that are sung but are not on the lyric sheet (an ad-lib the user's karaoke timing has as an event
+    of its own), as lines of their own: storyboard.EXTRA_LINES names the events and how to set them. The words
+    come from that file at run time, in hiragana, each on its syllable's time (the file's own timings shifted
+    onto the song by the aligned copy next to it), so no lyric text is kept in the repository."""
+    global _EXTRAS
+    if _EXTRAS is not None:
+        return _EXTRAS
+    _EXTRAS = []
+    import json
+    import re
+    import kana
+    import paths
+    ass = paths.karaoke()
+    aligned = Path(ass).parent / "enssat_syllables.json" if ass else None
+    if not ass or not aligned.exists() or not getattr(storyboard, "EXTRA_LINES", None):
+        return _EXTRAS
+    events = [ln.split(",", 9) for ln in Path(ass).read_text(encoding="utf-8-sig").splitlines()
+              if ln.startswith("Dialogue:")]
+    times = json.loads(aligned.read_text(encoding="utf-8"))
+    for k in storyboard.EXTRA_LINES:
+        t, text, ct = times[k]["t0"], "", []
+        for cs, syl in re.findall(r"\{\\k[fo]?(\d+)\}([^{]*)", events[k][9]):
+            hira = kana.to_hiragana(syl)
+            text += hira
+            ct += [t] * len(hira)
+            t += int(cs) / 100
+        if text:
+            _EXTRAS.append(dict(i=f"x{k}", text=text, ct=ct, start=ct[0], end=times[k]["t1"],
+                                notes=[dict(t=c) for c in ct]))
+    return _EXTRAS
+
+
 def lyrics_overlay(t, shot):
     """Two premultiplied layers: light lyric type (adapted to the picture later) and everything that
     keeps its colour (dark-on-marker lines, telop, HUD, titles, stamps, print marks)."""
@@ -450,15 +489,16 @@ def lyrics_overlay(t, shot):
     ca = sa.getCanvas()
     melt_layers = []
     heat_layers = []
-    for ln in TL.LINES:
-        st = storyboard.LYRIC_STYLES.get(ln["i"])
+    for ln in TL.LINES + _extras():
+        st = (storyboard.LYRIC_STYLES.get(ln["i"]) if isinstance(ln["i"], int)
+              else storyboard.EXTRA_LINES.get(int(ln["i"][1:])))
         if not st or t < ln["start"] - 1.0 or t > ln["end"] + st.get("tail", 4.0):
             continue
         if "shots" in st and shot["id"] not in st["shots"]:
             continue
         style = st["style"]
         kw = {k: v for k, v in st.items() if k not in ("style", "tail", "melt", "glow", "glow_col", "heat", "shots",
-                                                        "at_shot")}
+                                                        "at_shot", "apart")}
         # a line that carries over a cut can move to where the new picture has room for it
         kw.update(st.get("at_shot", {}).get(shot["id"], {}))
         ln, quick = _yield_to_next(ln)

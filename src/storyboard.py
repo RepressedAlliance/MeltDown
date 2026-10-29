@@ -669,10 +669,11 @@ LYRIC_STYLES[17] = dict(style="impact", x=960, y=905, size=64, face="mincho_b", 
 LYRIC_STYLES[16]["at_shot"] = {"S27": dict(y=965, size=96)}   # carried into the close-up: below her chin
 # long lines start higher so they keep most of their size inside the frame (14 / 16 characters)
 LYRIC_STYLES[32] = dict(style="tate", x=1660, y=70, size=84, face="mincho_b", attack=0.3, color=(1, 1, 1))
-# light type (it flips to the key ink where the core whites out): the grey frame swallowed dark ink
-# under the reactor on the open page, not inside its glowing lower half
-LYRIC_STYLES[35] = dict(style="impact", x=960, y=1000, size=64, face="mincho_b", overshoot=0.1, slam=0.5,
-                        color=(0.97, 0.98, 1.0))
+# light type (it flips to the key ink where the core whites out): the grey frame swallowed dark ink. It is
+# sung straight on from line 34, still on screen along the bottom, so it is set across the top, on the open
+# page above the reactor, where both can be read at once (apart); at y=1000 it sat 16 px off the bottom edge
+LYRIC_STYLES[35] = dict(style="impact", x=960, y=70, size=64, face="mincho_b", overshoot=0.1, slam=0.5,
+                        color=(0.97, 0.98, 1.0), apart=True)
 LYRIC_STYLES.update(_tate_cols([18, 19], 1720, 96, size=58, color=(1.0, 0.86, 0.78)))
 LYRIC_STYLES.update(_tate_cols([20, 21], 326, 96, size=58, color=(1.0, 0.86, 0.78)))
 LYRIC_STYLES.update(_tate_cols([22, 23], 1720, 96, size=58, color=(1.0, 0.8, 0.7)))
@@ -705,6 +706,13 @@ LYRIC_STYLES[53] = dict(style="impact", x=960, y=470, size=96, face="mincho_b", 
 # the city and then over the open quilt, so it neither jumps at the cut nor covers her shoulders
 LYRIC_STYLES[54] = dict(style="impact", x=1290, y=560, size=96, face="mincho_b", overshoot=0.08, slam=0.6,
                         color=(1.0, 0.92, 0.75), tail=6.0, hold=1.6, fade_out=0.9)
+# words that are sung but are not on the lyric sheet: the karaoke timing has them as events of their own
+# (by index in the user's .ass), and they are set as lines of their own; render_comp._extras reads the words
+# from that file. 48: the call just before the last chorus line (4:33), along the bottom, clear of that
+# line's big type
+EXTRA_LINES = {
+    48: dict(style="impact", x=960, y=880, size=76, face="mincho_b", overshoot=0.1, slam=0.5, color=(0.97, 0.98, 1.0)),
+}
 
 
 # ================================================================ design layer (titles, print marks, ring cuts)

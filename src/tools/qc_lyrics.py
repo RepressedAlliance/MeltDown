@@ -38,7 +38,9 @@ def draw_line(ln, t, shot):
     c = surf.getCanvas()
     c.scale(SCALE, SCALE)
     style = st["style"]
-    kw = {k: v for k, v in st.items() if k not in ("style", "tail", "melt", "glow", "glow_col", "heat", "shots")}
+    kw = {k: v for k, v in st.items() if k not in ("style", "tail", "melt", "glow", "glow_col", "heat", "shots",
+                                                    "at_shot", "apart")}
+    kw.update(st.get("at_shot", {}).get(shot["id"], {}))     # as render_comp.py: a line moved for one shot
     ln2, quick = RC._yield_to_next(ln)
     if quick is not None and style in ("tate", "impact", "whisper", "echo", "score_line"):
         kw["fade_out"] = quick
