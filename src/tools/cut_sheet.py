@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
@@ -40,9 +40,15 @@ def main():
     W = 110 + len(offs) * (CW + 4)
     sheet = Image.new("RGB", (W, len(cuts) * (CH + 4)), (24, 24, 28))
     d = ImageDraw.Draw(sheet)
+    try:
+        font = ImageFont.truetype("arial.ttf", 18)
+    except OSError:
+        font = None
     for r, (a, b) in enumerate(cuts):
         y = r * (CH + 4)
-        d.text((6, y + 6), f"{a['id']}>{b['id']}\n{b['t0']:.2f}s\n{b.get('in', '')}", fill=(240, 220, 120))
+        mm, ss = divmod(b["t0"], 60)
+        d.text((6, y + 6), f"{a['id']}>{b['id']}\n{int(mm)}:{ss:05.2f}\n{b.get('in') or 'cut'}", fill=(240, 220, 120),
+               font=font)
         for k, o in enumerate(offs):
             sheet.paste(frame_at(args.video, b["t0"] + o), (110 + k * (CW + 4), y))
     out = ROOT / "work" / "qc" / f"cuts_{args.t0:05.1f}_{args.t1:05.1f}.png"
