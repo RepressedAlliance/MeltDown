@@ -397,7 +397,9 @@ S("S42b", 160.4, scene="core", setup=dict(mood="white", exterior=True), finish=W
   cam=dict(keys=[(0, (24, -30, 14), (0, 0, -1), 30), (1, (60, -80, 40), (0, 0, -1), 30)], ease="in"),
   anim=dict(plasma=[(0, 2.0), (1, 4.0)]), out="white", out_dur=1.2)
 S("S43", 164.72, scene="gears", setup=dict(mood="steel", stud=(0.0, 0.0, 0.2)), finish=MONO, in_="black", in_dur=0.6,
-  cam=dict(keys=[(0, (1.4, -3.6, 2.2), (0.2, 0.0, 0.0), 60), (1, (0.9, -3.2, 1.6), (0.3, 0.2, 0.0), 70)], fstop=2.8),
+  # from the whole train of gears in toward her: by the end she is the subject, the gear turning round her
+  cam=dict(keys=[(0, (1.4, -3.6, 2.2), (0.2, 0.0, 0.0), 60), (1, (0.9, -3.2, 1.6), (0.03, -0.1, 0.14), 100)],
+           fstop=2.8),
   # a small Rin on a pin that stands still through the hub of the great gear: she sits on its cap with her
   # legs hanging over the gear that turns beneath her feet. The machine of time is giant, and she is the one
   # still point in it. The card stands just in front of the cap's edge, so her legs hang in front of it.
