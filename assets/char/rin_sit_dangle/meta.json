@@ -1,0 +1,14 @@
+{
+ "name": "rin_sit_dangle",
+ "source": "rin_sit_dangle_v1.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  177,
+  11,
+  858,
+  1508
+ ]
+}

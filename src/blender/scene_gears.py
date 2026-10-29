@@ -107,7 +107,7 @@ def escapement_spot(train, x0, y0, r_out):
     return x0 - 3.5, y0 + 0.4
 
 
-def build(sc, mood="steel", seed=4):
+def build(sc, mood="steel", seed=4, stud=None):
     col = collection("Gears")
     if mood == "gold":
         metal = mat_principled("Brass", (0.95, 0.68, 0.32), rough=0.22, metal=1.0)
@@ -162,6 +162,16 @@ def build(sc, mood="steel", seed=4):
     back.scale = (30, 30, 1)
     back.location = (0, 0, -0.6)
     assign(back, mat_principled("BackMat", (0.01, 0.01, 0.012), rough=0.6))
+    if stud:
+        # a pin that does not turn, up through the hub of a gear and capped: something still to stand on
+        # while the gear turns round it (the hub's hole is wider, so the gap shows the gear moving past)
+        sx, sy, top = stud
+        pin = add_prim("cylinder", "Pin", col, r=0.07, depth=top + 0.6, seg=48)
+        pin.location = (sx, sy, (top - 0.6) / 2)
+        cap = add_prim("cylinder", "PinCap", col, r=0.095, depth=0.025, seg=48)
+        cap.location = (sx, sy, top - 0.0125)
+        for ob in (pin, cap):
+            assign(ob, metal2)
     return {"col": col, "gears": gears, "escape": esc}
 
 
@@ -199,7 +209,7 @@ def build_shot(sc, shot):
     from common import setup_compositor, world_color
     st = shot.get("setup", {})
     world_color(sc, (0.003, 0.003, 0.004))
-    info = build(sc, mood=st.get("mood", "steel"))
+    info = build(sc, mood=st.get("mood", "steel"), stud=st.get("stud"))
     comp = dict(bloom=0.3, bloom_threshold=1.2, streaks=0.0, dispersion=0.006)
     comp.update(st.get("comp", {}))
     setup_compositor(sc, **comp)
