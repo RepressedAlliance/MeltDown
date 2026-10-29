@@ -3,7 +3,7 @@
 python karaoke_ass.py [file.ass]   -> work/analysis/karaoke/syllables.json and a comparison report
 A karaoke line is "{\\k15}ma{\\k55}chi ..." from its start time: each syllable starts where the
 previous one's duration (centiseconds) ends. Syllables are romaji (sometimes several morae, e.g.
-"kyuu", "nai", or English spellings such as "ETHER" for エーテル), so they are matched to our
+"kyuu", "nai", or English spellings such as "ETHER" for a katakana loanword), so they are matched to our
 morae by aligning the romaji strings; a mora inside a longer syllable gets its share of it.
 """
 import difflib
