@@ -640,6 +640,7 @@ for i, note in zip((12, 15, 30, 33, 48),
 for i in (13, 16, 31, 34, 49):
     LYRIC_STYLES[i] = dict(style="impact", x=960, y=640, size=118, face="gothic_k")
 LYRIC_STYLES[34]["y"] = 900  # under Rin, who floats across the middle of S42
+LYRIC_STYLES[49].update(x=1260, y=975, size=100)  # in the empty lower right: she dives across the middle of S59
 LYRIC_STYLES[14] = dict(style="tate", x=1660, y=120, size=84, face="mincho_b", attack=0.3, color=(0.85, 0.95, 1.0))
 LYRIC_STYLES[17] = dict(style="impact", x=960, y=905, size=64, face="mincho_b", overshoot=0.1, slam=0.5)
 LYRIC_STYLES[16]["at_shot"] = {"S27": dict(y=965, size=96)}   # carried into the close-up: below her chin
