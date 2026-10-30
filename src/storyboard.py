@@ -216,16 +216,29 @@ S("S15b", lambda: L(5) + 1.25, bg="chest_core",
                quad=[(596.2, 64.0), (1366.2, 60.4), (1398.4, 1272.1), (566.7, 1268.9)],
                push=dict(z=1.5, about=(1080, 1600))),   # 1.5: the drawing's cut-off bottom stays below the frame
   finish=NIGHT, fx=[{"type": "heat", "amount": 2.0}])
+# the lines wishing it had all been a lie: the burning in her stomach takes her down, a bar at a time, as stop-
+# motion (three drawings: doubled over, on her knees, curled up on the floor), the whole of her in the dark room
+# with the city behind her. The ring the diagram (S15b) showed in her stomach glows there, a warm light on the
+# floor that beats on 1 and 3 (anim glow). The camera sinks with her. Card heights keep her head one size across
+# the three drawings; each stands with its lowest line on the floor and a soft blot under it (floor_blot).
+# brighter than the room around her: in the night print a card at 1.05 went as dark as the window behind her,
+# her face and hair a silhouette (the "half hidden" figure this shot replaces)
+SINK_LIGHT = dict(key_dir=(0.4, -0.6, 0.6), key_col=(0.75, 0.42, 0.22), amb_col=(0.22, 0.2, 0.26),
+                  rim_dir=(-0.2, 1.0, 0.3), rim_col=(0.35, 0.48, 0.95), exposure=1.4)
+SINK = [("rin_double_over", 1.46, 1.92, 0.0, bar(34)), ("rin_sink_kneel", 0.83, 1.84, bar(34), bar(35)),
+        ("rin_curl_floor", 0.81, 1.78, bar(35), DURATION)]
 S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
-  cam=dict(keys=[(0, (2.75, 1.85, 1.25), (2.0, 2.75, 1.25), 40), (1, (2.65, 1.95, 1.25), (1.9, 2.75, 1.25), 42)],
-           fstop=2.8, focus=1.3),
-  fx=[{"type": "darken", "rect": (630, 600, 890, 1080), "feather": 25, "amount": 0.9},
-      {"type": "darken", "rect": (900, 860, 1920, 1080), "feather": 90, "amount": 0.45},
-      # her reflection in the window glass, not another shot of her: a drawing of its own, face-on as into a
-      # mirror (S15 and S17 show her turned right), faint, and the city lights show through her
-      {"type": "ghost", "pose": "rin_reflect", "x": 1280, "y": 600, "scale": 0.6, "opacity": 0.5,
-       "holdout": 0.5, "drift": -60, "fade_bottom": 0.3},
-      {"type": "zoom", "z": [(0, 1.0), (1, 1.07)], "cx": 220, "cy": 60}, {"type": "kick", "amount": 0.008}])
+  # the aim starts at rest (drift 0) and sinks with her, so while she stands her bow keeps its margin under the
+  # top edge (frame_check: bow at most 0.88 of the half-height, the curled figure inside 0.6 of the width)
+  cam=dict(keys=[(0, (1.92, 0.20, 0.86), (1.86, 2.2, 0.80), 20), (1, (1.80, 1.05, 0.52), (1.78, 2.2, 0.26), 20)],
+           fstop=4.0, ease="dolly", drift=(0.0, 0.0, 0.0)),
+  cards=[dict(pose=pose, h=h, loc=(x, 2.2, 0.0), rot=(90, 0, 0), face_cam=True, motion=None, on=[(t_a, t_b)],
+              contact=dict(kind="floor"), props=dict(SINK_LIGHT),
+              keys={"key_col": pulse_keys(max(t_a, 47.9), min(t_b, 54.4), (0.75, 0.42, 0.22), (1.1, 0.62, 0.32))})
+         for pose, h, x, t_a, t_b in SINK],
+  anim=dict(glow=dict(at=[(0.0, (1.86, 2.05, 0.82)), (bar(34), (1.78, 2.05, 0.36)), (bar(35), (1.76, 2.05, 0.22))],
+                      color=(1.0, 0.45, 0.16), base=3.0, peak=14.0)),
+  fx=[{"type": "heat", "amount": 1.5}])
 
 # ================================================================ B1 (white afternoon dream)
 S("S17", lambda: L(8) - 0.2, scene="room", setup=dict(tod="morning", wind=0.8, plate=None, world=(2.2, 2.2, 2.3)), finish=DAYW,
