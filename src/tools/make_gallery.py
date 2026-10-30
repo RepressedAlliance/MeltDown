@@ -18,13 +18,13 @@ sys.path.insert(0, str(ROOT / "src" / "comp"))
 OUT = ROOT / "docs" / "images"
 FPS = 24
 
-HERO = [21.5, 88.0, 117.6, 194.8, 233.5, 322.9]          # seconds, read left to right, top to bottom
-STILLS = [17.2, 43.6, 52.6, 79.0, 104.2, 134.0, 207.8, 262.4, 312.0]
-LOOPS = {"loop_opening": (6.4, 2.6), "loop_chorus": (77.6, 2.6), "loop_bridge": (192.6, 2.1)}
+HERO = [12.0, 88.0, 117.6, 194.8, 233.5, 322.9]          # seconds, read left to right, top to bottom
+STILLS = [19.6, 43.6, 52.6, 79.0, 104.2, 134.0, 207.8, 262.4, 312.0]
+LOOPS = {"loop_opening": (6.2, 2.6), "loop_chorus": (77.6, 2.6), "loop_bridge": (192.6, 2.1)}
 # before / after pairs for the making-of notes: the seventh cut's frame (kept in work/qc/before7) beside
 # the same shot of this film (at t_after, after any dissolve into it), both cropped to the part the note
 # is about (x, y, w, h at 1920 x 1080) and clear of the old frame's lyrics
-BEFORE_AFTER = [(14.0, "bed_sitting", (0, 0, 1920, 1080), 15.2), (43.0, "arm_cut", (180, 280, 1340, 800), 43.0),
+BEFORE_AFTER = [(14.0, "bed_sitting", (0, 0, 1920, 1080), 129.0), (43.0, "arm_cut", (180, 280, 1340, 800), 43.0),
                 (307.0, "bed_lying", (200, 0, 1400, 1080), 307.0)]
 
 _shots = None

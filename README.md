@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/hero.jpg" alt="《炉心融解》MV 的画面：深夜的房间、炉心、黄昏、电视里的铃、清晨" width="100%">
+  <img src="docs/images/hero.jpg" alt="《炉心融解》MV 的画面：片名下的夜城、炉心、黄昏、电视里的铃、清晨" width="100%">
 </p>
 
 <h1 align="center">MeltDown</h1>
@@ -31,12 +31,12 @@
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/images/loop_opening.webp" alt="开场：环形灯、瞳孔与窗外的城市"></td>
+    <td width="33%"><img src="docs/images/loop_opening.webp" alt="开场：从反应堆的光环飞过夜城，飞向她的窗"></td>
     <td width="33%"><img src="docs/images/loop_chorus.webp" alt="副歌：炉心的光烧穿纸面"></td>
     <td width="33%"><img src="docs/images/loop_bridge.webp" alt="桥段：电视里的铃"></td>
   </tr>
   <tr>
-    <td align="center"><sub>开场：从环形灯进入凌晨两点的房间</sub></td>
+    <td align="center"><sub>开场：一个镜头从片名飞进她的窗</sub></td>
     <td align="center"><sub>副歌：炉心的光把纸面烧穿</sub></td>
     <td align="center"><sub>桥段：电视里主持节目的也是铃</sub></td>
   </tr>

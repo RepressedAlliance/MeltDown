@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/hero.jpg" alt="Frames from the 《炉心融解》 MV: the room at night, the reactor core, dusk, Rin on TV, morning" width="100%">
+  <img src="docs/images/hero.jpg" alt="Frames from the 《炉心融解》 MV: the night city under the title, the reactor core, dusk, Rin on TV, morning" width="100%">
 </p>
 
 <h1 align="center">MeltDown</h1>
@@ -31,12 +31,12 @@
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/images/loop_opening.webp" alt="Opening: the ring lamp, an eye, the city outside"></td>
+    <td width="33%"><img src="docs/images/loop_opening.webp" alt="Opening: from the reactor ring over the night city toward her window"></td>
     <td width="33%"><img src="docs/images/loop_chorus.webp" alt="Chorus: the reactor's light burns through the page"></td>
     <td width="33%"><img src="docs/images/loop_bridge.webp" alt="Bridge: Rin on TV"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Opening: from the ring lamp into the room at 2 a.m.</sub></td>
+    <td align="center"><sub>Opening: one take from the title in through her window</sub></td>
     <td align="center"><sub>Chorus: the reactor's light burns through the page</sub></td>
     <td align="center"><sub>Bridge: the TV host is Rin too</sub></td>
   </tr>
