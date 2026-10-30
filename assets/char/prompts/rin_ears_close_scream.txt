@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Asset type: last frame of a three-frame cut-out sequence (swapped in on a drum hit and held, so it must line up exactly with the original)
+Primary request: edit the attached image so that the pain peaks: her mouth opens wide in a pained cry with her teeth showing, her eyes are squeezed shut even tighter with deep creases, her brows knit harder, and both hands press the headset harder, fingers curling into her hair. Her head, hair, headset and the big bow stay exactly where they are or sink a very little lower (never up), with the same tilt.
+Constraints: change only her face, mouth, eyes, brows and hands. Keep everything else pixel-identical: same framing, canvas size, scale and position of the head, hair, bow, headset, arms, sleeves, elbows, collar, necktie and chest, colors, line style and transparent background. Do not move, rescale or redraw anything else. Clean anime cel style matching the attached image: crisp uniform lines, flat two-tone hard shading, no soft gradients. Hair in a few large clean clumps, no thin stray strands.
+Background: fully transparent PNG alpha background, exactly as in the attached image.

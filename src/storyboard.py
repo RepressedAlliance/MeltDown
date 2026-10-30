@@ -540,19 +540,26 @@ S("S45b", 206.37, bg="tv_wall", bg_args=dict(wave=accents(206.3, 210.6, thr=0.4,
 
 # ================================================================ ALLEGRO AGITATO (score + tinnitus)
 S("S46", lambda: L(40) - 0.3, bg="score", bg_args=dict(mode="calm"), finish=dict(chroma=1.5))
-# she flinches once, on the hardest hit of the shot (attack and weight together: strongest_hit), her head down between
-# her shoulders, pressing harder (a variant of the pose, reached over in-betweens), and stays so. Flinching on every
-# other beat stuttered ("鬼畜", the director said); on a hit with attack but no weight it did not land with the music
-S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered", flinch=("rin_ears_flinch", strongest_hit(215.6, 221.6))),
+# she shrinks into the ringing a step at a time, stop-motion like her other actions: three drawings of the pose (each a
+# variant of the first, only the head, bow, hands and arms redrawn), each swapped in whole on a heavy hit and held
+# (scenes2d.tinnitus steps). Her eyes squeeze shut and her head sinks on the low hit before the line's second half; on the
+# hardest hit of the shot (attack and weight together) she clamps her arms in and grits her teeth. Optical-flow
+# in-betweens made this fluid like animation, out of keeping with the film; one swap on a weak hit read as a jump;
+# flinching on every other beat stuttered ("鬼畜")
+S("S47", lambda: L(41) - 0.2, bg="tinnitus",
+  bg_args=dict(pose="rin_ears_covered", steps=[("rin_ears_press", strongest_hit(217.5, 218.3)),
+                                               ("rin_ears_flinch", strongest_hit(215.6, 221.6))]),
   finish=dict(chroma=3.0),
   fx=[{"type": "strobe", "amount": 0.4}])
 S("S48", lambda: L(42) - 0.3, bg="score", bg_args=dict(mode="wild"), finish=dict(chroma=2.5),
   fx=[{"type": "glitch", "on": [(0, 0), (0.7, 0), (0.72, 1)], "amount": 0.8}])
-# closer, the ringing louder: once, on the hardest hit of the shot, her head drops between her shoulders and she cries
-# out (a variant of the pose with only the head, bow and hands redrawn)
+# closer, the ringing louder: a step a bar, each on the bar's heavy low hit just after beat 3 (a sixteenth before a
+# sung word): her head pulled down harder between her shoulders, then the cry (rin_ears_close_scream is a variant of
+# rin_ears_close_press, only the face and hands redrawn, so the head never rises between the steps)
 S("S49", lambda: L(43) - 0.2, bg="tinnitus",
   bg_args=dict(pose="rin_ears_close", close=True, scale=1.1, cx=1152, cy=640,   # both elbows inside the frame
-               flinch=("rin_ears_close_flinch", strongest_hit(227.2, 230.4))),
+               steps=[("rin_ears_close_press", strongest_hit(228.0, 228.3)),
+                      ("rin_ears_close_scream", strongest_hit(229.4, 229.7))]),
   finish=dict(chroma=1.5), fx=[{"type": "strobe", "amount": 0.6}], out="black", out_dur=0.08)
 
 # ================================================================ INSTRUMENTAL: the room grows infinite

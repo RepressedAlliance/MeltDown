@@ -1,0 +1,32 @@
+{
+ "name": "rin_ears_close_press",
+ "source": "rin_ears_close_press_v2.png",
+ "size": [
+  1254,
+  1254
+ ],
+ "bbox": [
+  18,
+  80,
+  1249,
+  1253
+ ],
+ "variant_of": "rin_ears_close",
+ "regions": [
+  [
+   630.0,
+   470.0,
+   470.0,
+   470.0,
+   0.0
+  ],
+  [
+   700.0,
+   190.0,
+   575.0,
+   215.0,
+   0.0
+  ]
+ ],
+ "ref": 1254
+}
