@@ -589,7 +589,9 @@ S("S54", lambda: L(45) - 0.2, scene="room", setup=dict(void=True, hide=["LampBas
                                                                          "FrameBot", "FrameL", "FrameR", "FrameMid"],
                                                        pillow_dent=(0.0, -0.03, 0.12, 0.035)),
   finish=VOID,
-  cam=dict(keys=[(0, (0.56, 1.62, 3.2), (0.561, 1.62, 0.0), 30, 0), (1, (0.56, 1.62, 9.5), (0.561, 1.62, 0.0), 30, 28)],
+  # (the aim sits 1 mm toward the pillow, +y: offset sideways, +x, Blender's track solution for a camera looking
+  # straight down turned the picture 90 degrees on the first frames, below 3.3 m, and back after; flip_scan)
+  cam=dict(keys=[(0, (0.56, 1.62, 3.2), (0.56, 1.621, 0.0), 30, 0), (1, (0.56, 1.62, 9.5), (0.56, 1.621, 0.0), 30, 28)],
            ease="out"),
   # not S09's pose under the quilt: she lies sprawled on top of the covers, arms flung up beside her head
   cards=[dict(pose="rin_lie_spread", h=1.52, loc=(0.55, 1.05, 0.44), rot=(0, 0, 0), tilt=4.0, motion="breath",
