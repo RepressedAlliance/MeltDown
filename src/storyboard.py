@@ -210,7 +210,7 @@ S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
       {"type": "zoom", "z": [(0, 1.0), (1, 1.07)], "cx": 220, "cy": 60}, {"type": "kick", "amount": 0.008}])
 
 # ================================================================ B1 (white afternoon dream)
-S("S17", lambda: L(8) - 0.2, scene="room", setup=dict(tod="morning", wind=0.8, plate=None, world=(2.2, 2.2, 2.3)), finish=DAYW, in_="white",
+S("S17", lambda: L(8) - 0.2, scene="room", setup=dict(tod="morning", wind=0.8, plate=None, world=(2.2, 2.2, 2.3)), finish=DAYW,
   fx=[{"type": "exposure", "ev": -0.2}],
   # the line about a violent dream: in the white afternoon she stares at her own open hands. Medium shot
   # wide enough to hold her bow and both hands the whole time (a tighter push left a sliver of the bow
@@ -252,7 +252,7 @@ S("S22", 67.98, scene="city", finish=COREB, in_="flash",
   cam=dict(keys=[(0, (900, -1150, 1900), (900, -1149.5, 0), 22, 0), (1, (900, -1150, 70), (900, -1149.5, 0), 16, 60)],
            ease="in"),
   anim=dict(facility=[(0, 1.0), (1, 3.0)]))
-S("S23", lambda: L(13) - 0.15, scene="core", setup=dict(mood="blue"), finish=COREB, in_="white", in_dur=0.2,
+S("S23", lambda: L(13) - 0.15, scene="core", setup=dict(mood="blue"), finish=COREB,
   cam=dict(keys=[(0, ring_pos(0.0, R + 1.6, 0.5), ring_pos(0.35, R, 0.0), 20, -5),
                  (1, ring_pos(0.55, R + 1.6, 0.4), ring_pos(0.9, R, 0.0), 20, 8)], ease="linear",
            shake=(0.03, 0.4, 1.2)))
@@ -289,8 +289,10 @@ S("S27", lambda: L(17) - 0.15, scene="core", setup=dict(mood="blue"), finish=COR
                          rim_dir=(-1, 0.2, 0), rim_col=(0.6, 0.9, 1.0), exposure=1.0))])
 
 # ================================================================ INTERLUDE
-S("S28", 92.73, bg="hudmap", finish=NIGHT, hud=dict(level=2))
-S("S29", 97.1, scene="dusk", setup=dict(place="balcony"), finish=DUSK, in_="glitch",
+# the map of the city; its reactor ring (r 197 at (959, 540) on the last frame) grows evenly through the shot,
+# 1.8x about (962, 1017), so that on the cut it lies where the sun of S29 is and as large (r 357 at (957, 154))
+S("S28", 92.73, bg="hudmap", finish=NIGHT, hud=dict(level=2), fx=[{"type": "zoom", "rate": 0.1345, "cx": 2, "cy": 477}])
+S("S29", 97.1, scene="dusk", setup=dict(place="balcony"), finish=DUSK,
   fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.1)], "cy": -280}, {"type": "heat", "amount": 2.0}],
   cam=dict(keys=[(0, (1499.0, 901.5, 151.3), (900, -1150, 40), 135), (1, (1499.0, 901.5, 151.3), (900, -1150, 60), 120)],
            ease="inout", shake=(0.0, 0.05, 0.3)))
@@ -334,8 +336,10 @@ S("S32", lambda: L(20) - 0.2, scene="room", setup=dict(tod="dusk", pillow_dent=S
   anim=dict(window_light=[(0, 160.0), (0.35, 150.0), (1, 40.0)]))
 S("S33", lambda: L(22) - 0.2, scene="dusk", setup=dict(place="balcony"), finish=DUSK,
   fx=[{"type": "heat", "amount": 4.0}],
-  cam=dict(keys=[(0, (1499.0, 901.5, 151.3), (900, -1150, 120), 160),
-                 (1, (1499.0, 901.5, 151.3), (900, -1150, 95), 200)]))
+  # aimed so the sun's centre ends on the cut where her iris is when S33b opens (960, 576): the sun becomes
+  # her eye
+  cam=dict(keys=[(0, (1499.0, 901.5, 151.3), (900, -1150, 140), 160),
+                 (1, (1499.0, 901.5, 151.3), (900, -1150, 115), 200)]))
 # the line about the setting sun: her eye, swollen from crying, the setting sun and
 # the city in its iris
 S("S33b", lambda: L(23) - 0.2, bg="eye",
@@ -504,10 +508,11 @@ S("S50", 230.88, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube
                          rim_dir=(0.9, 0.2, 0), rim_col=(0.35, 0.45, 0.8), exposure=1.0))],
   anim=dict(plate=[(0, 1.0), (1, 0.45)]))
 # S50's pull-back continues as one take: on its last frame the city and the reactor go out window by
-# window while the camera creeps toward her, until she is the only thing left on the bed in the dark
+# window, until she is the only thing left on the bed in the dark, and then she goes dark too (FLOW). The frame
+# creeps toward her at a steady 1.2 % a second; it used to swell 1.8x onto her, enlarging a still frame
 S("S51", 240.2, frames_from=dict(id="S50", at=9.75, speed=0.0), finish=VOID,
   fx=[{"type": "lights_out", "progress": [(0, 0.0), (0.72, 1.0), (1, 1.0)], "keep": (940, 540, 115)},
-      {"type": "zoom", "z": [(0, 1.0), (0.3, 1.08), (1, 1.8)], "cx": -20, "cy": -20}])
+      {"type": "zoom", "rate": 0.012, "cx": -20, "cy": -20}])
 S("S52", 250.0, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube", "LampShade"]), finish=VOID,
   hud=dict(level=1, alpha=0.6), render=dict(samples=64),
   fx=[{"type": "breath"}],
@@ -520,7 +525,8 @@ S("S52", 250.0, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube"
   anim=dict(plate=[(0, 0.0), (1, 0.0)]))
 
 # ================================================================ IGNITION (B3 over the band)
-S("S53", 259.82, scene="city", finish=NIGHT, in_="flash", setup=dict(lights=0.0),
+# on the band's return after the silence (the hit at 259.23; the first-pass sections had it half a second late)
+S("S53", 259.23, scene="city", finish=NIGHT, in_="flash", setup=dict(lights=0.0),
   cam=dict(keys=[(0, (1450, 1250, 260), (500, -400, 40), 26), (1, (1150, 900, 200), (600, -700, 40), 30)],
            shake=(0.8, 0.2, 0.8)),
   anim=dict(city_lights=[(0, 1.0), (0.15, 1.0), (1, 0.06)], window_strength=[(0, 9.0), (0.2, 5.0), (1, 4.0)],
@@ -732,13 +738,11 @@ DESIGN = {
     "S02": dict(in_="iris", in_dur=0.5),
     "S07": dict(title=dict(mode="poster"), marks=True),
     "S21": dict(marks=True, glow=0.0, stamps=[dict(text="臨界", x=1400, y=560, size=300, at=0.12)]),
-    "S23": dict(in_="iris", in_dur=0.35),
     # small mincho over a mid-tone face: keep the type light on a soft dark-ink plate
     # her face fills the frame: a soft shade along the bottom lets the light line read over her chin
     "S27": dict(type_mode="plate", fx=[{"type": "darken", "rect": (240, 850, 1680, 1080), "feather": 140,
                                          "amount": 0.4}]),
     "S28": dict(marks=True),
-    "S38": dict(in_="iris", in_dur=0.4),
     "S50": dict(marks=True),
     "S57": dict(marks=True, glow=0.0, stamps=[dict(text="暴走", x=620, y=500, size=280, angle=6, at=0.05),
                                     dict(text="溢出", x=1320, y=620, size=280, angle=-10, at=0.45)]),
@@ -746,45 +750,21 @@ DESIGN = {
 for _s in SHOTS:
     for _k, _v in DESIGN.get(_s["id"], {}).items():
         _s[_k] = _v
-# How each shot comes in where a plain cut jumped (a big change of light or place, a cut in the middle of
-# a quiet sung line, a section change): dissolves where the picture changes place, a dolly-through where
-# it moves into something (her chest, her eye, the sun in her eye), a flash or a fade through white where
-# the light itself changes. Beat cuts stay in the choruses and the bridge montage. The shot before a
-# dissolve or a dolly-through renders a `tail` past the cut, so it keeps moving underneath (TAILS).
+# How the shots meet. A plain cut on the beat, unless the picture itself gives a reason for something else. The
+# ninth and tenth cuts put a dissolve, a dolly-through or a flash wherever the place changed (40-odd of the 81
+# cuts, all eleven in the opening), which read as transitions laid on top: slow, and never quite natural. A cut is
+# made to flow by what the two shots share, the direction and speed of the move, or the shape the eye is on, at
+# the same place in the frame (the title ring and the lamp, the lamp and her eye). What is left here is
+# what the picture motivates:
+# - light: the drop to black when the band stops (2:17) and the music falls silent (3:50, 4:10), the white the
+#   white chorus burns out into (2:44) and the reactor runs away into (4:31), the dawn sun at 5:01;
+# - one picture turning into another drawn exactly over it (her figure and its diagram, 0:47 and 4:28; the
+#   same drawing under the same push at the end, 5:09 and 5:16), where the two frames already match;
+# - the ring the film opens with, drawn again in the silence at 2:19 and opening on the second chorus.
+# The flashes on the hits after silence (S22, S53, S58) are in their shots: the music explodes there.
 FLOW = {
-    # the way in, one forward flight: every cut pushes on into the next picture, and where the old shot flies
-    # towards a light, the new one opens out of that light (in_anchor, in_radial) instead of lying over it
-    "S01": dict(in_="dissolve", in_dur=0.7, in_radial=True,      # the lamp inside the title ring;
-                fx=[{"type": "darken", "rect": (-200, 0, 380, 1080), "feather": 140, "amount": 0.5}]),  # the lamp-lit wall
-    "S02": dict(in_="iris", in_dur=0.5, in_r0=330),               # the lamp's ring (r 345 at the cut) opens on her eye
-    "S03": dict(in_="dissolve", in_dur=0.5, in_anchor=(960, 580), in_radial=True),  # the city out of her pupil
-    "S04": dict(in_="dissolve", in_dur=0.5, in_radial=True),
-    "S05": dict(in_="dissolve", in_dur=0.5, in_anchor=(1500, 450), in_radial=True),  # the canyon's lights -> her window's
-    "S06": dict(in_="dissolve", in_dur=0.6, in_anchor=(1807, 285), in_radial=True),  # the reactor in her window
-    "S07": dict(in_="dissolve", in_dur=0.6, in_anchor=(1275, 409), in_radial=True, in_bloom=0.35),  # the city out of it
-    "S08": dict(in_="dissolve", in_dur=0.5, in_radial=True),       # down onto the core, whose light
-    "S09": dict(in_="dissolve", in_dur=0.6, in_radial=True, in_bloom=0.4),  # opens on her in bed
-    "S10": dict(in_="dissolve", in_dur=0.5, in_radial=True),
-    "S11": dict(in_="dissolve", in_dur=0.4, in_anchor=(380, 360), in_radial=True),  # her back -> her face, first line
-    "S13": dict(out="white", out_dur=0.25, out_anchor=(940, 540)),  # the light at the street's end grows,
-    "S14": dict(in_="white", in_dur=0.3, in_anchor=(1280, 340)),  # and the lighter comes out of its spark
     "S15b": dict(in_="dissolve", in_dur=0.3, in_anchor=(1030, 1000), in_radial=True),   # her figure -> its diagram
-    "S16": dict(in_="dissolve", in_dur=0.3, out="white", out_dur=0.35),   # and up into the white room
-    "S18": dict(in_="zoom", in_dur=0.3, in_anchor=(955, 470), in_radial=True),    # into her eye, where it is
-    "S24": dict(in_="flash"),                                     # out of the burnt-white page
-    # the map opens out of her eye, and its ring (r 210) grows 1.8x about (970, 1090) onto the sun (r 380 at
-    # (952, 100))
-    "S28": dict(in_="dissolve", in_dur=0.5, in_anchor=(910, 490), in_radial=True,
-                fx=[{"type": "zoom", "z": [(0, 1.0), (0.65, 1.0), (1, 1.8)], "cx": 10, "cy": 550}]),
-    "S29": dict(in_="zoom", in_dur=0.4, in_anchor=(952, 100), in_radial=True, in_bloom=0.3),  # ... and opens on the sun
-    "S30": dict(in_="dissolve", in_dur=0.4, in_anchor=(960, 120), in_radial=True),  # from the big sun out (one sun)
-    "S31": dict(in_="dissolve", in_dur=0.5, in_anchor=(930, 720), in_radial=True,  # the stairwell out of the dark
-                out="white", out_dur=0.35, out_anchor=(990, 640)),  # city below her; the lit steps grow
-    "S32": dict(in_="white", in_dur=0.4, in_anchor=(990, 640)),   # into the light her room comes out of
-    # through the sun in her eye: the eye pushed 1.6x about (2295, 920) carries its sun to where S34's is
-    "S34": dict(in_="zoom", in_dur=0.5, in_anchor=(2295, 920), in_push=0.6),
-    "S35": dict(in_="dissolve", in_dur=0.6, in_bloom=0.3,        # dusk -> blue hour
-                type_mode="plate", plate=1.5),                    # the column runs down over the lit windows
+    "S35": dict(type_mode="plate", plate=1.5),                    # the column runs down over the lit windows
     "S36": dict(out="black", out_dur=0.35),                       # the room goes dark as the band stops
     "S37": dict(out=None),                                        # the ring drawn in the silence ...
     "S38": dict(in_="iris", in_dur=0.45, in_r0=170,               # ... opens out from its own radius on the chorus
@@ -793,32 +773,22 @@ FLOW = {
     "S25": dict(type_mode="plate", plate=1.5),
     "S42b": dict(type_mode="plate", plate=1.5),
     "S58": dict(type_mode="plate", plate=1.5),
-    "S39": dict(in_="flash"),
-    "S43": dict(in_="white", in_dur=1.0),                         # the white chorus settles into the gears
-    "S43b": dict(in_="dissolve", in_dur=0.6),
-    "S46": dict(in_="glitch"),
+    "S43": dict(in_="white", in_dur=0.6),                         # the white chorus settles into the gears
     "S49": dict(out="black", out_dur=0.25),                       # the red figure and its trace dim together,
     "S50": dict(in_="black", in_dur=0.9),                         # and her dark room comes up sooner
-    # the push onto her bed lands on her sleepless face; the push goes on into her teary eye, the city opens
-# out of it, goes dark, and
-    # leaves only her bed in the dark
-    "S52": dict(in_="zoom", in_dur=0.8, in_anchor=(940, 520), in_push=0.6, in_radial=True),
-    "S53": dict(in_="zoom", in_dur=0.6, in_anchor=(870, 290), in_push=1.2, in_radial=True, out="black", out_dur=0.3),
-    "S54": dict(in_="black", in_dur=0.5),
-    "S55": dict(in_="zoom", in_dur=0.4, in_anchor=(1030, 430), in_push=0.5, in_radial=True),  # her chest -> the diagram
+    # the last light goes out and she goes with it; in the dark her face comes up, close
+    "S51": dict(out="black", out_dur=1.2),
+    "S52": dict(in_="black", in_dur=1.6),
     "S56": dict(in_="dissolve", in_dur=0.3, in_anchor=(869, 313), in_radial=True),   # the diagram becomes her
-    "S60": dict(in_="dissolve", in_dur=0.5, in_bloom=0.4),       # she dissolves into the light
-    "S61": dict(in_="dissolve", in_dur=0.5),
-    "S64": dict(in_="dissolve", in_dur=0.5, out="white", out_dur=0.4),  # the dawn sun whitens the frame,
+    "S64": dict(out="white", out_dur=0.4),                        # the dawn sun whitens the frame,
     "S65": dict(in_="white", in_dur=0.5),                         # and her morning room comes out of it
     # closer on one push: S65 pushed 1.55x about (-425, 500) carries her face onto S65b's ...
     "S65b": dict(in_="dissolve", in_dur=0.5),                    # the same push, on through the cut
     # ... into her face: pushed 3.5x about (873, 396), her face lands where and as large as it is in S65c
     "S65c": dict(in_="dissolve", in_dur=1.2),                    # her sleeping face becomes her waking one
 }
-TAILS = {"S13": 0.35, "S15": 0.35, "S17": 0.35, "S27": 0.55, "S29": 0.45, "S30": 0.45, "S31": 0.55, "S34": 0.65, "S43": 0.65,
-         "S43b": 0.65, "S43c": 0.55, "S53": 0.65, "S54": 0.45, "S59": 0.55, "S60": 0.55, "S63": 0.55, "S64": 0.85,
-         "S65": 0.65, "S65b": 1.3}
+# the shot before a dissolve renders a `tail` past the cut, so it keeps moving underneath
+TAILS = {"S15": 0.35, "S65": 0.65, "S65b": 1.3}
 for _s in SHOTS:
     for _k, _v in FLOW.get(_s["id"], {}).items():
         _s[_k] = _v
