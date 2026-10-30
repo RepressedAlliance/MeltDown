@@ -298,34 +298,49 @@ def radial_glow(img, x, y, r, col, k=1.0):
     return img + g[..., None] * np.array(col, np.float32) * k
 
 
+def _sputters(start, end):
+    """After the strike the flint keeps sputtering: small bursts on the 16th grid, about three in five, from just
+    after `start` to `end` (the director: one strike, but the sparks can keep flickering)."""
+    out = []
+    k = math.ceil((start + 0.1 - TL.PHASE) / TL.STEP)
+    while TL.PHASE + k * TL.STEP < end:
+        if np.random.default_rng(k * 7919).random() < 0.6:
+            out.append(TL.PHASE + k * TL.STEP)
+        k += 1
+    return out
+
+
 def sparks(img, t, fx, u):
     """Flint sparks thrown from the lighter wheel at each strike of her thumb (`hits`, song seconds; every snare
-    hit without them). x/y may be keyed over the shot (tracked from the render) so the sparks leave the hood
-    opening as the camera pushes in."""
+    hit without them), and with `sputter` (song seconds, the end) smaller bursts that keep flickering from the hood
+    after the last strike until then. x/y may be keyed over the shot (tracked from the render) so the sparks leave
+    the hood opening as the camera pushes in."""
     import skia
     from canvas import paint
-    hits = [h for h in fx.get("hits", TL._audio.get("snares", [])) if 0 <= t - h < 0.6]
+    strikes = fx.get("hits", TL._audio.get("snares", []))
+    small = _sputters(max(strikes), fx["sputter"]) if fx.get("sputter") and strikes else []
+    hits = [(h, False) for h in strikes if 0 <= t - h < 0.6] + [(h, True) for h in small if 0 <= t - h < 0.35]
     if not hits:
         return img
     s = surface()
     c = s.getCanvas()
     x0, y0 = _val(fx["x"], u), _val(fx["y"], u)
     flash = 0.0
-    for h in hits:
+    for h, little in hits:
         age = t - h
         rng = np.random.default_rng(int(h * 1000))
-        n = 26
+        n = int(rng.integers(5, 10)) if little else 26
         ang = rng.uniform(*fx.get("angles", (-2.6, -0.5)), n)
-        spd = rng.uniform(250, 900, n)
+        spd = rng.uniform(140, 420, n) if little else rng.uniform(250, 900, n)
         for a, v in zip(ang, spd):
             px = x0 + math.cos(a) * v * age
             py = y0 + math.sin(a) * v * age + 900 * age * age
             tail = 0.03
             qx = x0 + math.cos(a) * v * (age - tail)
             qy = y0 + math.sin(a) * v * (age - tail) + 900 * (age - tail) ** 2
-            life = max(0.0, 1 - age / rng.uniform(0.25, 0.6))
-            c.drawLine(qx, qy, px, py, paint((1.0, 0.85, 0.45), life, stroke=2.2))
-        flash = max(flash, math.exp(-age * 18))
+            life = max(0.0, 1 - age / (rng.uniform(0.12, 0.3) if little else rng.uniform(0.25, 0.6)))
+            c.drawLine(qx, qy, px, py, paint((1.0, 0.85, 0.45), life, stroke=1.6 if little else 2.2))
+        flash = max(flash, (0.35 if little else 1.0) * math.exp(-age * (24 if little else 18)))
     lay = to_array(s)
     img = img * (1 - lay[..., 3:4]) + lay[..., :3] * 1.6
     img = img + glow(lay, sigma=10, strength=1.2) * np.array([1.0, 0.6, 0.25], np.float32)

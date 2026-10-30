@@ -182,14 +182,15 @@ S("S14", lambda: L(4) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
            fstop=2.0),
   # the line about a lighter out of oil: her thumb strikes the wheel once, on the accent where the word "lighter"
   # is sung (a second drawing of the same hand with the thumb rolled down onto the lever, src/char/variant.py);
-  # sparks fly from the hood and it does not light, and her thumb stays down. Struck on every other beat it read
-  # as a loop, not a try (the director: "反复播放不自然")
+  # sparks fly from the hood and keep sputtering, it does not light, and her thumb stays down. Struck on every
+  # other beat it read as a loop, not a try (the director: "反复播放不自然")
   cards=[dict(pose=pose, h=0.32, loc=(2.75, 1.86, 0.76), rot=(90, 0, 0), face_cam=True, motion=None, on=on,
               props=dict(key_dir=(0.5, 0.5, 0.6), key_col=(0.35, 0.3, 0.3), amb_col=(0.1, 0.1, 0.14),
                          rim_dir=(0, 1, 0), rim_col=(1.0, 0.55, 0.25), exposure=1.0))
          for pose, on in (("rin_lighter_hand", [(0.0, STRIKE)]), ("rin_lighter_strike", [(STRIKE, DURATION)]))],
-  # spark origin tracked from the render: the opening of the lighter hood, above the flint wheel
-  fx=[{"type": "sparks", "angles": (-2.0, -0.35), "hits": [STRIKE],
+  # spark origin tracked from the render: the opening of the lighter hood, above the flint wheel. After the one
+  # strike the flint keeps sputtering small sparks to the end of the shot (`sputter`), and it never lights
+  fx=[{"type": "sparks", "angles": (-2.0, -0.35), "hits": [STRIKE], "sputter": 45.42,
        "x": [(0.0, 1300), (0.2, 1302), (0.3, 1308), (0.4, 1320), (0.5, 1340), (0.6, 1364), (0.7, 1378),
              (0.8, 1387), (0.9, 1390), (1.0, 1391)],
        "y": [(0.0, 316), (0.1, 312), (0.2, 308), (0.3, 303), (0.4, 296), (0.5, 284), (0.6, 272), (0.7, 266),
@@ -539,18 +540,19 @@ S("S45b", 206.37, bg="tv_wall", bg_args=dict(wave=accents(206.3, 210.6, thr=0.4,
 
 # ================================================================ ALLEGRO AGITATO (score + tinnitus)
 S("S46", lambda: L(40) - 0.3, bg="score", bg_args=dict(mode="calm"), finish=dict(chroma=1.5))
-# she flinches once, on the strongest hit while "won't stop" is sung, her head down between her shoulders, pressing
-# harder (a variant of the pose), and stays so. Flinching on every other beat stuttered ("鬼畜", the director said)
-S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered", flinch=("rin_ears_flinch", 218.542)),
+# she flinches once, on the hardest hit of the shot (attack and weight together: strongest_hit), her head down between
+# her shoulders, pressing harder (a variant of the pose, reached over in-betweens), and stays so. Flinching on every
+# other beat stuttered ("鬼畜", the director said); on a hit with attack but no weight it did not land with the music
+S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered", flinch=("rin_ears_flinch", strongest_hit(215.6, 221.6))),
   finish=dict(chroma=3.0),
   fx=[{"type": "strobe", "amount": 0.4}])
 S("S48", lambda: L(42) - 0.3, bg="score", bg_args=dict(mode="wild"), finish=dict(chroma=2.5),
   fx=[{"type": "glitch", "on": [(0, 0), (0.7, 0), (0.72, 1)], "amount": 0.8}])
-# closer, the ringing louder: once, on the hit in the middle of "won't go away", her head drops between her shoulders
-# and she cries out (a variant of the pose with only the head, bow and hands redrawn)
+# closer, the ringing louder: once, on the hardest hit of the shot, her head drops between her shoulders and she cries
+# out (a variant of the pose with only the head, bow and hands redrawn)
 S("S49", lambda: L(43) - 0.2, bg="tinnitus",
   bg_args=dict(pose="rin_ears_close", close=True, scale=1.1, cx=1152, cy=640,   # both elbows inside the frame
-               flinch=("rin_ears_close_flinch", 229.083)),
+               flinch=("rin_ears_close_flinch", strongest_hit(227.2, 230.4))),
   finish=dict(chroma=1.5), fx=[{"type": "strobe", "amount": 0.6}], out="black", out_dur=0.08)
 
 # ================================================================ INSTRUMENTAL: the room grows infinite

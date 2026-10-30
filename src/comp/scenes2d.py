@@ -355,20 +355,52 @@ def score(t, u, mode="calm", **kw):
 
 # ---------------------------------------------------------------- tinnitus
 
+def _morph(a, b, k):
+    """An in-between of two aligned drawings (a variant and its original, src/char/variant.py): each warped part of
+    the way along the optical flow between them, then blended, so the part that moves travels instead of jumping."""
+    ga = cv2.cvtColor(np.clip(a * 255, 0, 255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
+    gb = cv2.cvtColor(np.clip(b * 255, 0, 255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
+    dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_MEDIUM)
+    fab, fba = dis.calc(ga, gb, None), dis.calc(gb, ga, None)
+    yy, xx = np.mgrid[0:ga.shape[0], 0:ga.shape[1]].astype(np.float32)
+    wa = cv2.remap(a, xx + k * fba[..., 0], yy + k * fba[..., 1], cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    wb = cv2.remap(b, xx + (1 - k) * fab[..., 0], yy + (1 - k) * fab[..., 1], cv2.INTER_LINEAR,
+                   borderMode=cv2.BORDER_REPLICATE)
+    return wa * (1 - k) + wb * k
+
+
+FLINCH_TWEENS = 3          # in-between frames from one drawing to the other
+
+
 def tinnitus(t, u, pose="rin_ears_covered", close=False, scale=None, cx=None, cy=None, flinch=None, **kw):
     # sized so her bow and elbows stay inside the frame (a drawing of its own gives its own placement)
     s0, x0, y0 = (1.15, W * 0.68, H * 0.64) if not close else (1.45, W * 0.6, H * 0.8)
-    if flinch:
-        # (drawing, song time): she flinches once, into the other drawing of the pose (src/char/variant.py), from the
-        # frame the hit falls in, and stays so
-        if int(round(t * 24)) >= math.ceil(flinch[1] * 24 - 1e-6):
-            pose = flinch[0]
     scale, cx, cy = scale or s0, cx or x0, cy or y0
-    base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=scale, cx=cx, cy=cy,
-                duotone=((0.03, 0.0, 0.01), (1.0, 0.16, 0.12)))
+    duo = ((0.03, 0.0, 0.01), (1.0, 0.16, 0.12))
+    surge = 0.0
+    if flinch:
+        # (drawing, song time): she flinches once, into the other drawing of the pose, and stays so. Swapped in on
+        # one frame the change read as a jump, not a flinch (the director: "切换不是很自然"): the head travels
+        # over FLINCH_TWEENS in-betweens from the frame the hit falls in, her whole figure jolts down and settles,
+        # and the ringing surges on the hit
+        fs = math.ceil(flinch[1] * 24 - 1e-6)
+        f = int(round(t * 24))
+        if f >= fs:
+            tau = (f - fs) / 24.0 + 1 / 48
+            g = math.sin(0.5 * math.pi * min(1.0, tau / 0.08)) * (math.exp(-(tau - 0.08) / 0.16) if tau > 0.08 else 1)
+            cy += 0.024 * H * scale / 1.15 * g
+            cx += 3.0 * math.sin(tau * 2 * math.pi * 16) * math.exp(-tau / 0.1)
+            surge = 1.4 * math.exp(-tau / 0.25)
+            if f < fs + FLINCH_TWEENS:
+                k = (f - fs + 1) / (FLINCH_TWEENS + 1)
+                base = _morph(card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=scale, cx=cx, cy=cy, duotone=duo),
+                              card(t, u, flinch[0], bg=(0.02, 0.0, 0.0), scale=scale, cx=cx, cy=cy, duotone=duo), k)
+            pose = flinch[0]
+    if not (flinch and fs <= f < fs + FLINCH_TWEENS):
+        base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=scale, cx=cx, cy=cy, duotone=duo)
     s = surface()
     c = s.getCanvas()
-    amp = 8 + 120 * u ** 2
+    amp = (8 + 120 * u ** 2) * (1 + surge)
     freq = 0.02 + 0.1 * u
     path = skia.Path()
     for x in range(0, W + 4, 4):
