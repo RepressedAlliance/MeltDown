@@ -183,14 +183,20 @@ S("S13", lambda: L(3) - 0.2, scene="city", finish=NIGHT, fx=[{"type": "strobe", 
            ease="in", shake=(0.5, 0.4, 2.0)))
 
 # ================================================================ A2
+STRIKES = [swap_at(b) for b in BEATS[::2] if 42.5 <= b < 45.3]     # the downbeat of 0:42.52 is the cut
 S("S14", lambda: L(4) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   cam=dict(keys=[(0, (2.3, 1.3, 1.02), (2.75, 1.85, 0.97), 55), (1, (2.36, 1.38, 1.02), (2.75, 1.85, 0.97), 60)],
            fstop=2.0),
-  cards=[dict(pose="rin_lighter_hand", h=0.32, loc=(2.75, 1.86, 0.76), rot=(90, 0, 0), face_cam=True,
+  # the line about a lighter out of oil: her thumb strikes the wheel on beats 1 and 3 (a second drawing of the
+  # same hand with the thumb rolled down onto the lever, src/char/variant.py, in for three frames), sparks fly
+  # from the hood every time, and it never lights
+  cards=[dict(pose=pose, h=0.32, loc=(2.75, 1.86, 0.76), rot=(90, 0, 0), face_cam=True, motion=None, on=on,
               props=dict(key_dir=(0.5, 0.5, 0.6), key_col=(0.35, 0.3, 0.3), amb_col=(0.1, 0.1, 0.14),
-                         rim_dir=(0, 1, 0), rim_col=(1.0, 0.55, 0.25), exposure=1.0))],
+                         rim_dir=(0, 1, 0), rim_col=(1.0, 0.55, 0.25), exposure=1.0))
+         for pose, on in (("rin_lighter_hand", list(zip([0.0] + [b + 3 / 24 for b in STRIKES], STRIKES + [DURATION]))),
+                          ("rin_lighter_strike", [(b, b + 3 / 24) for b in STRIKES]))],
   # spark origin tracked from the render: the opening of the lighter hood, above the flint wheel
-  fx=[{"type": "sparks", "angles": (-2.0, -0.35),
+  fx=[{"type": "sparks", "angles": (-2.0, -0.35), "hits": STRIKES,
        "x": [(0.0, 1300), (0.2, 1302), (0.3, 1308), (0.4, 1320), (0.5, 1340), (0.6, 1364), (0.7, 1378),
              (0.8, 1387), (0.9, 1390), (1.0, 1391)],
        "y": [(0.0, 316), (0.1, 312), (0.2, 308), (0.3, 303), (0.4, 296), (0.5, 284), (0.6, 272), (0.7, 266),
