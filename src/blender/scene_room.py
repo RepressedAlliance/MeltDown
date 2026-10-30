@@ -1019,6 +1019,31 @@ def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
     if "crt_static" in an and objs.get("tv"):
         nt = objs["tv"].data.materials[0].node_tree
         key_socket(nt.nodes["static"].outputs[0], an["crt_static"], f0, dur)
+    if "crt_glimpse" in an and objs.get("tv"):
+        # (song time, frames, strength): her own face flashes out of the snow for a few frames on a hit and is gone,
+        # before the set tunes in to her for good (S44); the TV's light on the room jumps with it
+        nt = objs["tv"].data.materials[0].node_tree
+        sock = nt.nodes["host"].outputs[0]
+        tvl = bpy.data.lights.get("TVLight")
+        base_h, base_e = sock.default_value, tvl.energy if tvl else 0.0
+        for t, n, v in an["crt_glimpse"]:
+            f = math.ceil(t * 24 - 1e-6)
+            for ff, hv, ev in ((f - 1, base_h, 1.0), (f, v, 1.0 + 1.5 * v), (f + n, base_h, 1.0)):
+                sock.default_value = hv
+                sock.keyframe_insert("default_value", frame=ff)
+                if tvl:
+                    tvl.energy = base_e * ev
+                    tvl.keyframe_insert("energy", frame=ff)
+        for owner in (nt, tvl.id_data if tvl else None):
+            if owner is None or not owner.animation_data:
+                continue
+            act = owner.animation_data.action
+            curves = list(act.fcurves) if hasattr(act, "fcurves") else [
+                fc for layer in act.layers for strip in layer.strips for bag in strip.channelbags for fc in bag.fcurves]
+            for fc in curves:
+                if '"host"' in fc.data_path or fc.data_path == "energy":
+                    for kp in fc.keyframe_points:
+                        kp.interpolation = "CONSTANT"
     if "glow" in an:
         # a warm light where her stomach burns (S16): it moves with her drawings (song-time positions) and
         # flares on the band's hits (timeline.accents), lighting the floor around her

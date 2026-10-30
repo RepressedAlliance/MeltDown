@@ -197,7 +197,11 @@ def apply_fx(img, shot, t, u):
             yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
             img = cv2.remap(img, xx + dx, yy + dy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
         elif kind == "melt":
-            a = _val(fx["amount"], u)
+            a = _val(fx.get("amount", 0.0), u)
+            if fx.get("steps"):
+                # a notch on each of the shot's hits (song times), held between them: the world melts little by
+                # little in time with the music, stop-motion like her actions
+                a = fx["to"] * sum(1 for h in fx["steps"] if t >= h) / len(fx["steps"])
             if a > 0:
                 rgba = np.dstack([img, np.ones((H, W, 1), np.float32)])
                 img = typo_fx.melt_layer(rgba, a, t, seed=fx.get("seed", 3), edge=cv2.BORDER_REPLICATE)[..., :3]
@@ -210,9 +214,15 @@ def apply_fx(img, shot, t, u):
             lo, hi = np.array(fx["lo"], np.float32), np.array(fx["hi"], np.float32)
             k = np.clip((lum - fx.get("black", 0.05)) / fx.get("range", 0.8), 0, 1)[..., None]
             img = lo * (1 - k) + hi * k
-        elif kind == "strobe":  # brightness kicks on beats
+        elif kind == "strobe":  # brightness kicks on beats, or on the song times in `hits` (a TV flashing a picture)
             amt = fx.get("amount", 0.5)
-            bt = TL.beat_before(t)
+            if "hits" in fx:
+                past = [h for h in fx["hits"] if h <= t]
+                if not past:
+                    continue
+                bt = max(past)
+            else:
+                bt = TL.beat_before(t)
             k = math.exp(-(t - bt) * fx.get("decay", 9.0))
             img = img * (1 + amt * k)
         elif kind == "glitch":

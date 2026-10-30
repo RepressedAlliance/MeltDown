@@ -262,6 +262,22 @@ def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
             for f, v in ((b * 24 - 1, 0.0), (b * 24, 60.0), (b * 24 + 10, 6.0), (b * 24 + 60, 0.0)):
                 em.default_value = v
                 em.keyframe_insert("default_value", frame=f)
+    if an.get("ring_pulse"):
+        # the reactor's ring flares on the interlude's heavy hits (song times) and settles: across the water at
+        # sunset the facility breathes with the drums instead of standing as a still postcard. Hits closer than
+        # 15 frames would overlap their decays: keep them further apart (accents gap)
+        peak = an.get("ring_peak", 4.0)
+        for nm, k in (("FacilityGlow", 1.0), ("FacilityGlowLow", 1.0), ("FacilityCoreGlow", 0.5)):
+            m = bpy.data.materials.get(nm)
+            if m is None:
+                continue
+            em = m.node_tree.nodes["Emission"].inputs["Strength"]
+            base = em.default_value
+            for h in an["ring_pulse"]:
+                f = math.ceil(h * 24 - 1e-6)
+                for df, v in ((-1, 1.0), (0, peak), (4, 1 + (peak - 1) * 0.35), (14, 1.0)):
+                    em.default_value = base * (1 + (v - 1) * k)
+                    em.keyframe_insert("default_value", frame=f + df)
     for c, spec in zip(cards or [], shot.get("cards", [])):
         if spec.get("shadow_only"):
             c.visible_camera = False

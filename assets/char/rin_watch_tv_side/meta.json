@@ -1,0 +1,32 @@
+{
+ "name": "rin_watch_tv_side",
+ "source": "rin_watch_tv_side_v2.png",
+ "size": [
+  1536,
+  1024
+ ],
+ "bbox": [
+  410,
+  15,
+  1157,
+  1023
+ ],
+ "variant_of": "rin_watch_tv",
+ "regions": [
+  [
+   652.0,
+   410.0,
+   48.0,
+   42.0,
+   0.0
+  ],
+  [
+   768.0,
+   431.0,
+   52.0,
+   42.0,
+   0.0
+  ]
+ ],
+ "ref": 1536
+}

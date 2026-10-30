@@ -326,10 +326,17 @@ S("S27", lambda: L(17) - 0.15, scene="core", setup=dict(mood="blue"), finish=COR
 # the map of the city; its reactor ring (r 197 at (959, 540) on the last frame) grows evenly through the shot,
 # 1.8x about (962, 1017), so that on the cut it lies where the sun of S29 is and as large (r 357 at (957, 154))
 S("S28", 92.73, bg="hudmap", finish=NIGHT, hud=dict(level=2), fx=[{"type": "zoom", "rate": 0.1345, "cx": 2, "cy": 477}])
+# the interlude across the water: the map's push carries on into the reactor at an even 7.9 % a second (135 to
+# 205 mm, the aim sinking onto the drum), its ring spreading across nine tenths of the frame under the setting
+# sun, and the ring flares on the four heavy accents and settles (scene_dusk ring_pulse). The lens used to widen
+# while the frame was enlarged in the comp: the two cancelled out, and the sunset stood still as a postcard for
+# 5.5 seconds (the director: empty time)
 S("S29", 97.1, scene="dusk", setup=dict(place="balcony"), finish=DUSK,
-  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.1)], "cy": -280}, {"type": "heat", "amount": 2.0}],
-  cam=dict(keys=[(0, (1499.0, 901.5, 151.3), (900, -1150, 40), 135), (1, (1499.0, 901.5, 151.3), (900, -1150, 60), 120)],
-           ease="inout", shake=(0.0, 0.05, 0.3)))
+  fx=[{"type": "heat", "amount": 2.0}],
+  cam=dict(keys=[(0, (1499.0, 901.5, 151.3), (900, -1150, 40), 135), (1, (1499.0, 901.5, 151.3), (900, -1150, 20), 205)],
+           ease="dolly", shake=(0.0, 0.05, 0.3)),
+  anim=dict(ring_pulse=[h for h in accents(97.2, 102.5, thr=0.3, gap=0.8) if hit_strength(h)[0] >= 0.8],
+            ring_peak=8.0))
 
 # ================================================================ A3 / A4 (dusk)
 # from her whole figure with a strip of the balcony floor under her feet, a slow push and tilt up to a
@@ -380,8 +387,12 @@ S("S33b", lambda: L(23) - 0.2, bg="eye",
   bg_args=dict(pose="rin_eye_macro_teary", city_plate="assets/plates/city_window_dusk.png", zoom=(1.06, 1.24),
                reflect=1.1, light=1.0),
   finish=DUSK, fx=[{"type": "heat", "amount": 1.5}])
+# the line about the world melting away little by little: the city melts a notch on each of the line's hard hits
+# (the pairs of accents, six in all) and holds between them. A slow, even melt over the whole shot hardly showed: the
+# picture looked frozen for five and a half seconds of dense singing and drums
 S("S34", lambda: L(24) - 0.2, scene="dusk", setup=dict(place="balcony", lights=0.15), finish=DUSK,
-  fx=[{"type": "melt", "amount": [(0, 0.0), (1, 0.85)]}, {"type": "heat", "amount": 2.5}],
+  fx=[{"type": "melt", "steps": [h for h in accents(120.7, 126.0, thr=0.3, gap=0.5) if hit_strength(h)[0] >= 0.8],
+       "to": 1.0}, {"type": "heat", "amount": 2.5}],
   cam=dict(keys=[(0, (1499.0, 901.5, 152.0), (300, -900, 80), 50), (1, (1499.0, 901.5, 152.0), (300, -900, 70), 55)]))
 
 # ================================================================ B2 (blue hour, curtains, bubbles)
@@ -395,11 +406,24 @@ S("S35", lambda: L(26) - 0.2, scene="room", setup=dict(tod="night", wind=1.2, ra
               contact=SIT, blink=True,
               props=dict(key_dir=(0.8, 0.25, 0.4), key_col=(0.42, 0.52, 0.85), amb_col=(0.09, 0.1, 0.17),
                          rim_dir=(0.9, 0.2, 0), rim_col=(0.7, 0.82, 1.2), exposure=1.0))])
-# the line about words spilling from her lips: a tighter profile, lips parted as she murmurs.
-# The card is sized so her eye sits where the old profile's did (the drawing has less shoulder).
+# the line about the curtain in the spring breeze: the sheer curtain over the right pane billows into the dark room
+# on the gust (wind 1.8, some 40 cm at the hem), the night city through it. The verse had spent thirteen seconds on
+# her sitting still and then on her still profile (the director: too much empty time on one shot, one place); she
+# is not in this one, so no card is seen from the side. The cut is the hardest hit just before the line's first note
+S("S35b", lambda: hit_near(Ln(27) - 0.2), scene="room", setup=dict(tod="night", wind=1.8, rake=True, hide=[
+    "DeskTop", "DeskLeg", "DeskLeg.001", "DeskLeg.002", "DeskLeg.003", "DeskClock", "DeskClockDisplay",
+    "Lighter", "Glass"]), finish=NIGHT,
+  # nearly square to the curtain (10 degrees off), low enough to see its hem billow: from the side it showed as a
+  # band of strips beside a bare wall
+  cam=dict(keys=[(0, (2.35, 1.15, 1.0), (2.62, 2.62, 1.3), 26), (1, (2.33, 1.22, 1.01), (2.62, 2.62, 1.3), 27)],
+           fstop=2.8))
+# the line about words spilling from her lips: a tighter profile, lips parted as she murmurs, and an even push in
+# over both lines (about 40 %) that brings her lips to where the word bubbles rise; held nearly still, the profile
+# stood for seven and a half seconds. The card is sized so her eye sits where the old profile's did (the drawing
+# has less shoulder).
 S("S36", lambda: L(28) - 0.25, scene="room", setup=dict(tod="night", wind=0.6), finish=NIGHT,
-  cam=dict(keys=[(0, (1.95, 1.05, 1.06), (1.0, 2.2, 1.08), 62), (1, (1.88, 1.12, 1.06), (1.0, 2.2, 1.08), 64)],
-           fstop=2.0),
+  cam=dict(keys=[(0, (1.95, 1.05, 1.06), (1.0, 2.2, 1.08), 62), (1, (1.765, 1.274, 1.06), (1.0, 2.2, 1.08), 70)],
+           ease="dolly", fstop=2.0),
   render=dict(samples=64),
   cards=[dict(pose="rin_profile_speak", h=0.485, loc=(0.944, 2.154, 0.787), rot=(90, 0, 0), face_cam=True,
               blink=True,
@@ -474,28 +498,48 @@ S("S43", 164.72, scene="gears", setup=dict(mood="steel", stud=(0.0, 0.0, 0.2)), 
            fstop=2.8),
   cards=[dict(pose="rin_sit_dangle", on=[(0.0, _SWING[0])], **_DANGLE)]
   + [dict(pose=pose, on=on, **_DANGLE) for pose, on in zip(("rin_sit_dangle_a", "rin_sit_dangle_b"), alternate(_SWING))])
-# the room is dimmed to the TV's glow (window_light): in the grey print her light hair went the same grey as
-# the lit wall behind her
+# the interlude's TV night, thirteen seconds without singing: held still with only the snow flickering it was empty
+# time (the director), and she sat cross-legged here but hugged her knees in the close-up after it. Now her own face
+# flashes out of the snow on the interlude's accents (anim crt_glimpse, the room's light jumping with it: the set
+# tunes in to her for good at 3:12), the camera creeps in at an even 4 % a second, and on the downbeat after the
+# build, under the longest flash, she pulls her knees up to her chest: the pose the close-up finds her in.
+# The room is dimmed to the TV's glow (window_light): in the grey print her light hair went the same grey as the lit
+# wall behind her
+HUG_H = 1.0
+_TV_HITS = accents(172.95, 179.7, thr=0.45, gap=0.6)       # 173.46, 174.92, 176.38 (after the build), 177.46, 178.54
+_CURL = _TV_HITS[2]
+_SIT_TV = dict(loc=(0.6, 1.4, 0.38), rot=(90, 0, -90), face_cam=True, contact=SIT,
+               # brighter than the room: in the grey print she went the same grey as the wall and the bed
+               props=dict(key_dir=(0.8, 0.1, 0.5), key_col=(0.35, 0.4, 0.5), amb_col=(0.03, 0.035, 0.05),
+                          rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.3))
 S("S43c", 172.91, scene="room", setup=dict(tod="night", lamp=False, rake=True, window_light=0.45), finish=MONO,
-  cam=dict(keys=[(0, (3.2, 2.4, 1.5), (1.2, 0.8, 0.6), 24), (1, (3.1, 2.2, 1.45), (1.2, 0.8, 0.6), 26)], fstop=4.0),
-  # cross-legged and slumped, hands limp in her lap, staring at the snow on the screen
-  cards=[dict(pose="rin_sit_cross", h=1.0, loc=(0.6, 1.4, 0.38), rot=(90, 0, -90), face_cam=True,
-              contact=SIT,
-              # brighter than the room: in the grey print she went the same grey as the wall and the bed
-              props=dict(key_dir=(0.8, 0.1, 0.5), key_col=(0.35, 0.4, 0.5), amb_col=(0.03, 0.035, 0.05),
-                         rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.3))],
-  anim=dict(crt_static=[(0, 1.0), (1, 1.0)]), fx=[{"type": "tvflicker"}])
+  # (the aim drifts 19 cm toward the TV as the camera creeps in, so the set stays whole in the frame to the end)
+  cam=dict(keys=[(0, (3.2, 2.4, 1.5), (1.2, 0.8, 0.6), 24), (1, (3.0, 2.0, 1.356), (1.32, 0.65, 0.6), 25.8)],
+           ease="dolly", fstop=4.0),
+  # cross-legged and slumped, hands limp in her lap, staring at the snow on the screen; then hugging her knees
+  cards=[dict(pose="rin_sit_cross", h=1.0, on=[(0.0, swap_at(_CURL))], **_SIT_TV),
+         dict(pose="rin_sit_hug", h=HUG_H, on=[(swap_at(_CURL), DURATION)], **_SIT_TV)],
+  anim=dict(crt_static=[(0, 1.0), (1, 1.0)],
+            crt_glimpse=[(_TV_HITS[0], 2, 0.6), (_TV_HITS[1], 3, 0.7), (_CURL, 6, 0.9), (_TV_HITS[4], 3, 0.6)]),
+  fx=[{"type": "tvflicker"},
+      {"type": "strobe", "hits": [_TV_HITS[0], _TV_HITS[1], _CURL, _TV_HITS[4]], "amount": 0.35, "decay": 7.0}])
 # closer: the real Rin on the bed, chin on her knees, watching the snow. Shot from beside the TV (behind the
-# camera), so only the flicker of its light reaches her; the card stands where her head is in S43c, sized like
-# the other close-ups (aligned to rin_face_close)
-S("S44c", 179.46, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
+# camera), so only the flicker of its light reaches her, and the flashes of her face on the screen light her up on
+# the accents; on the bar's downbeat her eyes leave the TV for the clock on the wall (a variant, only the eyes
+# redrawn), and the film cuts to the clock. The cut in is on the heavy hit after the bar line. The card stands where
+# her head is in S43c, sized like the other close-ups (aligned to rin_face_close)
+_TV_HITS2 = accents(179.9, 185.9, thr=0.45, gap=0.6)       # 180.71, 181.46, 182.17, 183.62, 185.08
+_LOOK = _TV_HITS2[3]
+S("S44c", 179.78, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
   cam=dict(keys=[(0, (1.92, 0.73, 1.12), (0.6, 1.42, 1.15), 50), (1, (1.86, 0.79, 1.12), (0.6, 1.42, 1.15), 56)],
            fstop=2.0),
   render=dict(samples=64),
-  cards=[dict(pose="rin_watch_tv", h=0.6479, loc=(0.5974, 1.415, 0.7518), rot=(90, 0, 0), face_cam=True,
+  cards=[dict(pose=pose, h=0.6479, loc=(0.5974, 1.415, 0.7518), rot=(90, 0, 0), face_cam=True, on=on,
               props=dict(key_dir=(0.8, 0.1, 0.5), key_col=(0.4, 0.45, 0.55), amb_col=(0.04, 0.045, 0.06),
-                         rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.0))],
-  anim=dict(crt_host=[(0, 0.0), (1, 0.0)], crt_static=[(0, 1.0), (1, 1.0)]), fx=[{"type": "tvflicker"}])
+                         rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.0))
+         for pose, on in (("rin_watch_tv", [(0.0, swap_at(_LOOK))]), ("rin_watch_tv_side", [(swap_at(_LOOK), DURATION)]))],
+  anim=dict(crt_host=[(0, 0.0), (1, 0.0)], crt_static=[(0, 1.0), (1, 1.0)]),
+  fx=[{"type": "tvflicker"}, {"type": "strobe", "hits": [_TV_HITS2[0], _TV_HITS2[2]], "amount": 0.35, "decay": 7.0}])
 # the line about the clock's second hand: the clock, its second hand stepping on the beat
 S("S43b", 186.0, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
   cam=dict(keys=[(0, (3.0, 1.05, 1.88), (3.6, 1.0, 1.85), 70), (1, (3.05, 1.02, 1.86), (3.6, 1.0, 1.85), 85)],
@@ -768,9 +812,11 @@ for i, x in ((24, 1720), (25, 1624)):
 LYRIC_STYLES.update(_tate_cols([26, 27], 1720, 96, size=58, color=(0.82, 0.88, 1.0)))
 # the words wait just in front of her parted lips (S36 frame, measured from the render) and float off
 # spaced so neighbouring bubbles do not cross, starting clear of her face and reading left to right
-LYRIC_STYLES[28] = dict(style="bubbles", x=1500, y=720, size=46, tracking=0.55, bubble=0.8, spread=40.0,
+# S36 pushes in about its centre, so her lips sink down the frame as it goes: each line is set at the height
+# her lips have while it is sung (at 720 the second line rose from beside her eye)
+LYRIC_STYLES[28] = dict(style="bubbles", x=1460, y=860, size=46, tracking=0.55, bubble=0.8, spread=40.0,
                         rise=320.0, shots=("S36",))
-LYRIC_STYLES[29] = dict(style="bubbles", x=1500, y=720, size=46, tracking=0.55, bubble=0.8, spread=40.0,
+LYRIC_STYLES[29] = dict(style="bubbles", x=1480, y=935, size=46, tracking=0.55, bubble=0.8, spread=40.0,
                         rise=320.0, seed=5, shots=("S36",))
 for i, (x, y) in zip(range(36, 40), ((140, 120), (1000, 120), (140, 120), (1000, 120))):
     LYRIC_STYLES[i] = dict(style="echo", x=x, y=y, size=54, copies=10, dx=6.0, tail=6.0,

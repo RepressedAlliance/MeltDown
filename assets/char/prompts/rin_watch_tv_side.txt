@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Asset type: second frame of a two-frame cut-out animation (swapped in once, on a beat of the music, so it must line up exactly with the original)
+Primary request: edit the attached image so that only her eyes move: she glances away from the TV toward the RIGHT edge of the image (her left), at a clock on the wall. Both irises and pupils shift into the right-hand corners of her eyes, the eyelids stay as they are (tired, half-lidded), the catchlights move with the irises.
+Constraints: change only the eyes. Keep everything else pixel-identical: same framing, canvas size, position, scale, face, brows, mouth, hair, bow, headset, arms, sleeves, knees, colors, line style and transparent background. Do not move, rescale or redraw anything else. Clean anime cel style matching the attached image: flat aqua iris, one hard darker band at the top, one small white catchlight.
+Background: fully transparent PNG alpha background, exactly as in the attached image.
