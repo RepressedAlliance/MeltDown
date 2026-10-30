@@ -156,8 +156,9 @@ S("S09", lambda: bar(18), free=True,
 # its lights melting into bokeh behind her. Her hand is down; as she sings the first word it comes up to the
 # glass (two drawings of the same pose, src/char/variant.py, swapped on the note). The two share a breath phase.
 S("S10", lambda: bar(20), free=True, scene="room", setup=dict(tod="night"), finish=NIGHT, hud=dict(level=1, alpha=0.7),
-  # (aimed high enough that her bow keeps its margin as the push closes in: frame_check, bow at most 0.62)
-  cam=dict(keys=[(0, (2.3117, 0.9864, 1.38), (1.50, 2.7, 1.32), 38), (1, (1.92, 1.66, 1.42), (1.40, 2.7, 1.40), 40)],
+  # (aimed high enough that her bow keeps its margin as the push closes in: frame_check, bow at most 0.75. The lens
+  # closes in too, 38 -> 48 mm: on the camera move alone she grew 15 % a second, slower than the rest of the opening)
+  cam=dict(keys=[(0, (2.3117, 0.9864, 1.38), (1.50, 2.7, 1.32), 38), (1, (1.92, 1.66, 1.42), (1.40, 2.7, 1.40), 48)],
            fstop=2.0, ease="dolly"),
   # (seen from a little above, 10-18 degrees: lengthened 3 % so she is not squat, card_angles.py)
   cards=[dict(pose=pose, h=0.95, loc=(1.25, 2.45, 0.6), rot=(90, 0, 0), face_cam=True, phase=0.0, on=on, stretch=1.03,
