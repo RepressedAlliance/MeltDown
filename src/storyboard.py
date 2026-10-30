@@ -128,13 +128,18 @@ S("S03", lambda: on_grid(bar(3)), free=True, scene="city", finish=NIGHT,
 # then through it and down over her lying awake under the lamp; her eyes open on the band's hit (bar 18). The city
 # plate outside her window is hidden: the camera starts out beyond it. The pane it flies through is open (the glass
 # lay across the frame as a dark veil with a hard edge). Seen from outside her room is exposed like the lit windows
-# round it, then settles to the room's night as the window fills the frame (anim exposure, song seconds)
+# round it, then settles to the room's night as the window fills the frame (anim exposure, song seconds). She is a
+# drawing lying on the bed: seen from the side, through the window and flying in, she was flat as paper (the
+# director: "穿帮"). The camera now comes in looking up at the ring lamp and turns down over her only once it is
+# nearly above her (flight.LAMP_CITY, T_TURN0): she enters the picture at 30 degrees from straight on at most. Her
+# drawing is left out until the camera is through the window, while it is out of the picture: from outside, at the
+# bottom of the window, she was seen 70-80 degrees from straight on (the quilt keeps her shape)
 S("S09", lambda: bar(11), free=True,
   scene="room", setup=dict(tod="night_lamp", pillow_dent=(0.0, -0.03, 0.12, 0.035), quilt=LIE_QUILT,
                            hide=OVERHEAD_HIDE + ["CityPlate", "Pane0"]),
   finish=NIGHT, render=dict(exposure=-1.8), in_="portal",
   cam=dict(path="opening", frame="room"), anim=dict(exposure=[(18.6, -0.6), (21.6, -1.8)]),
-  cards=[dict(pose="rin_lie_up", **LIE_UP,
+  cards=[dict(pose="rin_lie_up", **LIE_UP, on=[(swap_at(bar(16)), DURATION)],
               props=dict(key_dir=(0.0, 0.3, 0.9), key_col=(0.5, 0.55, 0.62), amb_col=(0.25, 0.28, 0.36),
                          rim_col=(0.0, 0.0, 0.0), exposure=1.0),
               keys={"blink": [(("t", 0.0), 1.0), (("t", swap_at(bar(18) + 0.01)), 0.0)]})])

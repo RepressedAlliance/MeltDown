@@ -168,9 +168,12 @@ def _approach_rot(t):
 FACE_ABOVE = Vector((0.55, 2.17, 1.50))
 FACE_END = Vector((0.55, 2.15, 1.24))
 Q_FACE = _look(Vector((0, 0, -1)), Vector((1, 0, 0)))       # straight down, her head to the left of the frame
-FACE_CITY = room_to_city(Vector((0.55, 2.22, 0.50)))       # her face on the pillow
-T_LOOK0 = T_SWITCH - 1.6                                    # the look starts to find her through the window
-T_TURN0 = T_ENTER - 0.5                                     # and turns over her as the camera passes through
+# the ring lamp on the ceiling above her bed (scene_room.ring_lamp): the camera comes in looking up at it, the
+# film's third ring after the title's and the reactor's. Aimed at her as it closed in, the camera saw her drawing
+# from the side, flat as paper (the director: "穿帮"); she is only seen from nearly above
+LAMP_CITY = room_to_city(Vector((0.6, 1.55, 2.28)))
+T_LOOK0 = T_SWITCH - 1.6                                    # the look leaves the pane for the lamp
+T_TURN0 = T_ENTER - 0.7                                     # and turns down over her as it comes through
 
 
 def _inside(t):
@@ -199,9 +202,9 @@ def opening(t):
     p = _approach(t)[0] if t <= T_SWITCH else room_to_city(_inside(t))
     if t <= T_LOOK0:
         return p, _approach_rot(t), LENS
-    # the last of the approach: the look leaves the pane for her, lying under the window, so she is in the frame
-    # as the camera passes through it (aimed at the pane all the way, the turn inside swept over the floor first);
-    # then the frame turns over her, rolling so her head comes to the left, and settles straight above her face
+    # the last of the approach: the look leaves the pane for the ring lamp, so the bed under the window stays below
+    # the frame; through the window the frame turns down over her, rolling so her head comes to the left, and
+    # settles straight above her face. She comes into the picture only once the camera is nearly above her
     w2 = _smoother((t - T_TURN0) / (T_SETTLE - T_TURN0))
     q_room = Q_FACE @ Quaternion((0, 0, 1), math.radians(9.0) * max(0.0, (t - T_SETTLE) / (T_END - T_SETTLE)))
     q_end = (R_ROOM.to_quaternion() @ q_room).normalized()
@@ -211,7 +214,7 @@ def opening(t):
         return p, _look(_look_dir(t, p)), lens
     if w2 >= 1.0:
         return p, q_end, lens
-    # the turn over her: the view swings from her face to straight down while the picture rolls evenly from its up
+    # the turn over her: the view swings from the lamp to straight down while the picture rolls evenly from its up
     # as the turn begins to the final frame's (her head to the left: T). Slerping the look-at rotation into the final
     # one spun the picture 23 degrees in one frame where the camera passed over her face, since looking straight down
     # "up = sky" has no direction (flip_scan); blending the up hint from the sky to T instead crowded the whole
@@ -221,9 +224,9 @@ def opening(t):
 
 
 def _look_dir(t, p):
-    """Where the camera looks on the last of the approach: from the pane to her face as it comes through."""
+    """Where the camera looks on the last of the approach: from the pane to the ring lamp as it comes through."""
     w1 = _smoother((t - T_LOOK0) / (T_ENTER - T_LOOK0))
-    return (PANE.lerp(FACE_CITY, w1) - p).normalized()
+    return (PANE.lerp(LAMP_CITY, w1) - p).normalized()
 
 
 _p_turn = room_to_city(_inside(T_TURN0))

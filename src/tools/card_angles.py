@@ -96,8 +96,8 @@ def main():
         if not s.get("cards") or not s.get("cam"):
             continue
         if s["cam"].get("path"):
-            # a camera on one of flight.py's paths needs Blender's mathutils: judge its cards on the frames
-            print(f"{s['id']:5s} camera on the path {s['cam']['path']!r}: not measured here, look at the frames")
+            # a camera on one of flight.py's paths needs Blender's mathutils: src/tools/path_card_angles.py
+            print(f"{s['id']:5s} camera on the path {s['cam']['path']!r}: measured by path_card_angles.py (Blender)")
             continue
         for spec in s["cards"]:
             if spec.get("shadow_only"):
