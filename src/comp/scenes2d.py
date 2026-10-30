@@ -87,7 +87,8 @@ def eye(t, u, city_plate=None, zoom=(1.0, 1.18), drift=(0, -12), reflect=0.55, t
     else:
         base = rgb.copy()
     if city_plate:
-        plate, _ = _img(Path(city_plate))
+        # a path in the storyboard is relative to the project, wherever the compositor runs from
+        plate, _ = _img(ROOT / city_plate)
         # fisheye-squash the plate into the iris ellipse
         ph, pw = plate.shape[:2]
         size = int(max(ew, eh) * 1.1)
