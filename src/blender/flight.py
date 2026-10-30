@@ -42,8 +42,13 @@ def to_room(p, q):
 
 # the window opening's corners (outer face) in the city, for the portal mask: room x 0.35..3.25, z 0.55..2.2
 WINDOW_CORNERS = [room_to_city((x, 2.82, z)) for x, z in ((0.35, 0.55), (3.25, 0.55), (3.25, 2.2), (0.35, 2.2))]
-PANE = room_to_city((1.075, 2.82, 1.40))     # the left pane's middle: what the camera flies at (the middle bar is
-                                             # in the window's centre)
+PANE = room_to_city((1.075, 2.82, 1.40))     # the left pane's middle: what the camera looks at as it comes in (the
+                                             # middle bar is in the window's centre)
+# where it flies to: below the sill, so the last of the approach comes in under her window and rises into the room.
+# She lies just under the sill: from below it the wall hides her, and she is never seen through the window from the
+# side, flat as the drawing she is (the director: "穿帮"); hiding her drawing until the camera was in only traded
+# that for a bed that was empty and then was not
+AIM = room_to_city((1.075, 2.82, 0.30))
 
 # ---------------------------------------------------------------- timing (song seconds)
 T_MATCH = TL.on_grid(TL.DOWNBEATS[3])       # the title ring becomes the reactor's (bar 3)
@@ -60,12 +65,17 @@ TITLE_RATE = 0.22                           # S00's ring: r 150 px growing at th
 R_TITLE = 150.0 * math.exp(TITLE_RATE * T_MATCH)
 D_MATCH = BAND_R * F_PX / R_TITLE           # height above the band that draws it at R_TITLE
 D_SWITCH = 1.6                              # from here (outside the window) the move bends into the room
-EL_END = math.radians(4.0)                  # the last of the approach comes in slightly from above
+EL_END = 0.0                                # the last of the approach comes in level with AIM, under the sill
 
 
 def _smoother(x):
     x = min(1.0, max(0.0, x))
     return x * x * x * (x * (6 * x - 15) + 10)
+
+
+def _smooth(x):
+    x = min(1.0, max(0.0, x))
+    return x * x * (3 - 2 * x)
 
 
 def _look(f, up=Z):
@@ -93,7 +103,7 @@ def _above(t):
     return REACTOR + Vector((0, 0, BAND_Z + D_MATCH * math.exp(-TITLE_RATE * (t - T_MATCH))))
 
 
-V0 = _above(T_TILT0) - PANE                                  # where the approach starts, seen from her window
+V0 = _above(T_TILT0) - AIM                                   # where the approach starts, seen from under her window
 D0 = V0.length
 AZ0, EL0 = math.atan2(V0.y, V0.x), math.asin(V0.z / D0)
 AZ1 = math.atan2(N.y, N.x)
@@ -151,7 +161,7 @@ def _approach(t):
     w = _smoother((t - T_TILT1) / (T_ARC - T_TILT1))
     az = AZ0 + (AZ1 - AZ0) * w
     el = EL0 + (EL_END - EL0) * w
-    return PANE + _dist(t) * _sph(az, el), az
+    return AIM + _dist(t) * _sph(az, el), az
 
 
 def _approach_rot(t):
@@ -164,30 +174,40 @@ def _approach_rot(t):
     return (Quaternion((PANE - p).normalized(), bank) @ q).normalized()
 
 
-# inside the room (room coordinates): over her face, then a slow push down to it
-FACE_ABOVE = Vector((0.55, 2.17, 1.50))
+# inside the room (room coordinates): up through the window (WINDOW_IN, in the left pane, well over the sill), then
+# over her face and a slow push down to it. High enough that she comes into sight within 30 degrees of straight on
+# (path_card_angles.py: 28) with the turn down at most 4.1 degrees a frame
+WINDOW_IN = Vector((0.95, 2.82, 1.20))
+FACE_ABOVE = Vector((0.55, 2.17, 1.58))
 FACE_END = Vector((0.55, 2.15, 1.24))
 Q_FACE = _look(Vector((0, 0, -1)), Vector((1, 0, 0)))       # straight down, her head to the left of the frame
-# the ring lamp on the ceiling above her bed (scene_room.ring_lamp): the camera comes in looking up at it, the
-# film's third ring after the title's and the reactor's. Aimed at her as it closed in, the camera saw her drawing
-# from the side, flat as paper (the director: "穿帮"); she is only seen from nearly above
+# the ring lamp on the ceiling above her bed (scene_room.ring_lamp): the camera rises in looking up at it, the
+# film's third ring after the title's and the reactor's, and turns down over her only once it is above her
 LAMP_CITY = room_to_city(Vector((0.6, 1.55, 2.28)))
 T_LOOK0 = T_SWITCH - 1.6                                    # the look leaves the pane for the lamp
-T_TURN0 = T_ENTER - 0.7                                     # and turns down over her as it comes through
+T_TURN0 = T_ENTER - 0.3                                     # and turns down over her as it comes in
+
+
+def _hermite(a, va, b, vb, t0, t1, t):
+    dt = t1 - t0
+    w = (t - t0) / dt
+    h00, h10 = 2 * w ** 3 - 3 * w ** 2 + 1, w ** 3 - 2 * w ** 2 + w
+    h01, h11 = -2 * w ** 3 + 3 * w ** 2, w ** 3 - w ** 2
+    return a * h00 + va * dt * h10 + b * h01 + vb * dt * h11
 
 
 def _inside(t):
-    """Hermite from where the approach hands over (its position and velocity) to above her face, then the push."""
+    """From where the approach hands over (its position and velocity, under the sill) up through the window at
+    WINDOW_IN to above her face, then the push: two Hermite pieces with one velocity where they meet."""
     p0 = city_to_room(_approach(T_SWITCH)[0])
     h = 1.0 / 48
     v0 = R_ROOM.transposed() @ ((_approach(T_SWITCH + h)[0] - _approach(T_SWITCH - h)[0]) / (2 * h))
     v_push = (FACE_END - FACE_ABOVE) / (T_END - T_SETTLE)
+    v_in = (FACE_ABOVE - p0) / (T_SETTLE - T_SWITCH)
+    if t <= T_ENTER:
+        return _hermite(p0, v0, WINDOW_IN, v_in, T_SWITCH, T_ENTER, t)
     if t <= T_SETTLE:
-        dt = T_SETTLE - T_SWITCH
-        w = (t - T_SWITCH) / dt
-        h00, h10 = 2 * w ** 3 - 3 * w ** 2 + 1, w ** 3 - 2 * w ** 2 + w
-        h01, h11 = -2 * w ** 3 + 3 * w ** 2, w ** 3 - w ** 2
-        return p0 * h00 + v0 * dt * h10 + FACE_ABOVE * h01 + v_push * dt * h11
+        return _hermite(WINDOW_IN, v_in, FACE_ABOVE, v_push, T_ENTER, T_SETTLE, t)
     return FACE_ABOVE + v_push * (t - T_SETTLE)
 
 
@@ -202,10 +222,10 @@ def opening(t):
     p = _approach(t)[0] if t <= T_SWITCH else room_to_city(_inside(t))
     if t <= T_LOOK0:
         return p, _approach_rot(t), LENS
-    # the last of the approach: the look leaves the pane for the ring lamp, so the bed under the window stays below
-    # the frame; through the window the frame turns down over her, rolling so her head comes to the left, and
-    # settles straight above her face. She comes into the picture only once the camera is nearly above her
-    w2 = _smoother((t - T_TURN0) / (T_SETTLE - T_TURN0))
+    # the last of the approach: the look leaves the pane for the ring lamp as the camera rises in under it; through
+    # the window the frame turns down over her, rolling so her head comes to the left, and settles straight above her
+    # face. She comes into the picture only once the camera is nearly above her
+    w2 = _smooth((t - T_TURN0) / (T_SETTLE - T_TURN0))     # (a cubic ease: the quintic peaked at 5.6 deg a frame)
     q_room = Q_FACE @ Quaternion((0, 0, 1), math.radians(9.0) * max(0.0, (t - T_SETTLE) / (T_END - T_SETTLE)))
     q_end = (R_ROOM.to_quaternion() @ q_room).normalized()
     w = _smoother((t - T_SWITCH) / (T_SETTLE - T_SWITCH))

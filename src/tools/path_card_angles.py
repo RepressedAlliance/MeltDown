@@ -7,8 +7,10 @@ intervals) and part of it is in the picture, this measures the angle between the
 facing direction, and reports the worst angle per shot; over 35 degrees is flagged. The opening's camera once flew
 toward the bed through her window and saw her lying drawing from 70-80 degrees ("穿帮", the director said).
 Cards that turn to the camera (face_cam) always face it and are skipped. The part of a lying card under a tucked
-quilt (setup quilt `edge`) is left out; other occlusion is not considered, so a flag can be a frame where a wall
-hides her: check those frames by eye. Exits 1 if anything is flagged.
+quilt (setup quilt `edge`) is left out, and in the room a point is hidden when the line of sight from outside meets
+the window wall off the opening (scene_room's window); other occlusion is not considered, so a flag can still be
+a frame where something else hides her: check those frames by eye. Frames where a card is on but no part of it can
+be seen are listed too, as the span she is out of sight. Exits 1 if anything is flagged.
 """
 import math
 import sys
@@ -24,6 +26,20 @@ import storyboard  # noqa: E402
 
 FPS = 24
 LIMIT = 35.0
+# the room's window wall (scene_room: inner face D = 2.7, outer face 2.82) and its opening (WIN_X0..X1, WIN_Z0..Z1)
+WALL_Y, OPEN_X, OPEN_Z = (2.70, 2.82), (0.35, 3.25), (0.55, 2.20)
+
+
+def through_window(p, pt):
+    """Whether the line of sight from p (outside the room, room coordinates) to pt (inside) passes the opening."""
+    if p.y <= WALL_Y[1] or pt.y >= WALL_Y[0]:
+        return True
+    for y in WALL_Y:
+        k = (y - p.y) / (pt.y - p.y)
+        x, z = p.x + (pt.x - p.x) * k, p.z + (pt.z - p.z) * k
+        if not (OPEN_X[0] < x < OPEN_X[1] and OPEN_Z[0] < z < OPEN_Z[1]):
+            return False
+    return True
 
 
 def card_points(spec, quilt_edge=None):
@@ -54,28 +70,33 @@ def main():
                 continue
             quilt = (s.get("setup") or {}).get("quilt") or {}
             pts, normal = card_points(spec, quilt.get("edge") if quilt.get("mode") == "tucked" else None)
-            worst = (0.0, None)
+            worst, first = (0.0, None), None
             for f in range(round(s["t0"] * FPS), round(s["t1"] * FPS)):
                 t = f / FPS
                 if spec.get("on") is not None and not any(a <= t < b for a, b in spec["on"]):
                     continue
                 p, q, lens = path(t)
-                if cam.get("frame") == "room":
+                room = cam.get("frame") == "room"
+                if room:
                     p, q = flight.to_room(p, q)
                 inv = q.inverted()
                 seen = []
                 for pt in pts:
+                    if room and not through_window(p, pt):
+                        continue
                     v = inv @ (pt - p)
                     if v.z < -0.01 and abs(v.x / -v.z) < 18.0 / lens and abs(v.y / -v.z) < 10.125 / lens:
                         seen.append(math.degrees(abs(math.asin(max(-1.0, min(1.0, (p - pt).normalized().dot(normal)))))))
                 if seen:
+                    first = t if first is None else first
                     ang = 90.0 - min(seen)
                     if ang > worst[0]:
                         worst = (ang, t)
             flag = worst[0] > LIMIT
             bad += flag
             print(f"{s['id']:5s} {spec.get('pose', '?'):22s} worst {worst[0]:4.0f} deg"
-                  + (f" at {worst[1]:.2f}s" if worst[1] is not None else " (never in the picture)")
+                  + (f" at {worst[1]:.2f}s, in sight from {first:.2f}s" if worst[1] is not None
+                     else " (never in the picture)")
                   + ("   << seen from the side" if flag else ""))
     print(f"path card angles: {bad} flagged")
     sys.exit(1 if bad else 0)
