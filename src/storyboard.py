@@ -449,29 +449,36 @@ S("S42", lambda: L(34) - 0.15, scene="core", setup=dict(mood="white"), finish=WH
 # ================================================================ BRIDGE: clocks, TV, echoes
 S("S42b", 160.4, scene="core", setup=dict(mood="white", exterior=True), finish=WHITE,
   cam=dict(keys=[(0, (24, -30, 14), (0, 0, -1), 30), (1, (60, -80, 40), (0, 0, -1), 30)], ease="in"),
-  anim=dict(plasma=[(0, 2.0), (1, 4.0)]), out="white", out_dur=1.2)
-S("S43", 164.72, scene="gears", setup=dict(mood="steel", stud=(0.0, 0.0, 0.2)), finish=MONO, in_="black", in_dur=0.6,
-  # from the whole train of gears in toward her: by the end she is the subject, the gear turning round her. The
-  # push ends 2.5 m from her, two fifths of the frame high: stopping at 3.5 m left her a grey speck on the hub
-  # once the bridge's halftone printed her
+  anim=dict(plasma=[(0, 2.0), (1, 4.0)]), out="white", out_dur=0.6)
+# The bridge, in the order it is sung: the machine of time, her in the dark room watching the snow, then the clock
+# as the clock's second hand is sung, the TV host as the TV host is, the snow she is lost in as someone unseen is,
+# and the wall of laughing TVs as the laughter saturates. The cuts quicken toward that wall, each a whole picture:
+# the inserts that punched into a frame already used (S44b, S44d, and the zooms on S45c-S45g) cut the TV, her and
+# the mic in half, and are gone.
+#
+# from the whole train of gears in toward her: by the end she is the subject, the gear turning round her. The
+# push ends 2.5 m from her, two fifths of the frame high: stopping at 3.5 m left her a grey speck on the hub
+# once the bridge's halftone printed her.
+# A small Rin on a pin that stands still through the hub of the great gear: she sits on its cap, and from the
+# second bar her feet swing to the half-time pulse (two drawings of the pose, src/char/variant.py, one foot forward
+# then the other, a change every other beat) over the gear that turns beneath them. The machine of time is giant,
+# and she is the one still point in it, killing time. The card stands just in front of the cap's edge, so her legs
+# hang in front of it. Brighter than the steel: the bridge prints in grey, and at 1.0 she printed as the same
+# mid-grey as the gears. The camera looks down on her at 25-28 degrees: the card is lengthened 1.117x
+# (1 / cos 26.5) so she is not squat, and set 1 cm lower so her seat (45 % up the drawing) stays on the cap
+_SWING = [b for b in BEATS[::2] if 166.15 <= b < 173.5]
+_DANGLE = dict(h=0.2, loc=(0.032, -0.095, 0.0955), rot=(90, 0, 0), face_cam=True, stretch=1.117, motion=None,
+               props=dict(key_dir=(-0.8, -0.2, 0.5), key_col=(0.9, 0.38, 0.28), amb_col=(0.14, 0.15, 0.18),
+                          rim_dir=(0.9, 0.2, 0.3), rim_col=(0.55, 0.65, 0.9), exposure=1.35))
+S("S43", 164.72, scene="gears", setup=dict(mood="steel", stud=(0.0, 0.0, 0.2)), finish=MONO,
   cam=dict(keys=[(0, (1.4, -3.6, 2.2), (0.2, 0.0, 0.0), 60), (1, (0.645, -2.29, 1.255), (0.03, -0.095, 0.22), 100)],
            fstop=2.8),
-  # a small Rin on a pin that stands still through the hub of the great gear: she sits on its cap with her
-  # legs hanging over the gear that turns beneath her feet. The machine of time is giant, and she is the one
-  # still point in it. The card stands just in front of the cap's edge, so her legs hang in front of it.
-  # brighter than the steel: the bridge prints in grey, and at 1.0 she printed as the same mid-grey as the gears.
-  # The camera looks down on her at 25-28 degrees: the card is lengthened 1.117x (1 / cos 26.5) so she is not
-  # squat, and set 1 cm lower so her seat (45 % up the drawing) stays on the cap
-  cards=[dict(pose="rin_sit_dangle", h=0.2, loc=(0.032, -0.095, 0.0955), rot=(90, 0, 0), face_cam=True, stretch=1.117,
-              props=dict(key_dir=(-0.8, -0.2, 0.5), key_col=(0.9, 0.38, 0.28), amb_col=(0.14, 0.15, 0.18),
-                         rim_dir=(0.9, 0.2, 0.3), rim_col=(0.55, 0.65, 0.9), exposure=1.35))])
-S("S43b", 172.91, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
-  cam=dict(keys=[(0, (3.0, 1.05, 1.88), (3.6, 1.0, 1.85), 70), (1, (3.05, 1.02, 1.86), (3.6, 1.0, 1.85), 85)],
-           fstop=2.2),
-  anim=dict(clock_tick=True))
+  cards=[dict(pose="rin_sit_dangle", on=[(0.0, _SWING[0])], **_DANGLE),
+         dict(pose="rin_sit_dangle_a", on=list(zip(_SWING[0::2], _SWING[1::2])), **_DANGLE),
+         dict(pose="rin_sit_dangle_b", on=list(zip(_SWING[1::2], _SWING[2::2] + [DURATION])), **_DANGLE)])
 # the room is dimmed to the TV's glow (window_light): in the grey print her light hair went the same grey as
 # the lit wall behind her
-S("S43c", 179.46, scene="room", setup=dict(tod="night", lamp=False, rake=True, window_light=0.45), finish=MONO,
+S("S43c", 172.91, scene="room", setup=dict(tod="night", lamp=False, rake=True, window_light=0.45), finish=MONO,
   cam=dict(keys=[(0, (3.2, 2.4, 1.5), (1.2, 0.8, 0.6), 24), (1, (3.1, 2.2, 1.45), (1.2, 0.8, 0.6), 26)], fstop=4.0),
   # cross-legged and slumped, hands limp in her lap, staring at the snow on the screen
   cards=[dict(pose="rin_sit_cross", h=1.0, loc=(0.6, 1.4, 0.38), rot=(90, 0, -90), face_cam=True,
@@ -480,44 +487,53 @@ S("S43c", 179.46, scene="room", setup=dict(tod="night", lamp=False, rake=True, w
               props=dict(key_dir=(0.8, 0.1, 0.5), key_col=(0.35, 0.4, 0.5), amb_col=(0.03, 0.035, 0.05),
                          rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.3))],
   anim=dict(crt_static=[(0, 1.0), (1, 1.0)]), fx=[{"type": "tvflicker"}])
-# the line about the TV host: the set tunes in out of the snow while it is sung, and the host is Rin herself,
-# smiling and waving on air. The render runs on to 196.72 so the inserts below can re-use it.
-S("S44", 186.0, scene="room", setup=dict(tod="night", lamp=False), finish=MONO, render_to=196.72,
-  cam=dict(keys=[(0, (2.3, 1.6, 0.6), (2.3, 0.4, 0.52), 45), (1, (2.3, 1.35, 0.55), (2.3, 0.4, 0.52), 52)],
+# closer: the real Rin on the bed, chin on her knees, watching the snow. Shot from beside the TV (behind the
+# camera), so only the flicker of its light reaches her; the card stands where her head is in S43c, sized like
+# the other close-ups (aligned to rin_face_close)
+S("S44c", 179.46, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
+  cam=dict(keys=[(0, (1.92, 0.73, 1.12), (0.6, 1.42, 1.15), 50), (1, (1.86, 0.79, 1.12), (0.6, 1.42, 1.15), 56)],
+           fstop=2.0),
+  render=dict(samples=64),
+  cards=[dict(pose="rin_watch_tv", h=0.6479, loc=(0.5974, 1.415, 0.7518), rot=(90, 0, 0), face_cam=True,
+              props=dict(key_dir=(0.8, 0.1, 0.5), key_col=(0.4, 0.45, 0.55), amb_col=(0.04, 0.045, 0.06),
+                         rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.0))],
+  anim=dict(crt_host=[(0, 0.0), (1, 0.0)], crt_static=[(0, 1.0), (1, 1.0)]), fx=[{"type": "tvflicker"}])
+# the line about the clock's second hand: the clock, its second hand stepping on the beat
+S("S43b", 186.0, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
+  cam=dict(keys=[(0, (3.0, 1.05, 1.88), (3.6, 1.0, 1.85), 70), (1, (3.05, 1.02, 1.86), (3.6, 1.0, 1.85), 85)],
+           fstop=2.2),
+  anim=dict(clock_tick=True))
+# the line about the TV host: the set tunes in out of the snow and the host is Rin herself, mic in hand, smiling
+# and waving on air, her hand swinging on every beat (two drawings swapped in the CRT's picture, anim crt_wave).
+# The whole set stays in the frame (84 % of its height at the end); the render runs on to 196.72 for S45e
+S("S44", 192.55, scene="room", setup=dict(tod="night", lamp=False), finish=MONO, render_to=196.72,
+  cam=dict(keys=[(0, (2.3, 1.6, 0.6), (2.3, 0.4, 0.52), 45), (1, (2.3, 1.52, 0.57), (2.3, 0.4, 0.52), 48)],
            fstop=2.8),
   anim=dict(crt_host=[(0, 0.0), (0.04, 0.0), (0.3, 1.0), (1, 1.0)],
-            crt_static=[(0, 1.0), (0.04, 1.0), (0.32, 0.2), (1, 0.2)]))
-# the singing speeds up through the bridge, so does the cutting: TV, Rin and the clock intercut on the
-# bars, then on the beats, into the wall of TVs. Inserts re-frame frames already rendered for S43-S44.
-# a decisive punch-in on the screen (a 1.3x step on the same axis read as a jump cut)
-S("S44b", 190.36, frames_from=dict(id="S44", at=4.4), finish=MONO,
-  fx=[{"type": "zoom", "z": [(0, 1.55), (1, 1.62)], "cy": -300}])
-# reverse shot: the real Rin on the bed, chin on her knees, watching herself smile on the screen. Shot from
-# beside the TV (behind the camera), so only the flicker of its light reaches her; the card stands where
-# her head is in S43c, sized like the other close-ups (aligned to rin_face_close)
-S("S44c", 192.55, scene="room", setup=dict(tod="night", lamp=False), finish=MONO, render_to=195.0,
-  cam=dict(keys=[(0, (1.9, 0.75, 1.12), (0.6, 1.42, 1.15), 52), (1, (1.87, 0.78, 1.12), (0.6, 1.42, 1.15), 56)],
+            crt_static=[(0, 1.0), (0.04, 1.0), (0.32, 0.2), (1, 0.2)],
+            crt_wave=[(b, k % 2) for k, b in enumerate(x for x in BEATS if 192.0 <= x < 197.5)]))
+# her, watching herself on the screen: cutting from the set straight to its picture filling the frame (S45) was
+# a punch-in by another name, the same picture suddenly larger; between them the film looks at her, so the
+# picture that follows is what she sees. Closer than S44c, from a little further round
+S("S44e", 194.72, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
+  cam=dict(keys=[(0, (1.80, 0.62, 1.10), (0.6, 1.42, 1.18), 66), (1, (1.78, 0.64, 1.10), (0.6, 1.42, 1.18), 72)],
            fstop=2.0),
   render=dict(samples=64),
   cards=[dict(pose="rin_watch_tv", h=0.6479, loc=(0.5974, 1.415, 0.7518), rot=(90, 0, 0), face_cam=True,
               props=dict(key_dir=(0.8, 0.1, 0.5), key_col=(0.4, 0.45, 0.55), amb_col=(0.04, 0.045, 0.06),
                          rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.0))],
   anim=dict(crt_host=[(0, 1.0), (1, 1.0)], crt_static=[(0, 0.2), (1, 0.2)]), fx=[{"type": "tvflicker"}])
-S("S44d", 194.72, frames_from=dict(id="S12", at=0.0), finish=MONO,
-  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.08)]}])
-# the next line: Rin on the screen, lost and found in the snow
-S("S45", 196.72, bg="static", bg_args=dict(signal=0.5), finish=MONO, fx=[{"type": "strobe", "amount": 0.2}])
-S("S45c", 201.07, frames_from=dict(id="S43", at=4.0), finish=MONO,
-  fx=[{"type": "zoom", "z": [(0, 1.35), (1, 1.5)], "cx": -40, "cy": 60}])
+# the next line: what she sees, Rin on the screen, lost and found in the snow, still waving on the beat
+S("S45", 196.72, bg="static", bg_args=dict(signal=0.5, wave=True), finish=MONO, fx=[{"type": "strobe", "amount": 0.2}])
+# quicker now, each a whole picture: the gears, her laughing in the snow, the host, her watching, the clock
+S("S45c", 201.07, frames_from=dict(id="S43", at=4.0), finish=MONO)
 S("S45d", 203.09, bg="static", bg_args=dict(signal=0.35, pose="rin_laugh"), finish=MONO,
   fx=[{"type": "strobe", "amount": 0.3}])
-S("S45e", 204.18, frames_from=dict(id="S44", at=7.0), finish=MONO,
-  # the push is centred near the top of her bow, so the bow stays in and the frame grows downward
-  fx=[{"type": "zoom", "z": [(0, 1.22), (1, 1.28)], "cy": -380}])
-S("S45f", 205.28, frames_from=dict(id="S44c", at=0.3), finish=MONO,
-  fx=[{"type": "zoom", "z": [(0, 1.0), (1, 1.04)], "cy": -480}, {"type": "tvflicker"}])
-S("S45g", 205.83, frames_from=dict(id="S12", at=1.2), finish=MONO,
-  fx=[{"type": "zoom", "z": [(0, 1.15), (1, 1.2)]}])
+# (S44's frames just after its cut, where the whole set is still in the frame, and a whole number of beats
+# from here, so the host's wave stays on the beat)
+S("S45e", 204.18, frames_from=dict(id="S44", at=2.2), finish=MONO)
+S("S45f", 205.28, frames_from=dict(id="S44c", at=4.3), finish=MONO, fx=[{"type": "tvflicker"}])
+S("S45g", 205.83, frames_from=dict(id="S43b", at=2.0), finish=MONO)
 S("S45b", 206.37, bg="tv_wall", finish=MONO,
   fx=[{"type": "strobe", "amount": 0.45},
       {"type": "glitch", "on": [(0, 0), (0.6, 0), (0.62, 1)], "amount": 0.7}])
@@ -742,7 +758,7 @@ LYRIC_STYLES[29] = dict(style="bubbles", x=1500, y=720, size=46, tracking=0.55, 
                         rise=320.0, seed=5, shots=("S36",))
 for i, (x, y) in zip(range(36, 40), ((140, 120), (1000, 120), (140, 120), (1000, 120))):
     LYRIC_STYLES[i] = dict(style="echo", x=x, y=y, size=54, copies=10, dx=6.0, tail=6.0,
-                           shots=("S43", "S43b", "S43c", "S44", "S44b", "S44c", "S44d", "S45", "S45c", "S45d",
+                           shots=("S43", "S43b", "S43c", "S44", "S44c", "S44e", "S45", "S45c", "S45d",
                                   "S45e", "S45f", "S45g", "S45b"))
 for i in range(40, 44):
     LYRIC_STYLES[i] = dict(style="score_line", tail=0.6, italic="Allegro agitato" if i in (40, 42) else None)
@@ -847,7 +863,7 @@ for _sid, _rect in READING_SHADE.items():
 for _sid in ("S11", "S12", "S13", "S22", "S53", "S62", "S63"):
     next(_s for _s in SHOTS if _s["id"] == _sid)["plate"] = 1.25
 # the TV caption sits low on the left, where a broadcast puts it: clear of her hands (S44c), the host's
-# face and waving hand (S45) and most of the clock (S44d)
+# face and waving hand (S45 and the CRT in S44)
 LYRIC_STYLES[37] = dict(style="telop", x=110, y=952, w=760, size=44, tail=1.5)
 
 # a little life in the cut-outs: blinks on close-ups, hair moving where there is wind or weightlessness
@@ -916,7 +932,7 @@ for _s in SHOTS:
         _s["fx"] = list(_s["fx"]) + [{"type": "kick", "amount": 0.012}]
         _s["mis_hits"] = 5.0
 # the bridge keeps a half-time pulse: a lighter push on its kicks
-BRIDGE_SHOTS = ["S43", "S43b", "S43c", "S44", "S44b", "S44c", "S44d", "S45", "S45c", "S45d", "S45e", "S45f",
+BRIDGE_SHOTS = ["S43", "S43b", "S43c", "S44", "S44c", "S44e", "S45", "S45c", "S45d", "S45e", "S45f",
                 "S45g", "S45b"]
 for _s in SHOTS:
     if _s["id"] in BRIDGE_SHOTS:
