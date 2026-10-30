@@ -41,17 +41,30 @@ def print_marks(c, t, col=(0.93, 0.9, 0.83), a=0.7, sheet="", inks=(), margin=46
         _text(c, sheet, "mono", 14, W - margin - 330, H - margin + 9, col, a * 0.9, proportional=False)
 
 
+def _show_alpha(t, show):
+    """Opacity from song times (fade in from t_in0 to t_in1, out from t_out0 to t_out1; None: no fade there)."""
+    t_in0, t_in1, t_out0, t_out1 = show
+    a = 1.0
+    if t_in0 is not None:
+        a = min(a, max(0.0, min(1.0, (t - t_in0) / max(1e-3, t_in1 - t_in0))))
+    if t_out0 is not None:
+        a = min(a, max(0.0, min(1.0, (t_out1 - t) / max(1e-3, t_out1 - t_out0))))
+    return a
+
+
 def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ring", cx=W / 2, cy=H / 2, r=230,
-               at=0.0, panel="left", size=150, plate_title=True):
+               at=0.0, panel="left", size=150, plate_title=True, show=None):
     """The film title. mode 'ring': inside the opening ring; 'poster': full credits over the picture,
     coming up from shot fraction `at` (the end titles start once Rin has woken). `col` colours the big
     title; the credits always sit light on their dark plate, at the `panel` corner: "left" and "right" are
-    the lower corners, "top" is the upper left (for a close-up whose face fills the lower half)."""
+    the lower corners, "top" is the upper left (for a close-up whose face fills the lower half).
+    show=(t_in0, t_in1, t_out0, t_out1) in song seconds replaces the shot-fraction timing (a title that runs on
+    across a cut, or credits over part of a long shot)."""
     if mode == "ring":
-        a = max(0.0, min(1.0, (u - 0.45) / 0.25))
+        a = max(0.0, min(1.0, (u - 0.45) / 0.25)) if show is None else _show_alpha(t, show)
         blk = layout("炉心融解", "mincho_b", 74, vertical=True, tracking=0.18)
         for g in blk.glyphs:
-            k = max(0.0, min(1.0, (u - 0.45 - g.index * 0.06) / 0.2))
+            k = max(0.0, min(1.0, (u - 0.45 - g.index * 0.06) / 0.2)) if show is None else a
             m = glyph_matrix(g, dy=(1 - k) * -10)
             m.postTranslate(cx, cy - blk.height / 2)
             pth = skia.Path(g.path)
@@ -61,7 +74,10 @@ def title_card(c, t, u, col=(0.93, 0.9, 0.83), accent=(1.0, 0.83, 0.0), mode="ri
             _text(c, "MELTDOWN", "shoulders_l", 22, cx - 58, cy + r + 26, accent, a, tracking=0.6)
         return
     # poster: big vertical title right, credits left-bottom, thin rules
-    a = max(0.0, min(1.0, (u - at) * 3 / max(0.1, 1 - at))) * max(0.0, min(1.0, (1 - u) * 6))
+    if show is None:
+        a = max(0.0, min(1.0, (u - at) * 3 / max(0.1, 1 - at))) * max(0.0, min(1.0, (1 - u) * 6))
+    else:
+        a = _show_alpha(t, show)
     if a <= 0:
         return
     # the title and the credits each sit on a plate of the midnight ink, so they read over any picture

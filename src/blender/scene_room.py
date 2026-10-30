@@ -997,6 +997,12 @@ def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
     ground_cards(cards, shot.get("cards", []), cam=cam, frame=(f0 + f1) // 2)
     an = shot.get("anim", {})
     dur = (f1 + 1 - f0) / 24  # the rendered range (may run past the cut, see render_to)
+    if "exposure" in an:
+        # the camera's exposure in stops at song times (s, stops): S09 sees her room from outside exposed like the
+        # lit windows round hers, and settles to the room's night as the window fills the frame
+        for ts, ev in an["exposure"]:
+            sc.view_settings.exposure = ev
+            sc.view_settings.keyframe_insert("exposure", frame=ts * 24)
     if "lamp" in an:
         key_light(objs["ring_light"].data, [(u, v * LAMP_ENERGY) for u, v in an["lamp"]], f0, dur)
         tube = objs["ring"].data.materials[0]

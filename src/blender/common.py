@@ -383,11 +383,18 @@ class Shake:
 def bake_camera(sc, cam, frame_start, frame_end, fn):
     """fn(t_seconds_in_shot, frame) -> dict(pos, target, roll, lens, focus, fstop)."""
     cd = cam.data
+    prev = None
     for f in range(frame_start, frame_end + 1):
         t = (f - frame_start) / FPS
         s = fn(t, f)
         cam.location = s["pos"]
-        cam.rotation_euler = look_rotation(s["pos"], s["target"], s.get("roll", 0.0))
+        if "rot" in s:
+            # an explicit rotation (a path), kept compatible with the frame before so no axis flips between keys
+            e = s["rot"].to_euler("XYZ", prev) if prev is not None else s["rot"].to_euler("XYZ")
+            cam.rotation_euler = e
+            prev = e.copy()
+        else:
+            cam.rotation_euler = look_rotation(s["pos"], s["target"], s.get("roll", 0.0))
         cam.keyframe_insert("location", frame=f)
         cam.keyframe_insert("rotation_euler", frame=f)
         if "lens" in s:

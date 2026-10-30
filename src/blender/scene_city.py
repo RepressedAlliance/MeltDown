@@ -444,7 +444,203 @@ def reactor_facility(col, pos=REACTOR_POS, glow=(0.15, 0.6, 1.0), strength=10.0,
     return drum
 
 
-def build(sc, seed=11, lights=1.0, facility=True, window_strength=4.0):
+def _east_district(seed, keep_out):
+    """Low-rise blocks east of the city's last column (x 1504 to 2444), so the view toward her tower has a city
+    behind it instead of an empty field. Same parcels and heights as citygen._buildings (they fall off with the
+    distance from downtown: 12 to 40 m out here), its own seed so the rest of the city is untouched. Nothing here
+    is in the view from her window (south-west): x >= 1504 lies east of that view's edge."""
+    rnd = np.random.default_rng(seed)
+    out = []
+    pitch = BLOCK + STREET
+    for bx in range(16, 27):
+        for by in range(-3, 31):
+            cx, cy = bx * pitch, by * pitch - 120.0
+            if cy < -230:
+                continue
+            k = rnd.integers(1, 5)
+            parcels = [(cx, cy, BLOCK, BLOCK)]
+            for _ in range(k - 1):
+                x, y, w, h = parcels.pop(rnd.integers(len(parcels)))
+                if w > h:
+                    sp = rnd.uniform(0.35, 0.65) * w
+                    parcels += [(x - w / 2 + sp / 2, y, sp, h), (x + sp / 2, y, w - sp, h)]
+                else:
+                    sp = rnd.uniform(0.35, 0.65) * h
+                    parcels += [(x, y - h / 2 + sp / 2, w, sp), (x, y + sp / 2, w, h - sp)]
+            for (x, y, w, h) in parcels:
+                inset = rnd.uniform(2.0, 6.0)
+                w2, h2 = max(6.0, w - 2 * inset), max(6.0, h - 2 * inset)
+                d = math.hypot(x + 60.0, y - 420.0)
+                hgt = 12 + 190 * math.exp(-d / 520.0) * rnd.lognormal(0, 0.45) + rnd.uniform(0, 18)
+                if any(math.hypot(x - qx, y - qy) < rq for qx, qy, rq in keep_out):
+                    continue
+                out.append((x, y, w2, h2, hgt))
+    return out
+
+
+def her_block(col, rng):
+    """Her tower at the city's east edge, where the room's window plate was rendered from (flight.WIN_C), a few lower
+    buildings behind it and a low-rise district round it (_east_district). The tower's south-west and south-east faces
+    carry floor slabs and mullions with a grid of windows the size of hers (2.9 x 1.65 m, 3.6 m apart, 3.2 m floors),
+    lit ones with a sash bar and some with curtains or blinds. Hers is left bare: the compositor shows her room through
+    its outline (flight.WINDOW_CORNERS)."""
+    import flight as F
+    T, N, Z = F.T, F.N, Vector((0, 0, 1))
+    c = F.WIN_C
+    t0, t1, depth, top = -13.4, 19.6, 26.0, 186.0       # along the face (T), into the tower (-N), height
+    floor0 = c.z - 1.375                                 # her room's floor
+    # the faint cool glow of the city's sky on the walls and on the concrete edges of each floor: unlit, the last
+    # seconds before her window rendered pure black round it, and the room floated in a void
+    wall = mat_principled("TowerWall", (0.03, 0.032, 0.04), rough=0.6, spec=0.35, emission=(0.42, 0.46, 0.6),
+                          emission_strength=0.012)
+    concrete = mat_principled("TowerSlab", (0.11, 0.11, 0.12), rough=0.7, spec=0.3, emission=(0.55, 0.57, 0.65),
+                              emission_strength=0.035)
+
+    def box(name, center, ax_u, ax_v, su, sv, sz, mat, z0):
+        """A box with its sides along ax_u (length su) and ax_v (sv), height sz, base at z0."""
+        bm = bmesh.new()
+        pts = []
+        for zz in (z0, z0 + sz):
+            for du, dv in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+                v = Vector((center.x, center.y, 0.0)) + ax_u * (du * su / 2) + ax_v * (dv * sv / 2)
+                pts.append(bm.verts.new((v.x, v.y, zz)))
+        for f in ((0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)):
+            bm.faces.new([pts[i] for i in f])
+        me = bpy.data.meshes.new(name)
+        bm.to_mesh(me)
+        bm.free()
+        ob = link(bpy.data.objects.new(name, me), col)
+        assign(ob, mat)
+        return ob
+
+    box("HerTower", c + T * ((t0 + t1) / 2) - N * (depth / 2), T, N, t1 - t0, depth, top, wall, 0.0)
+    # floor slabs: a concrete edge at every floor on the two faces seen from the bay
+    for j in range(-46, 12):
+        z = floor0 + 3.2 * j
+        if not 3.0 < z < top - 3.0:
+            continue
+        box(f"SlabSW{j}", c + T * ((t0 + t1) / 2) + N * 0.18, T, N, t1 - t0 + 0.7, 0.36, 0.26, concrete, z - 0.26)
+        box(f"SlabSE{j}", c + T * (t0 - 0.18) - N * (depth / 2), T, N, 0.36, depth + 0.7, 0.26, concrete, z - 0.26)
+    # mullions between the windows (clear of hers, which spans -1.45 .. 1.45 along the face)
+    for k in range(-4, 6):
+        box(f"MullSW{k}", c + T * (3.6 * k + 1.8) + N * 0.06, T, N, 0.14, 0.12, top - 4.0, concrete, 2.0)
+    for k in range(0, 8):
+        box(f"MullSE{k}", c + T * (t0 - 0.06) - N * (3.6 * k + 1.8), T, N, 0.12, 0.14, top - 4.0, concrete, 2.0)
+    # windows: quads 2 cm proud of the faces, lit or dark per window. None over hers: the room shows through the
+    # outline of the opening on the face itself, and a quad in front of it (2 cm nearer the camera, so a little larger)
+    # left its lit edge round the room as a white frame
+    verts, faces, lit, hue = [], [], [], []
+    rows = [c.z + 3.2 * j for j in range(-45, 12) if 6.0 < c.z + 3.2 * j < top - 4.0]
+
+    def quad(center, along, w=2.9, h=1.65):
+        b0 = len(verts)
+        for du, dv in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+            v = center + along * (du * w / 2) + Z * (dv * h / 2)
+            verts.append((v.x, v.y, v.z))
+        faces.append((b0, b0 + 1, b0 + 2, b0 + 3))
+
+    for z in rows:
+        for k in range(-3, 6):
+            if k == 0 and abs(z - c.z) < 0.1:
+                continue
+            quad(c + T * (3.6 * k) + N * 0.02 + Z * (z - c.z), T)
+            lit.append(float(rng.random() < 0.38) * rng.uniform(0.45, 1.0))
+            hue.append(rng.random())
+        for k in range(0, 7):                               # the south-east face (toward -T)
+            quad(c + T * (t0 - 0.02) - N * (3.6 * k), -N)
+            lit.append(float(rng.random() < 0.3) * rng.uniform(0.45, 1.0))
+            hue.append(rng.random())
+    me = bpy.data.meshes.new("HerTowerWindows")
+    me.from_pydata(verts, [], faces)
+    kind = np.random.default_rng(41).random(len(faces))    # what hangs in each window (its own generator: the rest
+    for nm, arr in (("wlit", lit), ("whue", hue), ("wkind", kind)):     # of the city keeps its random sequence)
+        at = me.attributes.new(nm, "FLOAT", "FACE")
+        at.data.foreach_set("value", list(arr))
+    uv = me.uv_layers.new(name="UVMap")                     # 0..1 across each window, for the sash and curtains
+    uv.data.foreach_set("uv", [x for _ in faces for corner in ((0, 0), (1, 0), (1, 1), (0, 1)) for x in corner])
+    me.update()
+    win = link(bpy.data.objects.new("HerTowerWindows", me), col)
+    m = bpy.data.materials.new("TowerWindows")
+    nt = node_tree(m)
+    Nn, L = nt.nodes, nt.links
+    pr = Nn.get("Principled BSDF")
+    pr.inputs["Base Color"].default_value = (0.012, 0.014, 0.02, 1)
+    pr.inputs["Roughness"].default_value = 0.15
+    al = Nn.new("ShaderNodeAttribute")
+    al.attribute_type, al.attribute_name = "GEOMETRY", "wlit"
+    ah = Nn.new("ShaderNodeAttribute")
+    ah.attribute_type, ah.attribute_name = "GEOMETRY", "whue"
+    ramp = Nn.new("ShaderNodeValToRGB")
+    els = ramp.color_ramp.elements
+    els[0].position, els[0].color = 0.0, (1.0, 0.62, 0.32, 1)
+    els[1].position, els[1].color = 0.55, (1.0, 0.82, 0.55, 1)
+    e = els.new(0.8)
+    e.color = (0.85, 0.92, 1.0, 1)
+    ramp.color_ramp.interpolation = "CONSTANT"
+    L.new(ah.outputs["Fac"], ramp.inputs["Fac"])
+    L.new(ramp.outputs["Color"], pr.inputs["Emission Color"])
+    mul = Nn.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    L.new(al.outputs["Fac"], mul.inputs[0])
+    mul.inputs[1].default_value = 2.6                       # up close the city's 4.0 bloomed into glowing blocks
+
+    def op(kind_, a, b=None, c3=None):
+        n = Nn.new("ShaderNodeMath")
+        n.operation = kind_
+        for i, x in enumerate((a, b, c3)):
+            if isinstance(x, (int, float)):
+                n.inputs[i].default_value = x
+            elif x is not None:
+                L.new(x, n.inputs[i])
+        return n.outputs[0]
+
+    # up close the lit windows were blank glowing blocks: each gets the sash bar down its middle, a ceiling light that
+    # falls off toward the sill, and by its wkind a curtain drawn part way across from one side (35%) or blinds (17%)
+    ak = Nn.new("ShaderNodeAttribute")
+    ak.attribute_type, ak.attribute_name = "GEOMETRY", "wkind"
+    sep = Nn.new("ShaderNodeSeparateXYZ")
+    L.new(Nn.new("ShaderNodeTexCoord").outputs["UV"], sep.inputs[0])
+    u, v, kd = sep.outputs[0], sep.outputs[1], ak.outputs["Fac"]
+    f_bar = op("MULTIPLY_ADD", op("LESS_THAN", op("ABSOLUTE", op("SUBTRACT", u, 0.5)), 0.012), -0.85, 1.0)
+    u_side = op("MULTIPLY_ADD", op("LESS_THAN", kd, 0.17), op("MULTIPLY_ADD", u, -2.0, 1.0), u)
+    edge = op("MULTIPLY_ADD", op("FRACT", op("MULTIPLY", kd, 7.3)), 0.38, 0.58)
+    f_cur = op("MULTIPLY_ADD", op("MULTIPLY", op("LESS_THAN", kd, 0.35), op("GREATER_THAN", u_side, edge)), -0.72, 1.0)
+    blinds = op("MULTIPLY", op("GREATER_THAN", kd, 0.35), op("LESS_THAN", kd, 0.52))
+    slats = op("GREATER_THAN", op("SINE", op("MULTIPLY", v, 56.5)), 0.25)
+    f_bl = op("MULTIPLY_ADD", op("MULTIPLY", blinds, slats), -0.6, 1.0)
+    pattern = op("MULTIPLY", op("MULTIPLY", f_bar, f_cur), op("MULTIPLY", f_bl, op("MULTIPLY_ADD", v, 0.35, 0.75)))
+    L.new(op("MULTIPLY", mul.outputs[0], pattern), pr.inputs["Emission Strength"])
+    assign(win, m)
+    # red aviation lights on the roof corners
+    red = blink_material("TowerRed", (1.0, 0.04, 0.02), period=1.6, strength=30.0)
+    corners = [c + T * a2 - N * b2 for a2, b2 in ((t0, 0.0), (t1, 0.0), (t1, depth), (t0, depth))]
+    assign(_point_cloud_cubes("TowerRoofLights", [(v.x, v.y, top + 1.2) for v in corners], 1.4, col), red)
+    # lower buildings behind it (north-east) and the low-rise district round it, in the city's own facade
+    behind = []
+    for a2, b2, w, d, h in ((-38.0, 34.0, 30.0, 40.0, 58.0), (34.0, 48.0, 40.0, 30.0, 40.0),
+                            (-6.0, 74.0, 52.0, 38.0, 74.0), (62.0, 14.0, 30.0, 30.0, 27.0),
+                            (-70.0, 80.0, 36.0, 44.0, 46.0), (24.0, 110.0, 44.0, 34.0, 33.0)):
+        v = c + T * a2 - N * b2
+        behind.append((v.x, v.y, w, d, h))
+    tower_xy = c + T * ((t0 + t1) / 2) - N * (depth / 2)
+    east = _east_district(29, [(tower_xy.x, tower_xy.y, 70.0)] + [(x, y, 34.0) for x, y, _, _, _ in behind])
+    city = _box_mesh("HerBlock", behind + east, rng, col)
+    assign(city, bpy.data.materials["Facade"])
+    # street lamps through the new district
+    pitch = BLOCK + STREET
+    lamps = []
+    for bx in range(17, 27):
+        for by in range(-2, 31):
+            x, y = bx * pitch - pitch / 2, by * pitch - 120.0
+            if y < -230 or rng.random() > 0.85:
+                continue
+            lamps.append((x + pitch / 2 + rng.uniform(-4, 4), y + rng.uniform(-40, 40), 7.0))
+            lamps.append((x + rng.uniform(-30, 30), y + pitch / 2, 7.0))
+    assign(_point_cloud_cubes("EastLamps", lamps, 1.4, col), bpy.data.materials["Sodium"])
+    return win
+
+
+def build(sc, seed=11, lights=1.0, facility=True, window_strength=4.0, her_tower=False):
     col = collection("City")
     rng = np.random.default_rng(seed)
     boxes = _buildings(seed)
@@ -508,6 +704,8 @@ def build(sc, seed=11, lights=1.0, facility=True, window_strength=4.0):
 
     if facility:
         reactor_facility(col)
+    if her_tower:
+        her_block(col, rng)
     return col
 
 
@@ -571,7 +769,7 @@ def build_shot(sc, shot):
     else:
         sky_world(sc)
     build(sc, lights=st.get("lights", 1.0), window_strength=st.get("window_strength", 4.0),
-          facility=st.get("facility", True))
+          facility=st.get("facility", True), her_tower=st.get("her_tower", False))
     comp = dict(bloom=0.55, bloom_threshold=0.8, streaks=0.12, dispersion=0.006,
                 mist_color=(0.03, 0.026, 0.04), mist_amount=0.85)
     comp.update(st.get("comp", {}))
@@ -592,6 +790,13 @@ def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
         key_socket(nt.nodes["city_lights"].outputs[0], an["city_lights"], f0, dur)
     if "window_strength" in an:
         key_socket(nt.nodes["window_strength"].outputs[0], an["window_strength"], f0, dur)
+    if "facility_core" in an:
+        # the light inside the drum alone: dim while the ring above it stands for the title ring
+        m = bpy.data.materials.get("FacilityCoreGlow")
+        if m:
+            em = m.node_tree.nodes.get("Emission")
+            base = em.inputs["Strength"].default_value
+            key_socket(em.inputs["Strength"], [(u, base * v) for u, v in an["facility_core"]], f0, dur)
     if "facility" in an:
         for nm in ("FacilityGlow", "FacilityGlowLow", "FacilityCoreGlow"):
             m = bpy.data.materials.get(nm)

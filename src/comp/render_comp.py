@@ -7,6 +7,7 @@ lyrics + HUD overlay (with glow) -> cut transitions -> film finishing.
 Frames stream straight into ffmpeg; the song is muxed in at the end.
 """
 import argparse
+import json
 import math
 import os
 import subprocess
@@ -311,7 +312,7 @@ def sparks(img, t, fx, u):
     return radial_glow(img, x0, y0, 420, (1.0, 0.55, 0.2), 0.5 * flash)
 
 
-_MEM_SOURCES = ["S05", "S09", "S11", "S17", "S30", "S35", "S16", "S32"]   # also in tools/stale_segments.py
+_MEM_SOURCES = ["S10", "S15", "S11", "S17", "S30", "S35", "S16", "S32"]   # also in tools/stale_segments.py
 
 
 def memories(img, t, u, shot):
@@ -529,7 +530,8 @@ def lyrics_overlay(t, shot):
         hud.draw(c, t, **hud_cfg)
     u = (t - shot["t0"]) / max(1e-6, shot["t1"] - shot["t0"])
     if shot.get("title"):
-        layout2d.title_card(c, t, u, **shot["title"])
+        for spec in (shot["title"] if isinstance(shot["title"], list) else [shot["title"]]):
+            layout2d.title_card(c, t, u, **spec)
     for st_spec in shot.get("stamps", []):
         layout2d.stamp(c, t, u, **st_spec)
     if shot.get("marks"):
@@ -745,6 +747,35 @@ def cross_blend(img, f, t, shot, prev_shot, preview):
     return out
 
 
+_portal_cache = {}
+
+
+def portal_blend(img, f, t, shot, prev_shot, preview):
+    """This shot (her room) seen through her window in the shot before (the city, rendered on past its cut along the
+    same camera path, flight.py): the city's frame everywhere but inside the window's outline as projected for this
+    frame (render_shot.write_portal). Once the camera is at or through the window, only the room. The outline fades
+    in over the first half second, while her window is still a few pixels across: the dark opening in the city
+    lights up with the room behind it."""
+    key = prev_shot["id"]
+    if key not in _portal_cache:
+        pj = ROOT / "work" / "render" / key / "portal.json"
+        _portal_cache[key] = ({int(k): v for k, v in json.loads(pj.read_text(encoding="utf-8")).items()}
+                              if pj.exists() else {})
+    quad = _portal_cache[key].get(f)
+    if quad is None or any(c[2] <= 0.02 for c in quad):
+        return img
+    pts = np.array([[c[0] * W, (1.0 - c[1]) * H] for c in quad], np.float64)
+    pts = np.clip(pts, -60000, 60000)
+    mask = np.zeros((H, W), np.uint8)
+    cv2.fillPoly(mask, [np.round(pts * 16).astype(np.int32)], 255, lineType=cv2.LINE_AA, shift=4)
+    m = mask.astype(np.float32)[..., None] / 255.0
+    if m.min() > 0.999:
+        return img
+    m = m * min(1.0, max(0.0, (t - shot["t0"]) / 0.5))
+    old = render_frame([prev_shot], f, preview, raw=True)
+    return old * (1 - m) + img * m
+
+
 def transition(img, t, shot, prev_shot):
     """Flash, and fades through white or black. With out_anchor the fade-out starts at that point and spreads
     (a light growing out of the reactor, a spark), with in_anchor the next picture comes out of the white or
@@ -948,6 +979,8 @@ def render_frame(shots, f, preview, raw=False):
         img = iris_blend(img, t, shot, prev_shot, preview)
     elif shot.get("in") in ("dissolve", "zoom"):
         img = cross_blend(img, f, t, shot, prev_shot, preview)
+    elif shot.get("in") == "portal":
+        img = portal_blend(img, f, t, shot, prev_shot, preview)
     nxt = shots[idx + 1] if idx + 1 < len(shots) else None
     if nxt is not None and nxt.get("in") == "zoom":
         img = pre_push(img, t, nxt)

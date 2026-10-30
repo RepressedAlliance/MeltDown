@@ -45,13 +45,21 @@ def main():
             if not m or m.group(1).strip():
                 print("STAGE1_FAILED", m.group(1) if m else "no DRIVE_DONE", flush=True)
                 return 2
-        # guard against silent GPU failures: re-rendered frames must not be pure black
+        # guard against silent GPU failures: re-rendered frames must not be pure black. Only this version's frames
+        # (as render_comp.render_range): an older, longer version of a shot leaves frames past its end in the folder
         import numpy as np
         from PIL import Image
+        sys.path.insert(0, str(ROOT / "src"))
+        import storyboard
+        span = {s["id"]: (round(s["t0"] * 24), round((max(s["t1"], s.get("render_to", 0.0)) + s.get("tail", 0.0)) * 24) - 1)
+                for s in storyboard.resolved()}
         bad = {}
         for sid in shots + tails:
             d = ROOT / "work" / "render" / sid
+            lo, hi = span.get(sid, (0, 10 ** 6))
             for f in sorted(d.glob("*.jpg")):
+                if not (f.stem.isdigit() and lo <= int(f.stem) <= hi):
+                    continue
                 if np.asarray(Image.open(f).convert("L").reduce(16)).mean() < 0.5 and sid not in ("S54",):
                     bad.setdefault(sid, []).append(f.stem)
         if bad:

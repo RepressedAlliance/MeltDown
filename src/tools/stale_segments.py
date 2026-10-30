@@ -17,7 +17,7 @@ import storyboard  # noqa: E402
 
 FPS = 24
 # the shots whose frames the "memories" effect floats through the picture (src/comp/render_comp.py)
-MEMORY_SOURCES = ["S05", "S09", "S11", "S17", "S30", "S35", "S16", "S32"]
+MEMORY_SOURCES = ["S10", "S15", "S11", "S17", "S30", "S35", "S16", "S32"]
 
 
 def newest(shot_id):

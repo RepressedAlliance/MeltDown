@@ -36,6 +36,19 @@ def _keys_abs(keys, t0, dur):
 def setup_camera(sc, shot, t0, dur, f0, f1):
     cam_spec = shot["cam"]
     cam = common.make_camera(sc, lens=cam_spec.get("lens", 35), clip=tuple(cam_spec.get("clip", (0.05, 12000))))
+    if cam_spec.get("path"):
+        # a path in song time shared by several shots (flight.py): the city shot flies it as it is, the room shot
+        # the same move mapped into the room through her window
+        import flight
+        path = flight.PATHS[cam_spec["path"]]
+
+        def fn_path(t, f):
+            p, q, lens = path(f / FPS)
+            if cam_spec.get("frame") == "room":
+                p, q = flight.to_room(p, q)
+            return {"pos": p, "rot": q, "lens": lens}
+        bake_camera(sc, cam, f0 - 1, f1 + 1, fn_path)
+        return cam
     keys = _keys_abs(cam_spec["keys"], t0, dur)
     kind = cam_spec.get("ease", "inout")
     pos_k = [(k[0], Vector(k[1]), kind) for k in keys]
@@ -128,6 +141,24 @@ def render_shot_constant(action):
         if "blink" in fc.data_path:
             for kp in fc.keyframe_points:
                 kp.interpolation = "CONSTANT"
+
+
+def write_portal(sc, cam, shot, f0, f1):
+    """Her window's outline in this shot's frames (normalized view coordinates, y up, and depth), for the
+    compositor to show the room through it: work/render/<id>/portal.json."""
+    import json
+    from bpy_extras.object_utils import world_to_camera_view
+    import flight
+    corners = getattr(flight, shot["portal"])
+    keep = sc.frame_current
+    out = {}
+    for f in range(f0, f1 + 1):
+        sc.frame_set(f)
+        out[f] = [list(world_to_camera_view(sc, cam, c)) for c in corners]
+    sc.frame_set(keep)
+    d = common.ROOT / "work" / "render" / shot["id"]
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "portal.json").write_text(json.dumps(out), encoding="utf-8")
 
 
 def stop_motion(sc, shot, cards):
@@ -282,6 +313,8 @@ def prepare(shot_id, preview=False, pct=None, samples=None):
     if hasattr(mod, "animate"):
         mod.animate(sc, objs, shot, f0, f1, cards=cards, cam=cam)
     stop_motion(sc, shot, cards)
+    if shot.get("portal"):
+        write_portal(sc, cam, shot, f0, f1)
     if "comp_blender" in shot:
         common.setup_compositor(sc, **shot["comp_blender"])
     return sc, shot, f0, f1

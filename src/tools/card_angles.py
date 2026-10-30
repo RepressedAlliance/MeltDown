@@ -95,6 +95,10 @@ def main():
     for s in storyboard.resolved():
         if not s.get("cards") or not s.get("cam"):
             continue
+        if s["cam"].get("path"):
+            # a camera on one of flight.py's paths needs Blender's mathutils: judge its cards on the frames
+            print(f"{s['id']:5s} camera on the path {s['cam']['path']!r}: not measured here, look at the frames")
+            continue
         for spec in s["cards"]:
             if spec.get("shadow_only"):
                 continue
