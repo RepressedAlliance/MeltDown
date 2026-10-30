@@ -1015,7 +1015,7 @@ def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
         key_socket(nt.nodes["static"].outputs[0], an["crt_static"], f0, dur)
     if "glow" in an:
         # a warm light where her stomach burns (S16): it moves with her drawings (song-time positions) and
-        # flares on beats 1 and 3, lighting the floor around her
+        # flares on the band's hits (timeline.accents), lighting the floor around her
         import timeline as TL
         g = an["glow"]
         ld = bpy.data.lights.new("BellyGlow", "POINT")
@@ -1027,7 +1027,7 @@ def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
             lo.location = pos
             lo.keyframe_insert("location", frame=(math.ceil(t * 24 - 1e-6) - 0.5) if t > 0 else f0 - 2)
         base, peak = g.get("base", 3.0), g.get("peak", 12.0)
-        beats = [b for b in TL.BEATS[::2] if shot["t0"] - 0.8 <= b <= shot["t1"] + 0.8]
+        beats = TL.accents(shot["t0"] - 0.8, shot["t1"] + 0.8)
         ld.energy = base
         ld.keyframe_insert("energy", frame=f0 - 2)
         for b, nxt in zip(beats, beats[1:] + [beats[-1] + 0.8]):
@@ -1061,13 +1061,13 @@ def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
         sec = objs["clock"]["Second"]
         t0s, t1s = shot["t0"], shot["t1"]
         ticks = [b for b in TL.BEATS if t0s - 1 <= b <= t1s + 1]
-        # the clock hangs on the wall facing -x: seen from the room, +x rotation steps the hand clockwise (the
-        # minus sign it had ran the second hand backwards in every cut up to the tenth)
+        # the second hand steps BACKWARDS, on purpose: in the bridge time runs back (she longs to sleep "as before").
+        # The eleventh cut turned it clockwise as a fix and the director asked for it back: keep it so
         for k, b in enumerate(ticks):
             fb = b * 24
-            sec.rotation_euler = (math.radians(6 * k), 0, 0)
+            sec.rotation_euler = (math.radians(-6 * k), 0, 0)
             sec.keyframe_insert("rotation_euler", index=0, frame=fb)
-            sec.rotation_euler = (math.radians(6 * (k + 1)), 0, 0)
+            sec.rotation_euler = (math.radians(-6 * (k + 1)), 0, 0)
             sec.keyframe_insert("rotation_euler", index=0, frame=fb + 1.5)
     if "window_light" in an:
         wl = bpy.data.objects.get("WindowLight")

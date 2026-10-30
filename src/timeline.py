@@ -80,6 +80,21 @@ def beats_between(t0, t1):
     return [b for b in BEATS if t0 <= b < t1]
 
 
+def accents(t0, t1, thr=0.45, gap=0.3):
+    """The audible hits between t0 and t1 (song seconds): peaks of the onset envelope at or above thr, at least
+    gap seconds apart (of two closer ones the stronger is kept). This song's accents are often off the beat (on
+    the "and" of 1 or of 3), so an action meant to land with what is heard follows these, not the beat grid."""
+    on = _audio["env"]["onset"]
+    fps = _audio["fps"]
+    peaks = [(f / fps, on[f]) for f in range(max(1, int(t0 * fps)), min(len(on) - 1, int(t1 * fps) + 1))
+             if on[f] >= thr and on[f] >= on[f - 1] and on[f] >= on[f + 1] and t0 <= f / fps < t1]
+    kept = []
+    for t, v in sorted(peaks, key=lambda p: -p[1]):
+        if all(abs(t - k) >= gap for k, _ in kept):
+            kept.append((t, v))
+    return sorted(t for t, _ in kept)
+
+
 def frame(t):
     return int(round(t * FPS))
 

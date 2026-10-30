@@ -267,10 +267,9 @@ def static(t, u, **kw):
     pw, ph = 1300, 975
     pose = kw.get("pose", "rin_tv_host")
     if kw.get("wave"):
-        # the host waves on the beat: her two drawings take turns, a change on every beat
+        # the host waves: her two drawings take turns at the given song times (storyboard WAVE: the music's hits)
         import bisect
-        from timeline import BEATS
-        if bisect.bisect_right(BEATS, t) % 2:
+        if bisect.bisect_right(kw["wave"], t + 0.5 / 24) % 2:
             pose = "rin_tv_host_wave"
     pic = rin_picture(pose, pw, ph)
     full = np.zeros((H, W), np.float32)
@@ -353,15 +352,10 @@ def tinnitus(t, u, pose="rin_ears_covered", close=False, scale=None, cx=None, cy
     # sized so her bow and elbows stay inside the frame (a drawing of its own gives its own placement)
     s0, x0, y0 = (1.15, W * 0.68, H * 0.64) if not close else (1.45, W * 0.6, H * 0.8)
     if flinch:
-        # she flinches on beats 1 and 3: the other drawing of the pose (src/char/variant.py) for three frames from
-        # the frame each beat falls in, as the 3D stop-motion swaps do
-        import bisect
-        from timeline import BEATS
-        half = BEATS[::2]
-        f = int(round(t * 24))
-        j = bisect.bisect_right(half, (f + 0.5) / 24) - 1
-        if j >= 0 and 0 <= f - math.ceil(half[j] * 24 - 1e-6) < 3:
-            pose = flinch
+        # (drawing, song time): she flinches once, into the other drawing of the pose (src/char/variant.py), from the
+        # frame the hit falls in, and stays so
+        if int(round(t * 24)) >= math.ceil(flinch[1] * 24 - 1e-6):
+            pose = flinch[0]
     scale, cx, cy = scale or s0, cx or x0, cy or y0
     base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=scale, cx=cx, cy=cy,
                 duotone=((0.03, 0.0, 0.01), (1.0, 0.16, 0.12)))
@@ -498,7 +492,7 @@ WALL_POSES = ["rin_laugh", "rin_laugh_clap", "rin_tv_host", "rin_laugh", "rin_la
               "rin_laugh", "rin_tv_host", "rin_laugh_clap", "rin_eye_macro"]
 
 
-def tv_wall(t, u, cols=5, rows=4, **kw):
+def tv_wall(t, u, cols=5, rows=4, wave=(), **kw):
     """A wall of small CRTs, every channel showing Rin (a different moment of the film on each), each
     with its own reception, rolling bar and scanlines; the whole wall flares on the snares like a
     laugh track."""
@@ -510,7 +504,7 @@ def tv_wall(t, u, cols=5, rows=4, **kw):
     hits = [s for s in TL._audio.get("snares", []) if 0 <= t - s < 0.4]
     laugh = 0.35 * math.exp(-(t - max(hits)) * 9) if hits else 0.0
     import bisect
-    beat = bisect.bisect_right(TL.BEATS, t)
+    waved = bisect.bisect_right(wave, t + 0.5 / 24) % 2
     for r in range(rows):
         for c in range(cols):
             k = r * cols + c
@@ -521,8 +515,8 @@ def tv_wall(t, u, cols=5, rows=4, **kw):
             snow = cv2.resize(noise, (w, h), interpolation=cv2.INTER_NEAREST) * 0.55
             g = _signal(t, k, base=0.7)
             pose = WALL_POSES[(k * 3 + r) % len(WALL_POSES)]
-            if pose == "rin_tv_host" and beat % 2:
-                pose = "rin_tv_host_wave"          # the hosts on the wall wave on the beat, as on the room's TV
+            if pose == "rin_tv_host" and waved:
+                pose = "rin_tv_host_wave"          # the hosts on the wall wave on the wall's hits (storyboard)
             pic = rin_picture(pose, w, h, flip=(k % 3 == 1))
             scr = snow * (1 - 0.85 * g) + pic * g
             phase = (t * (0.6 + 0.13 * k) + k * 0.37) % 1.0

@@ -9,7 +9,7 @@ Lyric typography is assigned per line in LYRIC_STYLES (independent of cuts).
 """
 import math
 
-from timeline import BEATS, DOWNBEATS, DURATION, L, LINES, Le, Ln, beat_near, greet, on_grid
+from timeline import BEAT, BEATS, DOWNBEATS, DURATION, L, LINES, Le, Ln, accents, beat_near, greet, on_grid
 
 # ---------------------------------------------------------------- shared looks
 
@@ -83,9 +83,10 @@ def bar(n):
 
 
 def pulse_keys(t0, t1, lo, hi, decay=0.3):
-    """Card colour keys (song time) that flare to `hi` on beats 1 and 3 and die back to `lo`: a heartbeat."""
+    """Card colour keys (song time) that flare to `hi` on the music's audible hits (timeline.accents) and die back
+    to `lo`: a heartbeat that follows the band, which here hits on the "and" of 1 as often as on the beat."""
     keys = [(("t", 0.0), lo)]
-    beats = [b for b in BEATS[::2] if t0 - 0.05 <= b < t1]
+    beats = accents(t0, t1)
     for b, nxt in zip(beats, beats[1:] + [t1]):
         keys += [(("t", swap_at(b)), hi), (("t", b + decay), lo), (("t", max(b + decay, nxt - 1.0 / 24)), lo)]
     return keys
@@ -94,6 +95,15 @@ def pulse_keys(t0, t1, lo, hi, decay=0.3):
 def swap_at(t):
     """A song time moved to the middle of the frame gap before it, where a stop-motion change falls."""
     return (math.ceil(t * 24 - 1e-6) - 0.5) / 24
+
+
+def alternate(edges, n=2):
+    """The `on` intervals of n drawings that take turns at the song times `edges`: the k-th is on from every edge
+    whose index is k mod n to the next edge (the last one to the end of the song), so at every moment one of them
+    is on. (Pairing the edges with zip dropped the last turn whenever their number was odd: in the twelfth cut's
+    first render Rin vanished from her pin in S43 for its last second. pose_audit.py checks every shot for this.)"""
+    ends = list(edges[1:]) + [DURATION]
+    return [[(a, b) for i, (a, b) in enumerate(zip(edges, ends)) if i % n == k] for k in range(n)]
 
 
 # the title ring starts at r 150 and grows at PUSH: r 333 at the cut, the ring lamp's size in S01's first frame
@@ -184,20 +194,20 @@ S("S13", lambda: L(3) - 0.2, scene="city", finish=NIGHT, fx=[{"type": "strobe", 
            ease="in", shake=(0.5, 0.4, 2.0)))
 
 # ================================================================ A2
-STRIKES = [swap_at(b) for b in BEATS[::2] if 42.5 <= b < 45.3]     # the downbeat of 0:42.52 is the cut
+STRIKE = swap_at(44.0)     # the accent on the downbeat where the word for "lighter" begins
 S("S14", lambda: L(4) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   cam=dict(keys=[(0, (2.3, 1.3, 1.02), (2.75, 1.85, 0.97), 55), (1, (2.36, 1.38, 1.02), (2.75, 1.85, 0.97), 60)],
            fstop=2.0),
-  # the line about a lighter out of oil: her thumb strikes the wheel on beats 1 and 3 (a second drawing of the
-  # same hand with the thumb rolled down onto the lever, src/char/variant.py, in for three frames), sparks fly
-  # from the hood every time, and it never lights
+  # the line about a lighter out of oil: her thumb strikes the wheel once, on the accent where the word "lighter"
+  # is sung (a second drawing of the same hand with the thumb rolled down onto the lever, src/char/variant.py);
+  # sparks fly from the hood and it does not light, and her thumb stays down. Struck on every other beat it read
+  # as a loop, not a try (the director: "反复播放不自然")
   cards=[dict(pose=pose, h=0.32, loc=(2.75, 1.86, 0.76), rot=(90, 0, 0), face_cam=True, motion=None, on=on,
               props=dict(key_dir=(0.5, 0.5, 0.6), key_col=(0.35, 0.3, 0.3), amb_col=(0.1, 0.1, 0.14),
                          rim_dir=(0, 1, 0), rim_col=(1.0, 0.55, 0.25), exposure=1.0))
-         for pose, on in (("rin_lighter_hand", list(zip([0.0] + [b + 3 / 24 for b in STRIKES], STRIKES + [DURATION]))),
-                          ("rin_lighter_strike", [(b, b + 3 / 24) for b in STRIKES]))],
+         for pose, on in (("rin_lighter_hand", [(0.0, STRIKE)]), ("rin_lighter_strike", [(STRIKE, DURATION)]))],
   # spark origin tracked from the render: the opening of the lighter hood, above the flint wheel
-  fx=[{"type": "sparks", "angles": (-2.0, -0.35), "hits": STRIKES,
+  fx=[{"type": "sparks", "angles": (-2.0, -0.35), "hits": [STRIKE],
        "x": [(0.0, 1300), (0.2, 1302), (0.3, 1308), (0.4, 1320), (0.5, 1340), (0.6, 1364), (0.7, 1378),
              (0.8, 1387), (0.9, 1390), (1.0, 1391)],
        "y": [(0.0, 316), (0.1, 312), (0.2, 308), (0.3, 303), (0.4, 296), (0.5, 284), (0.6, 272), (0.7, 266),
@@ -226,14 +236,17 @@ S("S15b", lambda: L(5) + 1.25, bg="chest_core",
 # the lines wishing it had all been a lie: the burning in her stomach takes her down, a bar at a time, as stop-
 # motion (three drawings: doubled over, on her knees, curled up on the floor), the whole of her in the dark room
 # with the city behind her. The ring the diagram (S15b) showed in her stomach glows there, a warm light on the
-# floor that beats on 1 and 3 (anim glow). The camera sinks with her. Card heights keep her head one size across
-# the three drawings; each stands with its lowest line on the floor and a soft blot under it (floor_blot).
+# floor that flares on the band's hits (anim glow, timeline.accents). She goes down on the two strongest hits,
+# both on the "and" of 1 (the downbeats here are soft; the first cut put the changes on them and they fell between
+# what is heard). The camera sinks with her. Card heights keep her head one size across the three drawings; each
+# stands with its lowest line on the floor and a soft blot under it (floor_blot).
 # brighter than the room around her: in the night print a card at 1.05 went as dark as the window behind her,
 # her face and hair a silhouette (the "half hidden" figure this shot replaces)
 SINK_LIGHT = dict(key_dir=(0.4, -0.6, 0.6), key_col=(0.75, 0.42, 0.22), amb_col=(0.22, 0.2, 0.26),
                   rim_dir=(-0.2, 1.0, 0.3), rim_col=(0.35, 0.48, 0.95), exposure=1.4)
-SINK = [("rin_double_over", 1.46, 1.92, 0.0, bar(34)), ("rin_sink_kneel", 0.83, 1.84, bar(34), bar(35)),
-        ("rin_curl_floor", 0.81, 1.78, bar(35), DURATION)]
+KNEEL, CURL = swap_at(50.0), swap_at(51.458)
+SINK = [("rin_double_over", 1.46, 1.92, 0.0, KNEEL), ("rin_sink_kneel", 0.83, 1.84, KNEEL, CURL),
+        ("rin_curl_floor", 0.81, 1.78, CURL, DURATION)]
 S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT,
   # the aim starts at rest (drift 0) and sinks with her, so while she stands her bow keeps its margin under the
   # top edge (frame_check: bow at most 0.88 of the half-height, the curled figure inside 0.6 of the width)
@@ -243,7 +256,7 @@ S("S16", lambda: L(6) - 0.2, scene="room", setup=dict(tod="night"), finish=NIGHT
               contact=dict(kind="floor"), props=dict(SINK_LIGHT),
               keys={"key_col": pulse_keys(max(t_a, 47.9), min(t_b, 54.4), (0.75, 0.42, 0.22), (1.1, 0.62, 0.32))})
          for pose, h, x, t_a, t_b in SINK],
-  anim=dict(glow=dict(at=[(0.0, (1.86, 2.05, 0.82)), (bar(34), (1.78, 2.05, 0.36)), (bar(35), (1.76, 2.05, 0.22))],
+  anim=dict(glow=dict(at=[(0.0, (1.86, 2.05, 0.82)), (KNEEL, (1.78, 2.05, 0.36)), (CURL, (1.76, 2.05, 0.22))],
                       color=(1.0, 0.45, 0.16), base=3.0, peak=14.0)),
   fx=[{"type": "heat", "amount": 1.5}])
 
@@ -461,22 +474,23 @@ S("S42b", 160.4, scene="core", setup=dict(mood="white", exterior=True), finish=W
 # push ends 2.5 m from her, two fifths of the frame high: stopping at 3.5 m left her a grey speck on the hub
 # once the bridge's halftone printed her.
 # A small Rin on a pin that stands still through the hub of the great gear: she sits on its cap, and from the
-# second bar her feet swing to the half-time pulse (two drawings of the pose, src/char/variant.py, one foot forward
-# then the other, a change every other beat) over the gear that turns beneath them. The machine of time is giant,
+# second bar her feet swing with the groove (two drawings of the pose, src/char/variant.py, one foot forward then
+# the other), on the bridge's two hits in every bar, beat 1 and the "and" of 3: an uneven swing that is the
+# music's own (on beats 1 and 3 it ran a metronome beside it) over the gear that turns beneath them. The machine of time is giant,
 # and she is the one still point in it, killing time. The card stands just in front of the cap's edge, so her legs
 # hang in front of it. Brighter than the steel: the bridge prints in grey, and at 1.0 she printed as the same
 # mid-grey as the gears. The camera looks down on her at 25-28 degrees: the card is lengthened 1.117x
 # (1 / cos 26.5) so she is not squat, and set 1 cm lower so her seat (45 % up the drawing) stays on the cap
-_SWING = [b for b in BEATS[::2] if 166.15 <= b < 173.5]
+_SWING = sorted(swap_at(d + o) for d in DOWNBEATS if 166.1 <= d < 172.9 for o in (0.0, 2.5 * BEAT)
+                if d + o < 172.85)
 _DANGLE = dict(h=0.2, loc=(0.032, -0.095, 0.0955), rot=(90, 0, 0), face_cam=True, stretch=1.117, motion=None,
                props=dict(key_dir=(-0.8, -0.2, 0.5), key_col=(0.9, 0.38, 0.28), amb_col=(0.14, 0.15, 0.18),
                           rim_dir=(0.9, 0.2, 0.3), rim_col=(0.55, 0.65, 0.9), exposure=1.35))
 S("S43", 164.72, scene="gears", setup=dict(mood="steel", stud=(0.0, 0.0, 0.2)), finish=MONO,
   cam=dict(keys=[(0, (1.4, -3.6, 2.2), (0.2, 0.0, 0.0), 60), (1, (0.645, -2.29, 1.255), (0.03, -0.095, 0.22), 100)],
            fstop=2.8),
-  cards=[dict(pose="rin_sit_dangle", on=[(0.0, _SWING[0])], **_DANGLE),
-         dict(pose="rin_sit_dangle_a", on=list(zip(_SWING[0::2], _SWING[1::2])), **_DANGLE),
-         dict(pose="rin_sit_dangle_b", on=list(zip(_SWING[1::2], _SWING[2::2] + [DURATION])), **_DANGLE)])
+  cards=[dict(pose="rin_sit_dangle", on=[(0.0, _SWING[0])], **_DANGLE)]
+  + [dict(pose=pose, on=on, **_DANGLE) for pose, on in zip(("rin_sit_dangle_a", "rin_sit_dangle_b"), alternate(_SWING))])
 # the room is dimmed to the TV's glow (window_light): in the grey print her light hair went the same grey as
 # the lit wall behind her
 S("S43c", 172.91, scene="room", setup=dict(tod="night", lamp=False, rake=True, window_light=0.45), finish=MONO,
@@ -505,14 +519,16 @@ S("S43b", 186.0, scene="room", setup=dict(tod="night", lamp=False), finish=MONO,
            fstop=2.2),
   anim=dict(clock_tick=True))
 # the line about the TV host: the set tunes in out of the snow and the host is Rin herself, mic in hand, smiling
-# and waving on air, her hand swinging on every beat (two drawings swapped in the CRT's picture, anim crt_wave).
+# and waving on air: her hand swings on the music's hits while the line is sung (WAVE, the same toggles on the room's
+# CRT, anim crt_wave, and in S45's full-screen picture), then holds; on every beat it flickered like a loop.
+WAVE = accents(193.5, 198.0, thr=0.3, gap=0.4)
 # The whole set stays in the frame (84 % of its height at the end); the render runs on to 196.72 for S45e
 S("S44", 192.55, scene="room", setup=dict(tod="night", lamp=False), finish=MONO, render_to=196.72,
   cam=dict(keys=[(0, (2.3, 1.6, 0.6), (2.3, 0.4, 0.52), 45), (1, (2.3, 1.52, 0.57), (2.3, 0.4, 0.52), 48)],
            fstop=2.8),
   anim=dict(crt_host=[(0, 0.0), (0.04, 0.0), (0.3, 1.0), (1, 1.0)],
             crt_static=[(0, 1.0), (0.04, 1.0), (0.32, 0.2), (1, 0.2)],
-            crt_wave=[(b, k % 2) for k, b in enumerate(x for x in BEATS if 192.0 <= x < 197.5)]))
+            crt_wave=[(0.0, 0)] + [(b, (k + 1) % 2) for k, b in enumerate(WAVE)]))
 # her, watching herself on the screen: cutting from the set straight to its picture filling the frame (S45) was
 # a punch-in by another name, the same picture suddenly larger; between them the film looks at her, so the
 # picture that follows is what she sees. Closer than S44c, from a little further round
@@ -524,8 +540,8 @@ S("S44e", 194.72, scene="room", setup=dict(tod="night", lamp=False), finish=MONO
               props=dict(key_dir=(0.8, 0.1, 0.5), key_col=(0.4, 0.45, 0.55), amb_col=(0.04, 0.045, 0.06),
                          rim_dir=(-1, 0.2, 0), rim_col=(0.25, 0.3, 0.4), exposure=1.0))],
   anim=dict(crt_host=[(0, 1.0), (1, 1.0)], crt_static=[(0, 0.2), (1, 0.2)]), fx=[{"type": "tvflicker"}])
-# the next line: what she sees, Rin on the screen, lost and found in the snow, still waving on the beat
-S("S45", 196.72, bg="static", bg_args=dict(signal=0.5, wave=True), finish=MONO, fx=[{"type": "strobe", "amount": 0.2}])
+# the next line: what she sees, Rin on the screen, lost and found in the snow, her last waves, then still
+S("S45", 196.72, bg="static", bg_args=dict(signal=0.5, wave=WAVE), finish=MONO, fx=[{"type": "strobe", "amount": 0.2}])
 # quicker now, each a whole picture: the gears, her laughing in the snow, the host, her watching, the clock
 S("S45c", 201.07, frames_from=dict(id="S43", at=4.0), finish=MONO)
 S("S45d", 203.09, bg="static", bg_args=dict(signal=0.35, pose="rin_laugh"), finish=MONO,
@@ -535,20 +551,24 @@ S("S45d", 203.09, bg="static", bg_args=dict(signal=0.35, pose="rin_laugh"), fini
 S("S45e", 204.18, frames_from=dict(id="S44", at=2.2), finish=MONO)
 S("S45f", 205.28, frames_from=dict(id="S44c", at=4.3), finish=MONO, fx=[{"type": "tvflicker"}])
 S("S45g", 205.83, frames_from=dict(id="S43b", at=2.0), finish=MONO)
-S("S45b", 206.37, bg="tv_wall", finish=MONO,
+S("S45b", 206.37, bg="tv_wall", bg_args=dict(wave=accents(206.3, 210.6, thr=0.4, gap=0.4)), finish=MONO,
   fx=[{"type": "strobe", "amount": 0.45},
       {"type": "glitch", "on": [(0, 0), (0.6, 0), (0.62, 1)], "amount": 0.7}])
 
 # ================================================================ ALLEGRO AGITATO (score + tinnitus)
 S("S46", lambda: L(40) - 0.3, bg="score", bg_args=dict(mode="calm"), finish=dict(chroma=1.5))
-# she flinches on beats 1 and 3, her head down between her shoulders, pressing harder (a variant of the pose)
-S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered", flinch="rin_ears_flinch"),
+# she flinches once, on the strongest hit while "won't stop" is sung, her head down between her shoulders, pressing
+# harder (a variant of the pose), and stays so. Flinching on every other beat stuttered ("鬼畜", the director said)
+S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered", flinch=("rin_ears_flinch", 218.542)),
   finish=dict(chroma=3.0),
   fx=[{"type": "strobe", "amount": 0.4}])
 S("S48", lambda: L(42) - 0.3, bg="score", bg_args=dict(mode="wild"), finish=dict(chroma=2.5),
   fx=[{"type": "glitch", "on": [(0, 0), (0.7, 0), (0.72, 1)], "amount": 0.8}])
+# closer, the ringing louder: once, on the hit in the middle of "won't go away", her head drops between her shoulders
+# and she cries out (a variant of the pose with only the head, bow and hands redrawn)
 S("S49", lambda: L(43) - 0.2, bg="tinnitus",
-  bg_args=dict(pose="rin_ears_close", close=True, scale=1.1, cx=1152, cy=640),   # both elbows inside the frame
+  bg_args=dict(pose="rin_ears_close", close=True, scale=1.1, cx=1152, cy=640,   # both elbows inside the frame
+               flinch=("rin_ears_close_flinch", 229.083)),
   finish=dict(chroma=1.5), fx=[{"type": "strobe", "amount": 0.6}], out="black", out_dur=0.08)
 
 # ================================================================ INSTRUMENTAL: the room grows infinite
