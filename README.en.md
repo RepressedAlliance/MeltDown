@@ -54,7 +54,7 @@
 - **17 2D shots** drawn directly with skia (a wall of TVs, a musical score, title cards), plus 7 shots recut from 3D renders, such as the bridge montage that cuts faster and faster.
 - **One print look over everything**: every frame is treated as a small-run spot-colour print, with halftone dots, misregistration and paper grain. In the choruses the reactor's light burns through the page.
 - **Lyrics on the note**: every character appears when it is sung, in six typographic styles (vertical, chorus slams, echoes, a TV caption bar, bubbles, a score).
-- **Kagamine Rin**: 42 poses and expressions as layered cut-outs, one of her own for every shot. They are placed in the 3D sets as cards and relit there; she breathes and blinks, and her hair moves.
+- **Kagamine Rin**: 51 poses and expressions as layered cut-outs, one of her own for every shot. They are placed in the 3D sets as cards and relit there; she breathes and blinks, her hair moves, and in places she acts on the beat (climbing stairs, striking a lighter, sinking to the floor, swinging her feet, waving, flinching, waking), as stop-motion between drawings.
 
 This is not a one-click MV template. It is the whole production of one film: follow its methods for your own MV, or take any of its tools on their own.
 
@@ -72,7 +72,7 @@ This is not a one-click MV template. It is the whole production of one film: fol
 | Print-look compositing | AM halftone, spot inks, misregistration, paper, the chorus burn-through | `src/comp/printlook.py` |
 | Glyph typography | Japanese vertical setting from font outlines, per-character deformation and melting | `src/typo/glyphs.py`, `src/comp/typo_fx.py` |
 | Review tools | Labelled one-frame-per-second review sheets (no encoding, the whole film in minutes), frames around every cut, a check that a drawing's canvas edge never shows on screen, foreshortening checks, a measure of how fast the picture pushes in, a count of where each drawing is reused, review sheets for a second reviewer model | `src/tools/` |
-| Kagamine Rin assets | 42 poses as source images, processed layers and the prompts that made them | `assets/char/` |
+| Kagamine Rin assets | 51 poses as source images, processed layers and the prompts that made them | `assets/char/` |
 
 ## Frames
 
@@ -103,7 +103,7 @@ flowchart LR
   A["song + lyrics<br/>(bring your own)"] --> B["beat grid<br/>constant 165 BPM"]
   A --> C["vocal stems<br/>Demucs"]
   C --> D["note-level lyrics<br/>karaoke file + MMS + melody"]
-  E["turnaround sheet → 42 poses<br/>image model"] --> F["layered art<br/>flattened · pseudo-normals · hair weights"]
+  E["turnaround sheet → 51 poses<br/>image model"] --> F["layered art<br/>flattened · pseudo-normals · hair weights"]
   B --> G["storyboard<br/>storyboard.py"]
   D --> G
   G --> H["3D shots<br/>Blender Eevee"]
