@@ -80,6 +80,39 @@ def beats_between(t0, t1):
     return [b for b in BEATS if t0 <= b < t1]
 
 
+def hit_strength(t):
+    """How hard the music hits at t: (overall, attack, weight), 0..1. The attack is the onset envelope (a snare's
+    crack, a consonant), the weight the low band (a kick, the bass); the overall the larger of the two."""
+    fps, env = _audio["fps"], _audio["env"]
+    f = int(round(t * fps))
+    on = max(env["onset"][max(0, f - 2):f + 3])
+    low = max(env["low"][max(0, f - 1):f + 3])
+    return max(on, low), on, low
+
+
+def hit_near(t, window=0.35):
+    """The drum hit to cut on near t (song seconds): of the drum onsets within `window`, the strongest, less a
+    little for distance (0.25 a second) so a nearer hit of about the same weight wins. A cut on the 8th grid can still
+    fall between this song's hits, most of which are syncopated; tools/cut_hits.py checks every cut. Returns t if
+    there are no drums nearby."""
+    near = [h for h in _audio.get("kicks", []) if abs(h - t) <= window]
+    if not near:
+        return t
+    return max(near, key=lambda h: hit_strength(h)[0] - 0.25 * abs(h - t))
+
+
+def on_a_hit(t, frame=1 / 24):
+    """Whether something at t lands on a drum hit you can hear: within a frame of one at 0.6 or more."""
+    return any(abs(h - t) <= frame + 1e-6 and hit_strength(h)[0] >= 0.6 for h in _audio.get("kicks", []))
+
+
+def strongest_hit(t0, t1):
+    """The drum hit between t0 and t1 with the most attack and weight together: where a single action (a flinch)
+    lands so that it reads as caused by the music."""
+    near = [h for h in _audio.get("kicks", []) if t0 <= h <= t1]
+    return max(near, key=lambda h: sum(hit_strength(h)[1:])) if near else (t0 + t1) / 2
+
+
 def accents(t0, t1, thr=0.45, gap=0.3):
     """The audible hits between t0 and t1 (song seconds): peaks of the onset envelope at or above thr, at least
     gap seconds apart (of two closer ones the stronger is kept). This song's accents are often off the beat (on

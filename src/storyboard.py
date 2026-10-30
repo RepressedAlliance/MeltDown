@@ -9,7 +9,8 @@ Lyric typography is assigned per line in LYRIC_STYLES (independent of cuts).
 """
 import math
 
-from timeline import BEAT, BEATS, DOWNBEATS, DURATION, L, LINES, Le, Ln, accents, beat_near, greet, on_grid
+from timeline import (BEAT, BEATS, DOWNBEATS, DURATION, L, LINES, Le, Ln, accents, beat_near, greet, hit_near,
+                      hit_strength, on_a_hit, on_grid, strongest_hit)
 
 # ---------------------------------------------------------------- shared looks
 
@@ -989,6 +990,13 @@ def resolved():
             t = beat_near(t) if abs(beat_near(t) - t) < 0.18 else t
         if t > 0:
             t = on_grid(t)     # every cut on the song's eighth-note grid, to the frame
+        if not s.get("free") and t > 0 and not on_a_hit(round(t * 24) / 24):
+            # on the beat is not yet on the music: most of this song's hits are syncopated, and a cut drawn to beat 3
+            # could fall between the drums with the hardest hit of the bar 0.17 s later (the director: "没对上音乐
+            # 也没对上节奏"). A cut whose frame is not on a hit you can hear moves to a strong one nearby
+            # (tools/cut_hits.py checks every cut)
+            h = hit_near(t)
+            t = on_grid(h) if h != t and hit_strength(h)[0] >= 0.75 else t
         d = {k: v for k, v in s.items() if k not in ("t", "in_")}
         if "in_" in s:
             d["in"] = s["in_"]
