@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Asset type: second frame of a two-frame cut-out animation (it is swapped in and out on the beat of the music, so it must line up exactly with the original)
+Primary request: edit the attached image so that her lower legs swing: the foot on the viewer's right is swung forward toward the viewer (that knee opening, the sneaker forward and a little higher, seen more from its toe), and the foot on the viewer's left is swung back under her (that knee more bent, the sneaker drawn back and partly hidden behind the other shin). The ankles are no longer crossed. The thighs stay exactly as they are.
+Constraints: change only the lower legs below the knees, the leg warmers and the sneakers. Keep everything else pixel-identical: same framing, canvas size, position, scale, her head, hair, bow, headset, arms, hands, thighs, colors, line style and transparent background. Do not move, rescale or redraw anything else. Clean anime cel style matching the attached image: crisp uniform lines, flat two-tone hard shading, no soft gradients.
+Background: fully transparent PNG alpha background, exactly as in the attached image.

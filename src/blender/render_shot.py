@@ -130,6 +130,35 @@ def render_shot_constant(action):
                 kp.interpolation = "CONSTANT"
 
 
+def stop_motion(sc, shot, cards):
+    """Drawings that take turns on the beat: a card with `on` (song seconds, [(t0, t1), ...]) shows only inside its
+    intervals, and so do the objects built for it (its contact shadow or seat blot, named after it). The change
+    falls between two frames, as the stair climb's does, so no frame shows both drawings."""
+    for ob, spec in zip(cards or [], shot.get("cards", [])):
+        on = spec.get("on")
+        if on is None:
+            continue
+        # its contact shadow or seat blot (bedding.py names them after the card); a plain prefix would also take
+        # in a sibling drawing such as rin_window_back_low for rin_window_back
+        group = [ob] + [o for o in sc.objects if o.name in (ob.name + "_contact", ob.name + "_blot")]
+        edges = [math.ceil(a * FPS - 1e-6) - 0.5 for a, _ in on]
+        for o in group:
+            o.hide_render = True
+            o.keyframe_insert("hide_render", frame=min([sc.frame_start] + edges) - 1)
+            for a, b in on:
+                o.hide_render = False
+                o.keyframe_insert("hide_render", frame=math.ceil(a * FPS - 1e-6) - 0.5)
+                o.hide_render = True
+                o.keyframe_insert("hide_render", frame=math.ceil(b * FPS - 1e-6) - 0.5)
+            act = o.animation_data.action
+            curves = list(act.fcurves) if hasattr(act, "fcurves") else [
+                fc for layer in act.layers for strip in layer.strips for bag in strip.channelbags for fc in bag.fcurves]
+            for fc in curves:
+                if fc.data_path == "hide_render":
+                    for kp in fc.keyframe_points:
+                        kp.interpolation = "CONSTANT"
+
+
 def setup_cards(sc, shot, cam, f0, dur):
     objs = []
     for spec in shot.get("cards", []):
@@ -168,7 +197,8 @@ def setup_cards(sc, shot, cam, f0, dur):
             import math as _m
             base_loc = ob.location.copy()
             base_rot = ob.rotation_euler.copy()
-            ph = (hash(spec["pose"]) % 100) / 100 * 6.28
+            # drawings that take turns (`on`) share a `phase`, so the breath does not jump at a swap
+            ph = spec.get("phase", (hash(spec["pose"]) % 100) / 100 * 6.28)
             n = int(dur * FPS) + 2
             for k in range(0, n + 6, 6):
                 tt = (f0 + k) / FPS
@@ -198,7 +228,11 @@ def setup_cards(sc, shot, cam, f0, dur):
         for prop, keys in spec.get("keys", {}).items():
             for k in keys:
                 u, v = k[0], k[1]
-                f = f0 + (u[1] if isinstance(u, (list, tuple)) else u * dur) * FPS
+                # u: a fraction of the shot, ("s", seconds into it) or ("t", song seconds)
+                if isinstance(u, (list, tuple)) and u[0] == "t":
+                    f = u[1] * FPS if u[1] > 0 else f0 - 1
+                else:
+                    f = f0 + (u[1] if isinstance(u, (list, tuple)) else u * dur) * FPS
                 if prop in ("loc", "rot_deg"):
                     if prop == "loc":
                         ob.location = v
@@ -247,6 +281,7 @@ def prepare(shot_id, preview=False, pct=None, samples=None):
         cam.data.dof.focus_object = foc
     if hasattr(mod, "animate"):
         mod.animate(sc, objs, shot, f0, f1, cards=cards, cam=cam)
+    stop_motion(sc, shot, cards)
     if "comp_blender" in shot:
         common.setup_compositor(sc, **shot["comp_blender"])
     return sc, shot, f0, f1

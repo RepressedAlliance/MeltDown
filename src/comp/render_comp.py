@@ -278,11 +278,12 @@ def radial_glow(img, x, y, r, col, k=1.0):
 
 
 def sparks(img, t, fx, u):
-    """Flint sparks thrown from the lighter wheel on every snare hit. x/y may be keyed over the shot
-    (tracked from the render) so the sparks leave the hood opening as the camera pushes in."""
+    """Flint sparks thrown from the lighter wheel at each strike of her thumb (`hits`, song seconds; every snare
+    hit without them). x/y may be keyed over the shot (tracked from the render) so the sparks leave the hood
+    opening as the camera pushes in."""
     import skia
     from canvas import paint
-    hits = [h for h in TL._audio.get("snares", []) if 0 <= t - h < 0.6]
+    hits = [h for h in fx.get("hits", TL._audio.get("snares", [])) if 0 <= t - h < 0.6]
     if not hits:
         return img
     s = surface()

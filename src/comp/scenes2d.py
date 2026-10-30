@@ -70,9 +70,10 @@ def ring(t, u, radius=210.0, draw=1.0, color=(0.45, 0.85, 1.0), breathe=True, gr
 
 
 def eye(t, u, city_plate=None, zoom=(1.0, 1.18), drift=(0, -12), reflect=0.55, tear=0.0, light=1.0,
-        pose="rin_eye_macro", **kw):
+        pose="rin_eye_macro", zoom_exp=False, **kw):
     """Rin's eye with the city reflected in the iris (`pose`: another drawing of her eye, with its own
-    iris.json, or one aligned to the original so the original's iris ellipse still applies)."""
+    iris.json, or one aligned to the original so the original's iris ellipse still applies). zoom_exp: the zoom
+    grows at one rate (exponential, an even push like the 3D dolly) instead of easing in and out."""
     rgb, _ = _img(CHAR / pose / "color.png")
     iris = CHAR / pose / "iris.json"
     info = json.loads((iris if iris.exists() else CHAR / "rin_eye_macro" / "iris.json").read_text())
@@ -114,7 +115,7 @@ def eye(t, u, city_plate=None, zoom=(1.0, 1.18), drift=(0, -12), reflect=0.55, t
         cv2.ellipse(t_mask, ((icx, icy + eh * 0.36), (ew * 1.25, eh * 0.18), 0), 1.0, 3)
         t_mask = cv2.GaussianBlur(t_mask, (0, 0), 3)
         base = base + t_mask[..., None] * tear * 0.9
-    z = zoom[0] + (zoom[1] - zoom[0]) * (u * u * (3 - 2 * u))
+    z = zoom[0] * (zoom[1] / zoom[0]) ** u if zoom_exp else zoom[0] + (zoom[1] - zoom[0]) * (u * u * (3 - 2 * u))
     scale = max(W / w, H / h) * z
     cx = W / 2 - (icx - w / 2) * scale + drift[0] * u
     cy = H / 2 - (icy - h / 2) * scale * 0.35 + drift[1] * u
@@ -203,6 +204,7 @@ def hudmap(t, u, **kw):
 # what the TVs broadcast: Rin. Source crop (x0, y0, x1, y1) of each pose, framed 4:3 like a TV shot
 TV_CROPS = {
     "rin_tv_host": (-181, 0, 1206, 1040),      # the talk-show host, a presenter's medium shot: mic, wave, smile
+    "rin_tv_host_wave": (-181, 0, 1206, 1040),  # the same, her hand at the other end of the wave
     "rin_laugh": (0, 60, 1024, 828),
     "rin_laugh_clap": (0, 120, 1024, 888),
     "rin_face_close": (0, 40, 1024, 808),
@@ -263,7 +265,14 @@ def static(t, u, **kw):
     # snow above and beside the picture keeps the host's bow and waving hand inside the frame; the bust's
     # bottom edge stays on the frame's bottom edge (inside the frame it would show as a straight cut)
     pw, ph = 1300, 975
-    pic = rin_picture(kw.get("pose", "rin_tv_host"), pw, ph)
+    pose = kw.get("pose", "rin_tv_host")
+    if kw.get("wave"):
+        # the host waves on the beat: her two drawings take turns, a change on every beat
+        import bisect
+        from timeline import BEATS
+        if bisect.bisect_right(BEATS, t) % 2:
+            pose = "rin_tv_host_wave"
+    pic = rin_picture(pose, pw, ph)
     full = np.zeros((H, W), np.float32)
     x0, y0 = (W - pw) // 2, H - ph
     full[y0:y0 + ph, x0:x0 + pw] = pic
@@ -490,6 +499,8 @@ def tv_wall(t, u, cols=5, rows=4, **kw):
     rng = np.random.default_rng(int(t * 24))
     hits = [s for s in TL._audio.get("snares", []) if 0 <= t - s < 0.4]
     laugh = 0.35 * math.exp(-(t - max(hits)) * 9) if hits else 0.0
+    import bisect
+    beat = bisect.bisect_right(TL.BEATS, t)
     for r in range(rows):
         for c in range(cols):
             k = r * cols + c
@@ -499,7 +510,10 @@ def tv_wall(t, u, cols=5, rows=4, **kw):
             noise = rng.random((h // 3 + 1, w // 3 + 1), dtype=np.float32)
             snow = cv2.resize(noise, (w, h), interpolation=cv2.INTER_NEAREST) * 0.55
             g = _signal(t, k, base=0.7)
-            pic = rin_picture(WALL_POSES[(k * 3 + r) % len(WALL_POSES)], w, h, flip=(k % 3 == 1))
+            pose = WALL_POSES[(k * 3 + r) % len(WALL_POSES)]
+            if pose == "rin_tv_host" and beat % 2:
+                pose = "rin_tv_host_wave"          # the hosts on the wall wave on the beat, as on the room's TV
+            pic = rin_picture(pose, w, h, flip=(k % 3 == 1))
             scr = snow * (1 - 0.85 * g) + pic * g
             phase = (t * (0.6 + 0.13 * k) + k * 0.37) % 1.0
             yy = np.arange(h, dtype=np.float32)[:, None] / h

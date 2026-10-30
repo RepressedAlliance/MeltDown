@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Asset type: second frame of a two-frame cut-out animation (it is swapped in and out on the beat of the music, so it must line up exactly with the original)
+Primary request: edit the attached image so that her raised open hand (on the viewer's right, palm toward the viewer beside her shoulder) is tilted toward the viewer's right by about 30 degrees, mid-wave, the fingers a little more spread; the forearm and sleeve follow the small tilt.
+Constraints: change only that hand, its forearm and its sleeve. Keep everything else pixel-identical: same framing, canvas size, position, scale, her face, hair, bow, headset, the microphone and the hand holding it, her body, colors, line style and transparent background. Do not move, rescale or redraw anything else. Clean anime cel style matching the attached image: crisp uniform lines, flat two-tone hard shading, no soft gradients.
+Background: fully transparent PNG alpha background, exactly as in the attached image.

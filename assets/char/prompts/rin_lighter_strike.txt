@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Asset type: second frame of a two-frame cut-out animation (it is swapped in and out on the beat of the music, so it must line up exactly with the original)
+Primary request: edit the attached image so that her thumb has just struck the lighter: the thumb has rolled forward and down over the small metal spark wheel at the top of the lighter and now presses the lighter's gas lever just below the wheel; the thumb tip is lower than before, pointing a little down and forward, its joint bent. No flame and no sparks.
+Constraints: change only the thumb. Keep everything else pixel-identical: same framing, canvas size, position, scale, the lighter, the other fingers, the hand, the sleeve and cuff, colors, line style and transparent background. Do not move, rescale or redraw anything else. Clean anime cel style matching the attached image: crisp uniform lines, flat two-tone hard shading, no soft gradients.
+Background: fully transparent PNG alpha background, exactly as in the attached image.

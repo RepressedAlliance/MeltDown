@@ -1,0 +1,25 @@
+{
+ "name": "rin_lighter_strike",
+ "source": "rin_lighter_strike_v2.png",
+ "size": [
+  2094,
+  1254
+ ],
+ "bbox": [
+  0,
+  153,
+  1551,
+  1253
+ ],
+ "variant_of": "rin_lighter_hand",
+ "regions": [
+  [
+   1285.0,
+   230.0,
+   150.0,
+   115.0,
+   0.0
+  ]
+ ],
+ "ref": 1254
+}

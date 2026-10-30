@@ -1,0 +1,25 @@
+{
+ "name": "rin_sit_dangle_b",
+ "source": "rin_sit_dangle_b_v2.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  177,
+  11,
+  858,
+  1409
+ ],
+ "variant_of": "rin_sit_dangle",
+ "regions": [
+  [
+   465.0,
+   1165.0,
+   265.0,
+   360.0,
+   0.0
+  ]
+ ],
+ "ref": 1536
+}

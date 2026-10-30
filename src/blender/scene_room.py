@@ -600,11 +600,27 @@ def crt_material(static=1.0, host=0.0):
     onair = N.new("ShaderNodeTexImage")
     onair.image = bpy.data.images.load(str(ROOT / "assets" / "tv" / "rin_on_air.png"), check_existing=True)
     L.new(tc.outputs["UV"], onair.inputs["Vector"])
+    picture = onair.outputs["Color"]
+    wave_png = ROOT / "assets" / "tv" / "rin_on_air_wave.png"
+    if wave_png.exists():
+        # her waving hand's other drawing, swapped in on the beat by the `wave` value (anim crt_wave)
+        onair2 = N.new("ShaderNodeTexImage")
+        onair2.image = bpy.data.images.load(str(wave_png), check_existing=True)
+        L.new(tc.outputs["UV"], onair2.inputs["Vector"])
+        wavev = N.new("ShaderNodeValue")
+        wavev.name = "wave"
+        wavev.outputs[0].default_value = 0.0
+        swap = N.new("ShaderNodeMix")
+        swap.data_type = "RGBA"
+        L.new(wavev.outputs[0], swap.inputs["Factor"])
+        L.new(onair.outputs["Color"], swap.inputs["A"])
+        L.new(onair2.outputs["Color"], swap.inputs["B"])
+        picture = swap.outputs["Result"]
     tint = N.new("ShaderNodeMix")
     tint.data_type = "RGBA"
     tint.blend_type = "MULTIPLY"
     tint.inputs["Factor"].default_value = 1.0
-    L.new(onair.outputs["Color"], tint.inputs["A"])
+    L.new(picture, tint.inputs["A"])
     tint.inputs["B"].default_value = (0.82, 0.9, 1.0, 1)
     hostv = N.new("ShaderNodeValue")
     hostv.name = "host"
@@ -935,6 +951,23 @@ def ground_cards(cards, specs, cam=None, frame=None):
         c = spec.get("contact")
         if not c:
             continue
+        if c.get("kind") == "floor":
+            # a card standing on the floor (S16): its lowest line on the floor, a soft blot under the part of the
+            # drawing that touches it (the feet, the knees and hand, the whole curled side)
+            import numpy as np
+            h = spec.get("h", 1.5)
+            card.location.z = -bedding.drawing_floor(spec["pose"]) * h
+            a = bedding.alpha_grid(spec["pose"]) > 0.5          # rows bottom-up
+            rows = np.nonzero(a.any(axis=1))[0]
+            band = max(2, int(0.08 * (rows[-1] - rows[0])))
+            cols = np.nonzero(a[rows[0]:rows[0] + band].any(axis=0))[0]
+            nw = a.shape[1]
+            width = h * nw / a.shape[0]
+            x0, x1 = cols[0] / nw, (cols[-1] + 1) / nw
+            span = (x1 - x0) * width
+            bedding.sitting_blot(card, 0.0, size=(0.62 * span + 0.06, max(0.12, 0.18 * span)),
+                                 strength=c.get("strength", 0.6), shift=(((x0 + x1) / 2 - 0.5) * width, 0.0))
+            continue
         if c.get("kind") == "sit":
             with bedding.without_cards():
                 z = bedding.surface_below(card.location.x, card.location.y, z_from=card.location.z + 0.6)
@@ -980,16 +1013,61 @@ def animate(sc, objs, shot, f0, f1, cards=None, cam=None):
     if "crt_static" in an and objs.get("tv"):
         nt = objs["tv"].data.materials[0].node_tree
         key_socket(nt.nodes["static"].outputs[0], an["crt_static"], f0, dur)
+    if "glow" in an:
+        # a warm light where her stomach burns (S16): it moves with her drawings (song-time positions) and
+        # flares on beats 1 and 3, lighting the floor around her
+        import timeline as TL
+        g = an["glow"]
+        ld = bpy.data.lights.new("BellyGlow", "POINT")
+        ld.color = g.get("color", (1.0, 0.45, 0.15))
+        ld.shadow_soft_size = g.get("size", 0.1)
+        lo = bpy.data.objects.new("BellyGlow", ld)
+        sc.collection.objects.link(lo)
+        for t, pos in g["at"]:
+            lo.location = pos
+            lo.keyframe_insert("location", frame=(math.ceil(t * 24 - 1e-6) - 0.5) if t > 0 else f0 - 2)
+        base, peak = g.get("base", 3.0), g.get("peak", 12.0)
+        beats = [b for b in TL.BEATS[::2] if shot["t0"] - 0.8 <= b <= shot["t1"] + 0.8]
+        ld.energy = base
+        ld.keyframe_insert("energy", frame=f0 - 2)
+        for b, nxt in zip(beats, beats[1:] + [beats[-1] + 0.8]):
+            for t, e in ((b - 1.0 / 24, base), (b, peak), (b + 0.3, base), (nxt - 1.5 / 24, base)):
+                ld.energy = e
+                ld.keyframe_insert("energy", frame=t * 24)
+        for owner in (lo, ld):
+            act = owner.animation_data.action
+            curves = list(act.fcurves) if hasattr(act, "fcurves") else [
+                fc for layer in act.layers for strip in layer.strips for bag in strip.channelbags for fc in bag.fcurves]
+            for fc in curves:
+                if fc.data_path == "location":
+                    for kp in fc.keyframe_points:
+                        kp.interpolation = "CONSTANT"
+    if "crt_wave" in an and objs.get("tv") and "wave" in objs["tv"].data.materials[0].node_tree.nodes:
+        # the host waves on the beat: her two drawings swap at song times (seconds, value 0 or 1)
+        nt = objs["tv"].data.materials[0].node_tree
+        sock = nt.nodes["wave"].outputs[0]
+        for t, v in an["crt_wave"]:
+            sock.default_value = float(v)
+            sock.keyframe_insert("default_value", frame=math.ceil(t * 24 - 1e-6) - 0.5)
+        act = nt.animation_data.action
+        curves = list(act.fcurves) if hasattr(act, "fcurves") else [
+            fc for layer in act.layers for strip in layer.strips for bag in strip.channelbags for fc in bag.fcurves]
+        for fc in curves:
+            if '"wave"' in fc.data_path:
+                for kp in fc.keyframe_points:
+                    kp.interpolation = "CONSTANT"
     if an.get("clock_tick") and objs.get("clock"):
         import timeline as TL
         sec = objs["clock"]["Second"]
         t0s, t1s = shot["t0"], shot["t1"]
         ticks = [b for b in TL.BEATS if t0s - 1 <= b <= t1s + 1]
+        # the clock hangs on the wall facing -x: seen from the room, +x rotation steps the hand clockwise (the
+        # minus sign it had ran the second hand backwards in every cut up to the tenth)
         for k, b in enumerate(ticks):
             fb = b * 24
-            sec.rotation_euler = (math.radians(-6 * k), 0, 0)
+            sec.rotation_euler = (math.radians(6 * k), 0, 0)
             sec.keyframe_insert("rotation_euler", index=0, frame=fb)
-            sec.rotation_euler = (math.radians(-6 * (k + 1)), 0, 0)
+            sec.rotation_euler = (math.radians(6 * (k + 1)), 0, 0)
             sec.keyframe_insert("rotation_euler", index=0, frame=fb + 1.5)
     if "window_light" in an:
         wl = bpy.data.objects.get("WindowLight")

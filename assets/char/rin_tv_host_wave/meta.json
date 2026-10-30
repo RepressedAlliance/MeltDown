@@ -1,0 +1,25 @@
+{
+ "name": "rin_tv_host_wave",
+ "source": "rin_tv_host_wave_v2.png",
+ "size": [
+  1024,
+  1536
+ ],
+ "bbox": [
+  79,
+  16,
+  1021,
+  1535
+ ],
+ "variant_of": "rin_tv_host",
+ "regions": [
+  [
+   905.0,
+   840.0,
+   150.0,
+   235.0,
+   0.0
+  ]
+ ],
+ "ref": 1536
+}
