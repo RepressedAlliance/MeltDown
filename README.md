@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/hero.jpg" alt="《炉心融解》MV 的画面：片名下的夜城、炉心、黄昏、电视里的铃、清晨" width="100%">
+  <img src="docs/images/hero.jpg" alt="《炉心融解》MV 的画面：片名下的夜城、炉心、黄昏、电视里的铃、黑暗里的床、清晨" width="100%">
 </p>
 
 <h1 align="center">MeltDown</h1>
@@ -78,14 +78,14 @@
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/images/stills/01.jpg" alt="凌晨两点，她抱着膝坐在床上"></td>
+    <td width="33%"><img src="docs/images/stills/01.jpg" alt="凌晨两点，她睁着眼躺在床上"></td>
     <td width="33%"><img src="docs/images/stills/02.jpg" alt="打火机的火石轮擦出火花"></td>
-    <td width="33%"><img src="docs/images/stills/03.jpg" alt="侧脸，眼角有一滴泪"></td>
+    <td width="33%"><img src="docs/images/stills/03.jpg" alt="她蜷倒在床边的地板上，胃里透出光"></td>
   </tr>
   <tr>
     <td width="33%"><img src="docs/images/stills/04.jpg" alt="漂浮在炉心里"></td>
     <td width="33%"><img src="docs/images/stills/05.jpg" alt="黄昏的阳台，城市在脚下"></td>
-    <td width="33%"><img src="docs/images/stills/06.jpg" alt="话语从唇边化作气泡"></td>
+    <td width="33%"><img src="docs/images/stills/06.jpg" alt="侧脸，身后是夜里的云和城市"></td>
   </tr>
   <tr>
     <td width="33%"><img src="docs/images/stills/07.jpg" alt="满墙的电视里都是她"></td>
