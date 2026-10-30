@@ -349,9 +349,19 @@ def score(t, u, mode="calm", **kw):
 
 # ---------------------------------------------------------------- tinnitus
 
-def tinnitus(t, u, pose="rin_ears_covered", close=False, scale=None, cx=None, cy=None, **kw):
+def tinnitus(t, u, pose="rin_ears_covered", close=False, scale=None, cx=None, cy=None, flinch=None, **kw):
     # sized so her bow and elbows stay inside the frame (a drawing of its own gives its own placement)
     s0, x0, y0 = (1.15, W * 0.68, H * 0.64) if not close else (1.45, W * 0.6, H * 0.8)
+    if flinch:
+        # she flinches on beats 1 and 3: the other drawing of the pose (src/char/variant.py) for three frames from
+        # the frame each beat falls in, as the 3D stop-motion swaps do
+        import bisect
+        from timeline import BEATS
+        half = BEATS[::2]
+        f = int(round(t * 24))
+        j = bisect.bisect_right(half, (f + 0.5) / 24) - 1
+        if j >= 0 and 0 <= f - math.ceil(half[j] * 24 - 1e-6) < 3:
+            pose = flinch
     scale, cx, cy = scale or s0, cx or x0, cy or y0
     base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=scale, cx=cx, cy=cy,
                 duotone=((0.03, 0.0, 0.01), (1.0, 0.16, 0.12)))

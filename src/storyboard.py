@@ -540,7 +540,9 @@ S("S45b", 206.37, bg="tv_wall", finish=MONO,
 
 # ================================================================ ALLEGRO AGITATO (score + tinnitus)
 S("S46", lambda: L(40) - 0.3, bg="score", bg_args=dict(mode="calm"), finish=dict(chroma=1.5))
-S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered"), finish=dict(chroma=3.0),
+# she flinches on beats 1 and 3, her head down between her shoulders, pressing harder (a variant of the pose)
+S("S47", lambda: L(41) - 0.2, bg="tinnitus", bg_args=dict(pose="rin_ears_covered", flinch="rin_ears_flinch"),
+  finish=dict(chroma=3.0),
   fx=[{"type": "strobe", "amount": 0.4}])
 S("S48", lambda: L(42) - 0.3, bg="score", bg_args=dict(mode="wild"), finish=dict(chroma=2.5),
   fx=[{"type": "glitch", "on": [(0, 0), (0.7, 0), (0.72, 1)], "amount": 0.8}])
