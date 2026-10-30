@@ -48,13 +48,14 @@
 
 《炉心融解》 is about someone awake at 2 a.m. who wants to dive into a fusion reactor. In this MV, Kagamine Rin carries the "reactor" burning in her chest all the way into a real reactor core. A readout in the corner climbs from the first frame to a hundred million degrees and overflows; after dawn it falls back to 36.5 ℃. The reactor was her own body heat.
 
-5:29, 82 shots:
+5:29, 74 shots:
 
-- **58 3D shots**: a six-mat room, the city at night, a tokamak core, dusk streets, gears. Every set is built procedurally by Python scripts in Blender and rendered with Eevee.
-- **17 2D shots** drawn directly with skia (a wall of TVs, a musical score, title cards), plus 7 shots recut from 3D renders, such as the bridge montage that cuts faster and faster.
+- **53 3D shots**: a six-mat room, the city at night, a tokamak core, dusk streets, gears. Every set is built procedurally by Python scripts in Blender and rendered with Eevee.
+- **16 2D shots** drawn directly with skia (a wall of TVs, a musical score, title cards), plus 5 shots recut from 3D renders, such as the bridge montage that cuts faster and faster.
+- **An opening in one take**: the title's ring becomes the reactor's ring, the camera lifts on the drums as the whole night city opens up, flies across the bay and in through one window high in her tower, and comes to rest above her, lying awake. The city and the room are two sets joined into one shot by a single camera path.
 - **One print look over everything**: every frame is treated as a small-run spot-colour print, with halftone dots, misregistration and paper grain. In the choruses the reactor's light burns through the page.
 - **Lyrics on the note**: every character appears when it is sung, in six typographic styles (vertical, chorus slams, echoes, a TV caption bar, bubbles, a score).
-- **Kagamine Rin**: 51 poses and expressions as layered cut-outs, one of her own for every shot. They are placed in the 3D sets as cards and relit there; she breathes and blinks, her hair moves, and in places she acts on the beat (climbing stairs, striking a lighter, sinking to the floor, swinging her feet, waving, flinching, waking), as stop-motion between drawings.
+- **Kagamine Rin**: 52 poses and expressions as layered cut-outs, one of her own for every shot. They are placed in the 3D sets as cards and relit there; she breathes and blinks, her hair moves, and in places she acts on the music's accents (climbing stairs, striking a lighter, sinking to the floor, swinging her feet, waving, flinching, waking), as stop-motion between drawings.
 
 This is not a one-click MV template. It is the whole production of one film: follow its methods for your own MV, or take any of its tools on their own.
 
@@ -72,7 +73,7 @@ This is not a one-click MV template. It is the whole production of one film: fol
 | Print-look compositing | AM halftone, spot inks, misregistration, paper, the chorus burn-through | `src/comp/printlook.py` |
 | Glyph typography | Japanese vertical setting from font outlines, per-character deformation and melting | `src/typo/glyphs.py`, `src/comp/typo_fx.py` |
 | Review tools | Labelled one-frame-per-second review sheets (no encoding, the whole film in minutes), frames around every cut, a check that a drawing's canvas edge never shows on screen, foreshortening checks, a measure of how fast the picture pushes in, a count of where each drawing is reused, review sheets for a second reviewer model | `src/tools/` |
-| Kagamine Rin assets | 51 poses as source images, processed layers and the prompts that made them | `assets/char/` |
+| Kagamine Rin assets | 52 poses as source images, processed layers and the prompts that made them | `assets/char/` |
 
 ## Frames
 
@@ -103,7 +104,7 @@ flowchart LR
   A["song + lyrics<br/>(bring your own)"] --> B["beat grid<br/>constant 165 BPM"]
   A --> C["vocal stems<br/>Demucs"]
   C --> D["note-level lyrics<br/>karaoke file + MMS + melody"]
-  E["turnaround sheet → 51 poses<br/>image model"] --> F["layered art<br/>flattened · pseudo-normals · hair weights"]
+  E["turnaround sheet → 52 poses<br/>image model"] --> F["layered art<br/>flattened · pseudo-normals · hair weights"]
   B --> G["storyboard<br/>storyboard.py"]
   D --> G
   G --> H["3D shots<br/>Blender Eevee"]
@@ -150,7 +151,7 @@ Then:
 ```powershell
 .venv\Scripts\python src\analysis\analyze_audio.py       # beats, sections, loudness
 .venv\Scripts\python src\analysis\apply_timing.py        # use the shipped note timing, skip the alignment
-.venv\Scripts\python src\blender\drive_shots.py all      # render the 58 3D shots (resumable)
+.venv\Scripts\python src\blender\drive_shots.py all      # render the 53 3D shots (resumable)
 .venv\Scripts\python src\comp\render_parallel.py --workers 3   # composite → out\roshin_yuukai_mv.mp4
 ```
 
