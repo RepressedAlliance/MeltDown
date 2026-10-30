@@ -329,18 +329,23 @@ def sparks(img, t, fx, u):
     for h, little in hits:
         age = t - h
         rng = np.random.default_rng(int(h * 1000))
-        n = int(rng.integers(5, 10)) if little else 26
+        n = int(rng.integers(10, 17)) if little else 26
         ang = rng.uniform(*fx.get("angles", (-2.6, -0.5)), n)
-        spd = rng.uniform(140, 420, n) if little else rng.uniform(250, 900, n)
+        spd = rng.uniform(240, 680, n) if little else rng.uniform(250, 900, n)
+        tail = 0.05 if little else 0.03
         for a, v in zip(ang, spd):
             px = x0 + math.cos(a) * v * age
             py = y0 + math.sin(a) * v * age + 900 * age * age
-            tail = 0.03
-            qx = x0 + math.cos(a) * v * (age - tail)
-            qy = y0 + math.sin(a) * v * (age - tail) + 900 * (age - tail) ** 2
-            life = max(0.0, 1 - age / (rng.uniform(0.12, 0.3) if little else rng.uniform(0.25, 0.6)))
-            c.drawLine(qx, qy, px, py, paint((1.0, 0.85, 0.45), life, stroke=1.6 if little else 2.2))
-        flash = max(flash, (0.35 if little else 1.0) * math.exp(-age * (24 if little else 18)))
+            ta = max(0.0, age - tail)
+            qx = x0 + math.cos(a) * v * ta
+            qy = y0 + math.sin(a) * v * ta + 900 * ta * ta
+            life = max(0.0, 1 - age / (rng.uniform(0.15, 0.35) if little else rng.uniform(0.25, 0.6)))
+            c.drawLine(qx, qy, px, py, paint((1.0, 0.85, 0.45), life, stroke=2.2))
+        if little:
+            # the flint itself catching: a hot point on the wheel for a frame or two, so each burst reads at a
+            # glance through the print screen and not only as a few thin streaks
+            c.drawCircle(x0, y0, 9 + 6 * rng.random(), paint((1.0, 0.95, 0.75), math.exp(-age * 14)))
+        flash = max(flash, (0.75 if little else 1.0) * math.exp(-age * (14 if little else 18)))
     lay = to_array(s)
     img = img * (1 - lay[..., 3:4]) + lay[..., :3] * 1.6
     img = img + glow(lay, sigma=10, strength=1.2) * np.array([1.0, 0.6, 0.25], np.float32)
