@@ -103,7 +103,7 @@ AZ1 = math.atan2(N.y, N.x)
 # pane GLIDE seconds before it passes through the window at T_ENTER. (A single constant rate from 2 km away put the
 # camera over the bay at 800 m/s: a smear, not a flight.)
 T_GLIDE = TL.DOWNBEATS[7]                   # the glide over the bay ends; the push gathers pace
-R_TILT, R_GLIDE, R_LAND = 0.12, 0.2, 0.5
+R_TILT, R_GLIDE, R_LAND = 0.12, 0.32, 0.5
 GLIDE = 2.32
 T_SWITCH = T_ENTER - GLIDE
 

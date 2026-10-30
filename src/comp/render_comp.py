@@ -167,6 +167,26 @@ def apply_fx(img, shot, t, u):
                 M = cv2.getRotationMatrix2D((W / 2 + fx.get("cx", 0), H / 2 + fx.get("cy", 0)),
                                             _val(fx.get("rot", 0), u), z)
                 img = cv2.warpAffine(img, M, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+        elif kind == "ring_over":
+            # the title's ring carried across the cut onto the reactor's ring of the same size (S00 -> S03): drawn
+            # and pushed as in S00 (scenes2d.ring at `radius`, settled, zoom at `rate` from song time 0, so it lies
+            # exactly on the 3D ring as the camera sinks), it takes the 3D ring's place, then fades out over `fade`
+            # (song seconds), leaving the reactor's own thinner ring where it was. It replaces the whole band round
+            # the ring, the 3D ring's wide bloom included: cut straight to the 3D ring, the thick glowing title ring
+            # turned into a thin line; laid over it, the two added up to a wider, brighter ring than S00's
+            f0, f1 = fx["fade"]
+            k = max(0.0, min(1.0, (t - f0) / (f1 - f0)))
+            a = np.float32(1.0 - k * k * (3 - 2 * k))
+            if a > 0:
+                lay = scenes2d.ring(t, u, radius=fx["radius"], breathe=False)
+                z = math.exp(fx["rate"] * t)
+                M = cv2.getRotationMatrix2D((W / 2, H / 2), 0.0, z)
+                lay = np.clip(cv2.warpAffine(lay, M, (W, H), flags=cv2.INTER_LINEAR,
+                                             borderMode=cv2.BORDER_CONSTANT), 0.0, 1.0)
+                yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+                off = np.abs(np.hypot(xx - W / 2, yy - H / 2) - fx["radius"] * z)
+                band = np.clip(1.0 - (off - 45.0) / 50.0, 0.0, 1.0)[..., None]
+                img = img * (1 - band * a) + lay * a
         elif kind == "heat":  # heat haze
             a = _val(fx.get("amount", 4.0), u)
             n1 = _noise_field(11, 24)
@@ -527,7 +547,13 @@ def lyrics_overlay(t, shot):
         getattr(typo_fx, style)(ca if _adaptive(st) else c, ln, t, **kw)
     hud_cfg = shot.get("hud")
     if hud_cfg:
-        hud.draw(c, t, **hud_cfg)
+        cfg = dict(hud_cfg)
+        if "fade" in cfg:
+            # (t0, t1): the console fades out between these song times (S03 carries S00's across the cut)
+            f0, f1 = cfg.pop("fade")
+            k = max(0.0, min(1.0, (t - f0) / (f1 - f0)))
+            cfg["alpha"] = cfg.get("alpha", 1.0) * (1 - k * k * (3 - 2 * k))
+        hud.draw(c, t, **cfg)
     u = (t - shot["t0"]) / max(1e-6, shot["t1"] - shot["t0"])
     if shot.get("title"):
         for spec in (shot["title"] if isinstance(shot["title"], list) else [shot["title"]]):
@@ -929,11 +955,23 @@ def render_frame(shots, f, preview, raw=False):
         # in their highlights while the burn still reveals the full light
         pe = _val(shot.get("print_ev", 0.0), u)
         src = img * np.float32(2 ** pe) if pe else img
-        if shot.get("pre_blur"):
-            # merge pinpoint lights into tones the screen can carry, instead of dot noise
-            src = cv2.GaussianBlur(src, (0, 0), shot["pre_blur"])
+        pb = _val(shot.get("pre_blur", 0.0), u)
+        if pb > 0.05:
+            # merge pinpoint lights into tones the screen can carry, instead of dot noise (a number, or keys over
+            # the shot: S03 starts sharp, as the title ring it carries across the cut was)
+            src = cv2.GaussianBlur(src, (0, 0), pb)
         pr = printlook.riso(src, t, inks=inks, mis=mis)
         pr = printlook.apply_paper(pr, t, amount=0.8)
+        ink_from = shot.get("ink_from")
+        if ink_from and t < ink_from[2]:
+            # (inks, t0, t1): the shot before's print carried across the cut and blended into this shot's own
+            # between song times t0 and t1. S00's title ring is printed flat on dark paper (graphic), the city in
+            # halftone (night): cut straight across, the ring lost its glow and the screen appeared all at once
+            k = max(0.0, min(1.0, (t - ink_from[1]) / (ink_from[2] - ink_from[1])))
+            w = k * k * (3 - 2 * k)
+            if w < 1.0:
+                pr0 = printlook.apply_paper(printlook.riso(src, t, inks=ink_from[0], mis=mis), t, amount=0.8)
+                pr = pr0 * np.float32(1 - w) + pr * np.float32(w)
         b = burn_amount(shot, t, u)
         if b > 0:
             pr = printlook.burn(pr, finish.bloom(light * 1.1, strength=0.6, threshold=0.7), t, b,

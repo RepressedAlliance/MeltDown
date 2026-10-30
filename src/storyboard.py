@@ -107,16 +107,19 @@ def alternate(edges, n=2):
 
 
 # the title ring starts at r 150 and grows at PUSH: r 423 px on bar 3, the reactor ring's size in S03's first frame
-S("S00", 0.0, free=True, bg="ring", bg_args=dict(radius=150), hud=dict(level=2, alpha=0.8), finish=NIGHT,
+S("S00", 0.0, free=True, bg="ring", bg_args=dict(radius=150, settle=(3.6, 4.7)), hud=dict(level=2, alpha=0.8),
+  finish=NIGHT,
   fx=[{"type": "zoom", "rate": PUSH}])
 # the reactor's ring from straight above, then the flight to her window (flight.opening). The light inside the drum is
-# kept low while its rim stands for the title ring, and comes up as the camera tilts away. The title stays a moment
-# across the cut, and the credits ride over the bay; the room is seen through her window from 0:16.33 (S09). Pinpoint
-# windows far below are merged into tone before the screen (pre_blur). Rendered on to just before the camera reaches
-# the window: from there the compositor shows only the room
+# kept low while its rim stands for the title ring, and comes up as the camera tilts away. The title, its glowing
+# ring, the console and S00's flat print stay a moment across the cut and give way with the piano to the reactor's
+# own ring and the city's halftone (fx ring_over, ink_from, the hud's fade). The credits ride over the bay; the room
+# is seen through her window from 0:16.33 (S09). Pinpoint windows far below are merged into tone before the screen
+# (pre_blur). Rendered on to just before the camera reaches the window: from there the compositor shows only the room
 S("S03", lambda: on_grid(bar(3)), free=True, scene="city", finish=NIGHT,
   setup=dict(her_tower=True, comp=dict(streaks=0.0)), portal="WINDOW_CORNERS",
-  cam=dict(path="opening"),
+  cam=dict(path="opening"), fx=[{"type": "ring_over", "radius": 150, "rate": PUSH, "fade": (4.85, 5.6)}],
+  ink_from=("graphic", 4.85, 5.9), hud=dict(level=2, alpha=0.8, fade=(4.85, 5.6)),
   anim=dict(facility_core=[(0, 0.0), (0.2, 0.0), (0.42, 1.0), (1, 1.0)]),
   title=[dict(mode="ring", r=200, show=(None, None, 4.9, 5.6)),
          dict(mode="poster", show=(bar(6), bar(6) + 0.5, bar(9) + 0.3, bar(9) + 0.9))],
@@ -963,7 +966,7 @@ BURN = {
 PRINT_EV = {sid: -0.6 for sid in ("S23", "S24", "S26", "S39", "S40", "S41", "S59", "S60", "S17")}
 PRINT_EV.update({"S29": -0.5, "S33": -0.5, "S34": -0.5})
 # aerial city: merge the pinpoint windows into tone before the screen, or they print as dot noise
-PRE_BLUR = {"S03": 1.6}
+PRE_BLUR = {"S03": [(0.0, 0.0), (0.1, 1.6), (1.0, 1.6)]}   # S03 from sharp (the carried title ring) by 0:05.9
 for _s in SHOTS:
     if _s["id"] in PRINT_EV:
         _s["print_ev"] = PRINT_EV[_s["id"]]

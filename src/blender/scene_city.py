@@ -544,11 +544,12 @@ def her_block(col, rng):
             if k == 0 and abs(z - c.z) < 0.1:
                 continue
             quad(c + T * (3.6 * k) + N * 0.02 + Z * (z - c.z), T)
-            lit.append(float(rng.random() < 0.38) * rng.uniform(0.45, 1.0))
+            # (from dim to bright: in the print every lit window had come out the same paper white)
+            lit.append(float(rng.random() < 0.46) * rng.uniform(0.2, 1.0))
             hue.append(rng.random())
         for k in range(0, 7):                               # the south-east face (toward -T)
             quad(c + T * (t0 - 0.02) - N * (3.6 * k), -N)
-            lit.append(float(rng.random() < 0.3) * rng.uniform(0.45, 1.0))
+            lit.append(float(rng.random() < 0.36) * rng.uniform(0.2, 1.0))
             hue.append(rng.random())
     me = bpy.data.meshes.new("HerTowerWindows")
     me.from_pydata(verts, [], faces)
@@ -594,8 +595,9 @@ def her_block(col, rng):
                 L.new(x, n.inputs[i])
         return n.outputs[0]
 
-    # up close the lit windows were blank glowing blocks: each gets the sash bar down its middle, a ceiling light that
-    # falls off toward the sill, and by its wkind a curtain drawn part way across from one side (35%) or blinds (17%)
+    # up close the lit windows were blank glowing blocks: each gets a dark frame round it and the sash bar down its
+    # middle, a ceiling light that falls off toward the sill, and by its wkind a curtain drawn part way across from one
+    # side (35%) or blinds (17%)
     ak = Nn.new("ShaderNodeAttribute")
     ak.attribute_type, ak.attribute_name = "GEOMETRY", "wkind"
     sep = Nn.new("ShaderNodeSeparateXYZ")
@@ -608,13 +610,25 @@ def her_block(col, rng):
     blinds = op("MULTIPLY", op("GREATER_THAN", kd, 0.35), op("LESS_THAN", kd, 0.52))
     slats = op("GREATER_THAN", op("SINE", op("MULTIPLY", v, 56.5)), 0.25)
     f_bl = op("MULTIPLY_ADD", op("MULTIPLY", blinds, slats), -0.6, 1.0)
+    frame = op("MAXIMUM", op("GREATER_THAN", op("ABSOLUTE", op("SUBTRACT", u, 0.5)), 0.465),
+               op("GREATER_THAN", op("ABSOLUTE", op("SUBTRACT", v, 0.5)), 0.43))
+    f_bar = op("MULTIPLY", f_bar, op("MULTIPLY_ADD", frame, -0.88, 1.0))
     pattern = op("MULTIPLY", op("MULTIPLY", f_bar, f_cur), op("MULTIPLY", f_bl, op("MULTIPLY_ADD", v, 0.35, 0.75)))
     L.new(op("MULTIPLY", mul.outputs[0], pattern), pr.inputs["Emission Strength"])
     assign(win, m)
-    # red aviation lights on the roof corners
-    red = blink_material("TowerRed", (1.0, 0.04, 0.02), period=1.6, strength=30.0)
+    # red aviation lights on the roof corners, and a band of the reactor ring's cyan round the top floor: the flight
+    # is aimed at this tower from two kilometres out, and dark among the city's lights it only became the destination
+    # in the last seconds
+    red = blink_material("TowerRed", (1.0, 0.04, 0.02), period=1.6, strength=45.0)
     corners = [c + T * a2 - N * b2 for a2, b2 in ((t0, 0.0), (t1, 0.0), (t1, depth), (t0, depth))]
-    assign(_point_cloud_cubes("TowerRoofLights", [(v.x, v.y, top + 1.2) for v in corners], 1.4, col), red)
+    assign(_point_cloud_cubes("TowerRoofLights", [(v.x, v.y, top + 1.2) for v in corners], 2.2, col), red)
+    crown = mat_principled("TowerCrown", (0.05, 0.06, 0.07), rough=0.5, emission=(0.45, 0.85, 1.0),
+                           emission_strength=4.0)
+    for nm, ctr, au, av, su, sv in (("CrownSW", c + T * ((t0 + t1) / 2) + N * 0.12, T, N, t1 - t0 + 0.24, 0.24),
+                                    ("CrownSE", c + T * (t0 - 0.12) - N * (depth / 2), T, N, 0.24, depth + 0.24),
+                                    ("CrownNE", c + T * (t1 + 0.12) - N * (depth / 2), T, N, 0.24, depth + 0.24),
+                                    ("CrownNW", c + T * ((t0 + t1) / 2) - N * (depth + 0.12), T, N, t1 - t0 + 0.24, 0.24)):
+        box(nm, ctr, au, av, su, sv, 2.4, crown, top - 4.4)
     # lower buildings behind it (north-east) and the low-rise district round it, in the city's own facade
     behind = []
     for a2, b2, w, d, h in ((-38.0, 34.0, 30.0, 40.0, 58.0), (34.0, 48.0, 40.0, 30.0, 40.0),

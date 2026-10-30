@@ -52,11 +52,17 @@ def white(t, u, level=1.0, tint=(1.0, 0.98, 0.95), **kw):
     return np.ones((H, W, 3), np.float32) * np.array(tint, np.float32) * level
 
 
-def ring(t, u, radius=210.0, draw=1.0, color=(0.45, 0.85, 1.0), breathe=True, grow=False, **kw):
-    """A thin glowing ring: the first image of the film. grow: it draws itself over the shot."""
+def ring(t, u, radius=210.0, draw=1.0, color=(0.45, 0.85, 1.0), breathe=True, grow=False, settle=None, **kw):
+    """A thin glowing ring: the first image of the film. grow: it draws itself over the shot. settle=(t0, t1): its
+    breathing dies away between these song times, so it holds still and true for a match cut (S00 into the
+    reactor's ring)."""
     s = surface()
     c = s.getCanvas()
-    r = radius * (1 + (0.015 * math.sin(t * 2.2) if breathe else 0))
+    amp = 0.015 if breathe else 0.0
+    if settle:
+        k = max(0.0, min(1.0, (t - settle[0]) / (settle[1] - settle[0])))
+        amp *= 1 - k * k * (3 - 2 * k)
+    r = radius * (1 + amp * math.sin(t * 2.2))
     sweep = 360.0 * max(0.0, min(1.0, draw if not grow else u / 0.75))
     rect = skia.Rect.MakeXYWH(W / 2 - r, H / 2 - r, 2 * r, 2 * r)
     p = paint(color, 1.0, stroke=2.2)
