@@ -599,16 +599,30 @@ S("S48", lambda: L(42) - 0.3, bg="score", bg_args=dict(mode="wild"), finish=dict
   fx=[{"type": "glitch", "on": [(0, 0), (0.7, 0), (0.72, 1)], "amount": 0.8}])
 # closer, the ringing louder: a step a bar, each on the bar's heavy low hit just after beat 3 (a sixteenth before a
 # sung word): her head pulled down harder between her shoulders, then the cry (rin_ears_close_scream is a variant of
-# rin_ears_close_press, only the face and hands redrawn, so the head never rises between the steps)
+# rin_ears_close_press, only the face and hands redrawn, so the head never rises between the steps).
+# After the line the band plays on for two bars and stops dead, and the shot holds until the music has died away (the
+# director: cut when the singing is over and the music has stopped completely). The steps go on, each drawing drawn
+# from the one before and registered to it by the chest, the head only sinking: when the line's last note is over,
+# on the next downbeat, the cry is over too and she bites down and sinks; on the hardest hit (the bar's heavy low hit
+# after beat 3, as before) she folds forward behind her forearms; on the band's last hit she curls up, her face
+# hidden. Then the noise drains away with the music and only the ringing is left, a thin line, until the black.
+RING_STOP = strongest_hit(233.7, 233.9)    # the band's last hit
 S("S49", lambda: L(43) - 0.2, bg="tinnitus",
   bg_args=dict(pose="rin_ears_close", close=True, scale=1.1, cx=1152, cy=640,   # both elbows inside the frame
                steps=[("rin_ears_close_press", strongest_hit(228.0, 228.3)),
-                      ("rin_ears_close_scream", strongest_hit(229.4, 229.7))]),
-  finish=dict(chroma=1.5), fx=[{"type": "strobe", "amount": 0.6}], out="black", out_dur=0.08)
+                      ("rin_ears_close_scream", strongest_hit(229.4, 229.7)),
+                      ("rin_ears_close_bow", strongest_hit(231.5, 231.7)),
+                      ("rin_ears_close_fold", strongest_hit(232.4, 232.6)),
+                      ("rin_ears_close_curl", RING_STOP)],
+               ramp=(226.7083, 230.875), quiet=RING_STOP),   # the ringing reaches full as the line ends, as it did
+  finish=dict(chroma=1.5),
+  fx=[{"type": "strobe", "amount": 0.6, "hits": [b for b in BEATS if 226.0 < b < RING_STOP + 0.1]}],   # stops with the band
+  out="black", out_dur=0.08)
 
 # ================================================================ INSTRUMENTAL: the room grows infinite
-# the void opens on the downbeat after the line is sung out (the music changes at 230.9)
-S("S50", 230.88, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube", "LampShade"]), finish=VOID,
+# the void comes up out of the black in the silence after the band's last chord has died (3:55.6), as the quiet
+# two-bar figure that carries the bridge begins (236.7, then every two bars: 237.4, 240.3, 243.3 ... 257.8)
+S("S50", 235.6, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube", "LampShade"]), finish=VOID,
   in_="black", in_dur=1.5,
   cam=dict(keys=[(0, (2.2, 0.2, 1.36), (0.6, 2.0, 0.68), 30), (1, (6.0, -14.0, 5.0), (0.6, 2.0, 0.6), 35)],
            ease="inout"),
@@ -620,11 +634,12 @@ S("S50", 230.88, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube
   anim=dict(plate=[(0, 1.0), (1, 0.45)]))
 # S50's pull-back continues as one take: on its last frame the city and the reactor go out window by
 # window, until she is the only thing left on the bed in the dark, and then she goes dark too (FLOW). The frame
-# creeps toward her at a steady 1.2 % a second; it used to swell 1.8x onto her, enlarging a still frame
-S("S51", 240.2, frames_from=dict(id="S50", at=9.75, speed=0.0), finish=VOID,
+# creeps toward her at a steady 1.2 % a second; it used to swell 1.8x onto her, enlarging a still frame. The lights
+# begin to go out on an entry of the bridge's figure, and her face follows on another (at=7.6: S50's last frame)
+S("S51", 243.25, frames_from=dict(id="S50", at=7.6, speed=0.0), finish=VOID,
   fx=[{"type": "lights_out", "progress": [(0, 0.0), (0.72, 1.0), (1, 1.0)], "keep": (940, 540, 115)},
       {"type": "zoom", "rate": 0.012, "cx": -20, "cy": -20}])
-S("S52", 250.0, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube", "LampShade"]), finish=VOID,
+S("S52", 252.0, scene="room", setup=dict(void=True, hide=["LampBase", "RingTube", "LampShade"]), finish=VOID,
   hud=dict(level=1, alpha=0.6), render=dict(samples=64),
   fx=[{"type": "breath"}],
   cam=dict(keys=[(0, (1.6, 1.5, 0.95), (1.0, 2.2, 0.92), 65), (1, (1.5, 1.6, 0.94), (1.0, 2.2, 0.92), 80)],
@@ -870,7 +885,7 @@ for _s in SHOTS:
 # made to flow by what the two shots share, the direction and speed of the move, or the shape the eye is on, at
 # the same place in the frame (the title ring and the lamp, the lamp and her eye). What is left here is
 # what the picture motivates:
-# - light: the drop to black when the band stops (2:17) and the music falls silent (3:50, 4:10), the white the
+# - light: the drop to black when the band stops (2:17) and the music falls silent (3:55, 4:12), the white the
 #   white chorus burns out into (2:44) and the reactor runs away into (4:31), the dawn sun at 5:01;
 # - one picture turning into another drawn exactly over it (her figure and its diagram, 0:47 and 4:28; the
 #   same drawing under the same push at the end, 5:09 and 5:16), where the two frames already match;
@@ -973,7 +988,8 @@ for _s in SHOTS:
 THERMAL = {
     "S20": dict(fx=[{"type": "rgbsplit", "px": [(0, 0.0), (0.6, 2.0), (1, 16.0)]}],
                 lyric_glitch=[(0, 0.0), (0.7, 0.0), (1, 1.0)]),
-    "S49": dict(lyric_glitch=[(0, 0.2), (1, 0.6)]),
+    # swells over the sung line as it did before the shot was held on past it (to 230.875: u 0.467 of the shot)
+    "S49": dict(lyric_glitch=[(0, 0.2), (0.467, 0.6), (1, 0.6)]),
     "S56": dict(fx=[{"type": "rgbsplit", "px": [(0, 0.0), (0.7, 2.0), (1, 8.0)]}],
                 lyric_glitch=[(0, 0.0), (0.75, 0.0), (1, 0.8)]),
     "S57": dict(lyric_glitch=[(0, 0.0), (1, 0.15)]),

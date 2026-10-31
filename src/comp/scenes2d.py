@@ -355,7 +355,8 @@ def score(t, u, mode="calm", **kw):
 
 # ---------------------------------------------------------------- tinnitus
 
-def tinnitus(t, u, pose="rin_ears_covered", close=False, scale=None, cx=None, cy=None, steps=(), **kw):
+def tinnitus(t, u, pose="rin_ears_covered", close=False, scale=None, cx=None, cy=None, steps=(), ramp=None,
+             quiet=None, **kw):
     # sized so her bow and elbows stay inside the frame (a drawing of its own gives its own placement)
     s0, x0, y0 = (1.15, W * 0.68, H * 0.64) if not close else (1.45, W * 0.6, H * 0.8)
     scale, cx, cy = scale or s0, cx or x0, cy or y0
@@ -374,14 +375,23 @@ def tinnitus(t, u, pose="rin_ears_covered", close=False, scale=None, cx=None, cy
     base = card(t, u, pose, bg=(0.02, 0.0, 0.0), scale=scale, cx=cx, cy=cy, duotone=duo)
     s = surface()
     c = s.getCanvas()
-    amp = (8 + 120 * u ** 2) * (1 + surge)
-    freq = 0.02 + 0.1 * u
+    # the ringing swells over the shot, or over `ramp` (song times) when the shot runs on past the swell
+    w = u if ramp is None else min(1.0, max(0.0, (t - ramp[0]) / (ramp[1] - ramp[0])))
+    amp = (8 + 120 * w ** 2) * (1 + surge)
+    freq = 0.02 + 0.1 * w
+    glow = 0.6
+    if quiet is not None and t > quiet:
+        # `quiet`, the band's last hit: the noise drains away as fast as the music dies, and what is left is the
+        # ringing itself, a thin line that does not stop
+        g = math.exp(-(t - quiet) / 0.3)
+        amp = amp * g + 4.0 * (1 - g)
+        glow *= 0.3 + 0.7 * g
     path = skia.Path()
     for x in range(0, W + 4, 4):
         y = H / 2 + math.sin(x * freq + t * 40) * amp * (0.6 + 0.4 * math.sin(x * 0.003 + t))
         path.moveTo(x, y) if x == 0 else path.lineTo(x, y)
     c.drawPath(path, paint((1, 1, 1), 0.95, stroke=2.2))
-    c.drawPath(path, paint((1, 0.6, 0.6), 0.6, stroke=10, blur=10))
+    c.drawPath(path, paint((1, 0.6, 0.6), glow, stroke=10, blur=10))
     lay = to_array(s)
     # the ringing runs behind her: drawn over her it crossed her face and hair like a second outline
     _rgb, a = _img(CHAR / pose / "color.png")
