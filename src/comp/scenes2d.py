@@ -218,7 +218,6 @@ TV_CROPS = {
     "rin_ears_covered": (0, 0, 1024, 768),
     "rin_profile_close": (280, 0, 1232, 714),
     "rin_eye_macro": (240, 120, 1360, 960),
-    "rin_sit_knees": (60, 120, 1254, 1015),
     "rin_back_stand": (152, 0, 872, 540),
     "rin_float": (40, 160, 1000, 880),
     "rin_sleep": (0, 0, 1365, 1024),
