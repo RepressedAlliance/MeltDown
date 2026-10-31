@@ -42,7 +42,7 @@
   </tr>
 </table>
 
-<!-- VIDEO -->
+**Watch:** [YouTube](https://youtu.be/w0tWFyW-kn4) · [Bilibili](https://www.bilibili.com/video/BV19mxr6rEhL)
 
 ## What it is
 
@@ -184,7 +184,7 @@ MeltDown/
 
 ## Making-of notes
 
-The film went through eight cuts. [docs/制作手记.md](docs/制作手记.md) (Chinese) records what changed in each, what we tried that failed, and how to avoid the same traps. The main lessons:
+The film went through fifteen cuts. [docs/制作手记.md](docs/制作手记.md) (Chinese) records what changed in each, what we tried that failed, and how to avoid the same traps. The main lessons:
 
 - **The "AI look" comes from hair, folds and soft light.** Generate one TV-anime model sheet first and use it as the reference for every pose; ask for 6–9 large hair locks, only the essential folds, strictly two-tone hard shading.
 - **Don't trust a beat tracker's BPM.** It reported 110; the song is a constant 165. A 16th-note grid fitted on the drum stem (±6 ms) carries every cut and effect.
